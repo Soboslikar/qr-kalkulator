@@ -1,117 +1,31 @@
 <!DOCTYPE html>
 <html lang="hr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>QR Kalkulator</title>
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      padding: 0.5em;
-      background: #f4f4f4;
-    }
-    #reader {
-      width: 100%;
-      max-width: 400px;
-      margin: auto;
-      height: 50vh; /* Postavljanje visine na pola trenutne visine */
-    }
-    #total {
-      font-size: 1.5em;
-      font-weight: bold;
-      margin: 1em 0;
-      text-align: center;
-    }
-    .btns {
-      display: flex;
-      justify-content: center;
-      gap: 1em;
-    }
-    button {
-      padding: 0.5em 1em;
-      font-size: 1em;
-      border: none;
-      border-radius: 5px;
-      background: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-    button:active {
-      background: #0056b3;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Skener</title>
+    <script src="https://unpkg.com/qr-scanner/qr-scanner.min.js"></script>
 </head>
 <body>
-  <div id="reader"></div>
-  <div id="total">Zbroj: 0.00 €</div>
-  <div class="btns">
-    <button onclick="clearAll()">Obriši sve</button>
-    <button onclick="undoLast()">Obriši zadnji</button>
-    <button onclick="addCurrent()">Dodaj</button>
-  </div>
+    <h1>QR Skener</h1>
+    <video id="qr-video" width="300" height="200"></video>
+    <p>Rezultat: <span id="result"></span></p>
+    <script>
+        const videoElem = document.getElementById('qr-video');
+        const resultElem = document.getElementById('result');
 
-  <script>
-    let ukupno = 0;
-    let povijest = [];
-    let currentAmount = 0;
+        const qrScanner = new QrScanner(videoElem, result => {
+            const url = result;
+            const match = url.match(/izn=(\d+)/);
+            if (match) {
+                const amountInCents = match[1];
+                resultElem.textContent = `Iznos u centima: ${amountInCents}`;
+            } else {
+                resultElem.textContent = 'QR kod ne sadrži valjani iznos.';
+            }
+        });
 
-    function updateDisplay() {
-      document.getElementById('total').innerText = `Zbroj: ${ukupno.toFixed(2)} €`;
-    }
-
-    function playSound() {
-      const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
-      audio.play();
-    }
-
-    function undoLast() {
-      if (povijest.length > 0) {
-        ukupno -= povijest.pop();
-        updateDisplay();
-      }
-    }
-
-    function clearAll() {
-      ukupno = 0;
-      povijest = [];
-      updateDisplay();
-    }
-
-    function addCurrent() {
-      if (currentAmount > 0) {
-        povijest.push(currentAmount);
-        ukupno += currentAmount;
-        updateDisplay();
-        playSound();
-        currentAmount = 0;
-      }
-    }
-
-    function handleScan(decodedText) {
-      const urlParams = new URLSearchParams(decodedText);
-      const iznosCenti = parseFloat(urlParams.get('izn'));
-      if (!isNaN(iznosCenti)) {
-        const iznosEuri = iznosCenti / 100; // Konvertiranje iz centi u eure
-        currentAmount = iznosEuri;
-        playSound();
-      }
-    }
-
-    const html5QrCode = new Html5Qrcode("reader");
-    Html5Qrcode.getCameras().then(devices => {
-      if (devices && devices.length) {
-        html5QrCode.start(
-          { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 }
-          },
-          handleScan
-        ).catch(err => console.error(err));
-      }
-    });
-  </script>
+        qrScanner.start();
+    </script>
 </body>
 </html>
