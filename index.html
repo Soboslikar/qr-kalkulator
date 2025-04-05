@@ -1,1 +1,93 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QR Kalkulator</title>
+    <style>
+        #qr-video {
+            height: 50% !important; /* postavi visinu na polovicu */
+            width: auto; /* automatski prilagođava širinu */
+            max-width: 100%; /* maksimalna širina ne smije biti veća od 100% širine ekrana */
+        }
+        #total-sum {
+            display: block;
+            margin-top: 10px;
+            font-size: 1.5em;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 1em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Scan QR Code:</h1>
+    <div id="video-container">
+        <video id="qr-video" disablepictureinpicture="" playsinline="" style="transform: scaleX(-1);"></video>
+    </div>
+    <div>
+        <span id="total-sum">Ukupno: 0.00</span>
+        <button id="clear-last-entry">Obriši zadnji unos</button>
+        <button id="clear-all">Obriši sve</button>
+    </div>
+
+    <script src="https://unpkg.com/qr-scanner/qr-scanner.min.js"></script>
+    <script>
+        let total = 0; // varijabla koja čuva ukupan zbroj
+
+        // Funkcija za ekstrakciju iznosa iz QR koda
+        function extractAmountFromQRCode(data) {
+            const regex = /izn=([\d,\.]+)/; // traži broj nakon "izn="
+            const match = data.match(regex);
+            if (match && match[1]) {
+                return parseFloat(match[1].replace(',', '.')); // zamjena zareza s točkom
+            }
+            return null;
+        }
+
+        // Funkcija za ažuriranje ukupnog zbroja
+        function addToTotal(amount) {
+            total += amount; // dodavanje iznosa u ukupan zbroj
+            document.getElementById("total-sum").textContent = "Ukupno: " + total.toFixed(2); // prikazivanje ukupnog iznosa
+        }
+
+        // Funkcija za prikaz rezultata
+        function setResult(camQrResult, result) {
+            camQrResult.textContent = result.data;
+            camQrResult.style.color = 'green';
+        }
+
+        // Inicijalizacija skenera za QR kod
+        const scanner = new QrScanner(document.getElementById('qr-video'), result => {
+            const amount = extractAmountFromQRCode(result.data); // pokušaj dobiti iznos iz QR koda
+            if (amount !== null) {
+                addToTotal(amount); // ako postoji iznos, dodaj ga u ukupan zbroj
+            }
+            setResult(document.getElementById('qr-video'), result); // prikaži rezultat skeniranja
+        });
+
+        // Provjeri dopuštenja za kameru prije početka skeniranja
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(() => {
+                scanner.start(); // pokreni skener ako su dopuštenja dozvoljena
+            })
+            .catch(err => {
+                alert('Kamera nije dostupna. Provjeri dopuštenja za pristup kameri.');
+                console.error('Kamera error:', err);
+            });
+
+        // Aktiviranje tipki za brisanje
+        document.getElementById('clear-last-entry').addEventListener('click', () => {
+            total = 0; // resetiranje ukupnog zbroja
+            document.getElementById("total-sum").textContent = "Ukupno: 0.00"; // resetiranje prikaza
+        });
+
+        document.getElementById('clear-all').addEventListener('click', () => {
+            total = 0; // resetiranje ukupnog zbroja
+            document.getElementById("total-sum").textContent = "Ukupno: 0.00"; // resetiranje prikaza
+        });
+    </script>
+</body>
+</html>
