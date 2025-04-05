@@ -29,21 +29,33 @@
       height: 50vh; /* Vraćeno na prvotnu visinu */
       position: relative;
     }
-    #total {
+    #total, #history-title {
       font-size: 1.5em;
       font-weight: bold;
-      color: red;
-      text-align: right;
       position: absolute;
+      z-index: 2;
+    }
+    #history-title {
+      left: 10px;
       bottom: 10px;
+    }
+    #total {
       right: 10px;
-      z-index: 1;
+      bottom: 10px;
+      color: red;
     }
     .btns {
       display: flex;
       justify-content: center;
       gap: 1em;
       margin-top: 1em;
+    }
+    .big-btns {
+      display: flex;
+      justify-content: center;
+      gap: 1em;
+      margin-top: 1em;
+      margin-bottom: 1em;
     }
     button {
       padding: 0.5em 1em;
@@ -66,10 +78,14 @@
     .green-btn:active {
       background: #009900;
     }
-    #current-amount {
+    .bold-text {
+      font-weight: bold;
+    }
+    #current-amount-section {
       text-align: center;
       font-size: 1.5em;
       font-weight: bold;
+      margin-top: 1em;
     }
     #history {
       max-height: 300px; /* Povećana visina */
@@ -79,17 +95,10 @@
       background: white;
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      position: absolute;
-      top: 50vh;
-      left: 0;
+      margin-top: 60vh; /* Spušteno ispod slike kamere */
       width: calc(100vw / 4); /* Smanjena širina */
       display: flex;
       flex-direction: column;
-    }
-    #history h3 {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
     }
     #history ul {
       list-style: none;
@@ -105,9 +114,7 @@
       justify-content: center;
       align-items: center;
       gap: 1em;
-      position: absolute;
-      top: calc(50vh + 150px); /* Adjusted based on history list */
-      left: 35%;
+      margin-top: 1em;
     }
     #amount-section div {
       font-size: 1.5em;
@@ -118,25 +125,30 @@
 <body>
   <div id="header">QR Kalkulator by Banović & GPT-4</div>
   <div id="reader"></div>
+  <div id="history-title">RAČUNI</div>
   <div id="total">UKUPNO: 0.00 €</div>
   <div id="history">
-    <h3>RAČUNI</h3>
     <ul id="historyList"></ul>
   </div>
   <div id="amount-section">
-    <div>IZNOS:</div>
+    <div id="amount-label">IZNOS:</div>
     <div id="current-amount">0.00 €</div>
-    <button class="green-btn" onclick="addCurrent()">Dodaj</button>
+    <button class="green-btn" id="add-btn" onclick="addCurrent()">Dodaj</button>
+    <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()">Obriši</button>
   </div>
   <div class="btns">
     <button class="red-btn" onclick="clearAll()">Obriši sve</button>
     <button class="red-btn" onclick="undoLast()">Obriši zadnji</button>
   </div>
-
+  <div class="big-btns">
+    <button class="red-btn" onclick="startRemoveFromList()">Obriši iz liste</button>
+  </div>
+  
   <script>
     let ukupno = 0;
     let povijest = [];
     let currentAmount = 0;
+    let removeConfirm = false;
 
     function updateDisplay() {
       const totalText = `UKUPNO: ${ukupno.toFixed(2)} €`;
@@ -150,6 +162,7 @@
       historyList.innerHTML = '';
       povijest.forEach((iznos, index) => {
         const listItem = document.createElement('li');
+        listItem.classList.add('bold-text');
         listItem.innerText = `${index + 1}.  ${iznos.toFixed(2)} €`; // Dodano dva razmaka
         historyList.appendChild(listItem);
       });
@@ -180,6 +193,31 @@
         updateDisplay();
         playSound('https://www.soundjay.com/button/beep-08b.mp3');
         currentAmount = 0;
+        document.getElementById('amount-label').style.display = 'none';
+        document.getElementById('current-amount').style.display = 'none';
+        document.getElementById('clear-current-btn').style.display = 'none';
+      }
+    }
+
+    function clearCurrent() {
+      currentAmount = 0;
+      document.getElementById('amount-label').style.display = 'none';
+      document.getElementById('current-amount').style.display = 'none';
+      document.getElementById('clear-current-btn').style.display = 'none';
+      updateDisplay();
+    }
+
+    function startRemoveFromList() {
+      if (!removeConfirm) {
+        document.querySelector('.big-btns button').innerText = 'Potvrdi';
+        removeConfirm = true;
+      } else {
+        if (povijest.length > 0) {
+          ukupno -= povijest.pop();
+          updateDisplay();
+        }
+        document.querySelector('.big-btns button').innerText = 'Obriši iz liste';
+        removeConfirm = false;
       }
     }
 
@@ -190,6 +228,9 @@
         const iznosEuri = iznosCenti / 100; // Konvertiranje iz centi u eure
         currentAmount = iznosEuri;
         playSound('https://www.soundjay.com/button/beep-07.wav');
+        document.getElementById('amount-label').style.display = 'block';
+        document.getElementById('current-amount').style.display = 'block';
+        document.getElementById('clear-current-btn').style.display = 'block';
         updateDisplay();
       }
     }
@@ -207,6 +248,16 @@
       ).catch(err => console.error(err));
     }
   });
+
+  // StatCounter code for tracking visits
+  var sc_project=12702047; 
+  var sc_invisible=1; 
+  var sc_security="e75d2592"; 
+  var scJsHost = (("https:" == document.location.protocol) ?
+  "https://secure." : "http://www.");
+  document.write("<sc"+"ript type='text/javascript' src='" +
+  scJsHost+
+  "statcounter.com/counter/counter.js'></"+"script>");
   </script>
 </body>
 </html>
