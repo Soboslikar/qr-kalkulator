@@ -1,99 +1,84 @@
 <!DOCTYPE html>
-<html lang="hr">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>QR Kalkulator</title>
-  <script type="module">
-    import QrScanner from "https://unpkg.com/qr-scanner@1.4.2/qr-scanner.min.js";
-
-    let ukupno = 0;
-    const kodovi = [];
-
-    function ažurirajZbroj() {
-      document.getElementById("zbroj").textContent = ukupno.toFixed(2) + " €";
-    }
-
-    function dodajKod(kod) {
-      const iznos = parseFloat(kod.replace(",", "."));
-      if (!isNaN(iznos)) {
-        kodovi.push(iznos);
-        ukupno += iznos;
-        ažurirajZbroj();
-      }
-    }
-
-    function obrišiZadnji() {
-      const zadnji = kodovi.pop();
-      if (zadnji !== undefined) {
-        ukupno -= zadnji;
-        ažurirajZbroj();
-      }
-    }
-
-    function obrišiSve() {
-      kodovi.length = 0;
-      ukupno = 0;
-      ažurirajZbroj();
-    }
-
-    window.onload = () => {
-      const video = document.getElementById("kamera");
-
-      const scanner = new QrScanner(video, result => {
-        dodajKod(result.data);
-      });
-
-      scanner.start();
-
-      document.getElementById("gumbZadnji").addEventListener("click", obrišiZadnji);
-      document.getElementById("gumbSve").addEventListener("click", obrišiSve);
-    };
-  </script>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 10px;
-      background: #f9f9f9;
-      text-align: center;
-    }
-    video {
-      width: 100%;
-      max-width: 400px;
-      border: 2px solid #444;
-      border-radius: 10px;
-    }
-    .zbroj {
-      font-size: 2em;
-      margin: 10px 0;
-    }
-    .gumbi {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .gumbi button {
-      font-size: 1em;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 8px;
-      background: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-    .gumbi button:hover {
-      background: #0056b3;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>QR Kalkulator</title>
+    <style>
+        #qr-video {
+            height: 50% !important; /* postavi visinu na polovicu */
+            width: auto; /* automatski prilagođava širinu */
+            max-width: 100%; /* maksimalna širina ne smije biti veća od 100% širine ekrana */
+        }
+        #total-sum {
+            display: block;
+            margin-top: 10px;
+            font-size: 1.5em;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 1em;
+        }
+    </style>
 </head>
 <body>
-  <h2>QR Kalkulator</h2>
-  <video id="kamera" autoplay muted playsinline></video>
-  <div class="zbroj" id="zbroj">0.00 €</div>
-  <div class="gumbi">
-    <button id="gumbZadnji">Obriši zadnji</button>
-    <button id="gumbSve">Obriši sve</button>
-  </div>
+    <h1>Scan QR Code:</h1>
+    <div id="video-container">
+        <video id="qr-video" disablepictureinpicture="" playsinline="" style="transform: scaleX(-1);"></video>
+    </div>
+    <div>
+        <span id="total-sum">Ukupno: 0.00</span>
+        <button id="clear-last-entry">Obriši zadnji unos</button>
+        <button id="clear-all">Obriši sve</button>
+    </div>
+
+    <script src="https://unpkg.com/qr-scanner/qr-scanner.min.js"></script>
+    <script>
+        let total = 0; // varijabla koja čuva ukupan zbroj
+
+        // Funkcija za ekstrakciju iznosa iz QR koda
+        function extractAmountFromQRCode(data) {
+            const regex = /izn=([\d,\.]+)/; // traži broj nakon "izn="
+            const match = data.match(regex);
+            if (match && match[1]) {
+                return parseFloat(match[1].replace(',', '.')); // zamjena zareza s točkom
+            }
+            return null;
+        }
+
+        // Funkcija za ažuriranje ukupnog zbroja
+        function addToTotal(amount) {
+            total += amount; // dodavanje iznosa u ukupan zbroj
+            document.getElementById("total-sum").textContent = "Ukupno: " + total.toFixed(2); // prikazivanje ukupnog iznosa
+        }
+
+        // Funkcija za prikaz rezultata
+        function setResult(camQrResult, result) {
+            camQrResult.textContent = result.data;
+            camQrResult.style.color = 'green';
+        }
+
+        // Inicijalizacija skenera za QR kod
+        const scanner = new QrScanner(document.getElementById('qr-video'), result => {
+            const amount = extractAmountFromQRCode(result.data); // pokušaj dobiti iznos iz QR koda
+            if (amount !== null) {
+                addToTotal(amount); // ako postoji iznos, dodaj ga u ukupan zbroj
+            }
+            setResult(document.getElementById('qr-video'), result); // prikaži rezultat skeniranja
+        });
+
+        scanner.start(); // pokretanje skenera
+
+        // Aktiviranje tipki za brisanje
+        document.getElementById('clear-last-entry').addEventListener('click', () => {
+            total = 0; // resetiranje ukupnog zbroja
+            document.getElementById("total-sum").textContent = "Ukupno: 0.00"; // resetiranje prikaza
+        });
+
+        document.getElementById('clear-all').addEventListener('click', () => {
+            total = 0; // resetiranje ukupnog zbroja
+            document.getElementById("total-sum").textContent = "Ukupno: 0.00"; // resetiranje prikaza
+        });
+    </script>
 </body>
 </html>
