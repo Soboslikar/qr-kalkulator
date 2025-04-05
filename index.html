@@ -12,44 +12,104 @@
       padding: 0.5em;
       background: #f4f4f4;
     }
+    #header {
+      text-align: center;
+      color: yellow;
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-bottom: 0.5em;
+      position: absolute;
+      width: 100%;
+      z-index: 1;
+    }
     #reader {
       width: 100%;
       max-width: 400px;
       margin: auto;
-      height: 50vh; /* Postavljanje visine na pola trenutne visine */
+      height: calc(50vh / 3); /* Postavljanje visine na 1/3 prethodne visine */
+      position: relative;
     }
     #total {
       font-size: 1.5em;
       font-weight: bold;
-      margin: 1em 0;
+      color: red;
       text-align: center;
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      z-index: 1;
     }
     .btns {
       display: flex;
-      justify-content: center;
+      justify-content: flex-end;
       gap: 1em;
+      margin-top: 1em;
+      margin-right: 1em;
     }
     button {
       padding: 0.5em 1em;
       font-size: 1em;
       border: none;
       border-radius: 5px;
-      background: #007bff;
       color: white;
       cursor: pointer;
     }
-    button:active {
-      background: #0056b3;
+    .red-btn {
+      background: #ff0000;
+    }
+    .red-btn:active {
+      background: #cc0000;
+    }
+    .green-btn {
+      background: #00cc00;
+      position: relative;
+      top: 2em;
+    }
+    .green-btn:active {
+      background: #009900;
+    }
+    #current-amount {
+      text-align: center;
+      margin-top: 1em;
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+    #history {
+      max-height: 200px;
+      overflow-y: auto;
+      margin: 1em 0;
+      padding: 1em;
+      background: white;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      position: absolute;
+      top: 50vh;
+      left: 0;
+      width: calc(100vw / 3);
+    }
+    #history ul {
+      list-style: none;
+      padding: 0;
+    }
+    #history li {
+      padding: 0.5em 0;
+      border-bottom: 1px solid #eee;
     }
   </style>
 </head>
 <body>
+  <div id="header">QR Kalkulator by Banović & GPT-4</div>
   <div id="reader"></div>
   <div id="total">Zbroj: 0.00 €</div>
+  <div id="current-amount">Trenutni iznos: 0.00 €</div>
   <div class="btns">
-    <button onclick="clearAll()">Obriši sve</button>
-    <button onclick="undoLast()">Obriši zadnji</button>
-    <button onclick="addCurrent()">Dodaj</button>
+    <button class="red-btn" onclick="clearAll()">Obriši sve</button>
+    <button class="red-btn" onclick="undoLast()">Obriši zadnji</button>
+  </div>
+  <button class="green-btn" onclick="addCurrent()">Dodaj</button>
+  <div id="history">
+    <h3>Povijest skeniranih iznosa:</h3>
+    <ul id="historyList"></ul>
   </div>
 
   <script>
@@ -59,10 +119,22 @@
 
     function updateDisplay() {
       document.getElementById('total').innerText = `Zbroj: ${ukupno.toFixed(2)} €`;
+      document.getElementById('current-amount').innerText = `Trenutni iznos: ${currentAmount.toFixed(2)} €`;
+      updateHistory();
     }
 
-    function playSound() {
-      const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
+    function updateHistory() {
+      const historyList = document.getElementById('historyList');
+      historyList.innerHTML = '';
+      povijest.forEach((iznos, index) => {
+        const listItem = document.createElement('li');
+        listItem.innerText = `${index + 1}. ${iznos.toFixed(2)} €`;
+        historyList.appendChild(listItem);
+      });
+    }
+
+    function playSound(url) {
+      const audio = new Audio(url);
       audio.play();
     }
 
@@ -84,7 +156,7 @@
         povijest.push(currentAmount);
         ukupno += currentAmount;
         updateDisplay();
-        playSound();
+        playSound('https://www.soundjay.com/button/beep-08b.mp3');
         currentAmount = 0;
       }
     }
@@ -95,7 +167,8 @@
       if (!isNaN(iznosCenti)) {
         const iznosEuri = iznosCenti / 100; // Konvertiranje iz centi u eure
         currentAmount = iznosEuri;
-        playSound();
+        playSound('https://www.soundjay.com/button/beep-07.wav');
+        updateDisplay();
       }
     }
 
