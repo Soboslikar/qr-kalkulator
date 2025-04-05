@@ -12,10 +12,13 @@
       padding: 0.5em;
       background: #f4f4f4;
     }
-    #reader {
+    .camera-container {
       width: 100%;
       max-width: 400px;
       margin: auto;
+    }
+    #reader {
+      width: 100%;
     }
     #total {
       font-size: 1.5em;
@@ -42,7 +45,9 @@
   </style>
 </head>
 <body>
-  <div id="reader"></div>
+  <div class="camera-container">
+    <div id="reader"></div>
+  </div>
   <div id="total">Zbroj: 0.00 €</div>
   <div class="btns">
     <button onclick="undoLast()">Obriši zadnji</button>
