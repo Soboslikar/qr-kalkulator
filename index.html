@@ -26,7 +26,7 @@
       width: 100%;
       max-width: 400px;
       margin: auto;
-      height: 50vh; /* Vraćeno na prvotnu visinu */
+      height: 30vh; /* Smanjena visina slike kamere */
       position: relative;
       z-index: 1; /* Postavljeno ispod teksta */
     }
@@ -117,14 +117,14 @@
       display: flex;
       justify-content: start;
       align-items: center;
-      gap: 1em;
-      margin-top: 1em;
-      margin-left: calc(100vw / 4 + 10em); /* Pomaknuto desno od liste povijesti za 10 slova */
+      gap: 0.5em; /* Smanjen razmak nakon iznosa i gumba za 3 slova */
+      margin-top: -10em; /* Pomaknuto prema gore */
+      margin-left: calc(100vw / 4 - 2em); /* Pomaknuto lijevo za 3 slova */
     }
     #amount-section div {
       font-size: 1.5em;
       font-weight: bold;
-      margin-right: 1em; /* Pomaknuto u desno */
+      margin-right: 0.5em; /* Pomaknuto u desno i smanjen razmak */
     }
     .button-container {
       display: flex;
@@ -250,20 +250,20 @@
     }
 
     const html5QrCode = new Html5Qrcode("reader");
-    Html5Qrcode.getCameras().then(devices => {
+    Html5QrCode.getCameras().then(devices => {
       if (devices && devices.length) {
         html5QrCode.start(
           { facingMode: "environment" },
           {
             fps: 10,
-            qrbox: { width: 250, height: 250 }
+            qrbox: { width: 300, height: 300 } // Povećanje QR kod skenera na kvadrat
         },
         handleScan
       ).catch(err => console.error(err));
     }
   });
 
-  // StatCounter code for tracking visits
+  // StatCounter code for tracking posjeta
   var sc_project=12702047; 
   var sc_invisible=1; 
   var sc_security="e75d2592"; 
