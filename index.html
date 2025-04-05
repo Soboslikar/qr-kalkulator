@@ -67,7 +67,15 @@
             setResult(document.getElementById('qr-video'), result); // prikaži rezultat skeniranja
         });
 
-        scanner.start(); // pokretanje skenera
+        // Provjeri dopuštenja za kameru prije početka skeniranja
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(() => {
+                scanner.start(); // pokreni skener ako su dopuštenja dozvoljena
+            })
+            .catch(err => {
+                alert('Kamera nije dostupna. Provjeri dopuštenja za pristup kameri.');
+                console.error('Kamera error:', err);
+            });
 
         // Aktiviranje tipki za brisanje
         document.getElementById('clear-last-entry').addEventListener('click', () => {
