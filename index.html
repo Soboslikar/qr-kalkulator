@@ -36,6 +36,7 @@
       border-radius: 5px;
       background: #007bff;
       color: white;
+      cursor: pointer;
     }
     button:active {
       background: #0056b3;
@@ -46,16 +47,23 @@
   <div id="reader"></div>
   <div id="total">Zbroj: 0.00 €</div>
   <div class="btns">
-    <button onclick="undoLast()">Obriši zadnji</button>
     <button onclick="clearAll()">Obriši sve</button>
+    <button onclick="undoLast()">Obriši zadnji</button>
+    <button onclick="addCurrent()">Dodaj</button>
   </div>
 
   <script>
     let ukupno = 0;
     let povijest = [];
+    let currentAmount = 0;
 
     function updateDisplay() {
       document.getElementById('total').innerText = `Zbroj: ${ukupno.toFixed(2)} €`;
+    }
+
+    function playSound() {
+      const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
+      audio.play();
     }
 
     function undoLast() {
@@ -71,14 +79,23 @@
       updateDisplay();
     }
 
+    function addCurrent() {
+      if (currentAmount > 0) {
+        povijest.push(currentAmount);
+        ukupno += currentAmount;
+        updateDisplay();
+        playSound();
+        currentAmount = 0;
+      }
+    }
+
     function handleScan(decodedText) {
       const urlParams = new URLSearchParams(decodedText);
       const iznosCenti = parseFloat(urlParams.get('izn'));
       if (!isNaN(iznosCenti)) {
         const iznosEuri = iznosCenti / 100; // Konvertiranje iz centi u eure
-        povijest.push(iznosEuri);
-        ukupno += iznosEuri;
-        updateDisplay();
+        currentAmount = iznosEuri;
+        playSound();
       }
     }
 
