@@ -15,7 +15,7 @@
     #header {
       text-align: center;
       color: yellow;
-      font-size: 1.5em;
+      font-size: 1.2em; /* Smanjen tekst */
       font-weight: bold;
       margin-bottom: 0.5em;
       position: absolute;
@@ -62,15 +62,13 @@
     }
     .green-btn {
       background: #00cc00;
-      position: relative;
-      top: 2em;
+      margin-left: 1em;
     }
     .green-btn:active {
       background: #009900;
     }
     #current-amount {
       text-align: center;
-      margin-top: 1em;
       font-size: 1.5em;
       font-weight: bold;
     }
@@ -86,6 +84,13 @@
       top: 50vh;
       left: 0;
       width: calc(100vw / 3);
+      display: flex;
+      flex-direction: column;
+    }
+    #history h3 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     #history ul {
       list-style: none;
@@ -95,21 +100,37 @@
       padding: 0.5em 0;
       border-bottom: 1px solid #eee;
     }
+    #amount-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1em;
+      position: absolute;
+      top: calc(50vh + 150px); /* Adjusted based on history list */
+      left: 35%;
+    }
+    #amount-section div {
+      font-size: 1.5em;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <div id="header">QR Kalkulator by Banović & GPT-4</div>
   <div id="reader"></div>
-  <div id="total">Zbroj: 0.00 €</div>
-  <div id="current-amount">Trenutni iznos: 0.00 €</div>
+  <div id="total">UKUPNO: 0.00 €</div>
   <div class="btns">
     <button class="red-btn" onclick="clearAll()">Obriši sve</button>
     <button class="red-btn" onclick="undoLast()">Obriši zadnji</button>
   </div>
-  <button class="green-btn" onclick="addCurrent()">Dodaj</button>
   <div id="history">
-    <h3>Povijest skeniranih iznosa:</h3>
+    <h3>RAČUNI <span id="total-span">UKUPNO: 0.00 €</span></h3>
     <ul id="historyList"></ul>
+  </div>
+  <div id="amount-section">
+    <div>IZNOS:</div>
+    <div id="current-amount">0.00 €</div>
+    <button class="green-btn" onclick="addCurrent()">Dodaj</button>
   </div>
 
   <script>
@@ -118,8 +139,10 @@
     let currentAmount = 0;
 
     function updateDisplay() {
-      document.getElementById('total').innerText = `Zbroj: ${ukupno.toFixed(2)} €`;
-      document.getElementById('current-amount').innerText = `Trenutni iznos: ${currentAmount.toFixed(2)} €`;
+      const totalText = `UKUPNO: ${ukupno.toFixed(2)} €`;
+      document.getElementById('total').innerText = totalText;
+      document.getElementById('total-span').innerText = totalText;
+      document.getElementById('current-amount').innerText = `${currentAmount.toFixed(2)} €`;
       updateHistory();
     }
 
@@ -180,11 +203,11 @@
           {
             fps: 10,
             qrbox: { width: 250, height: 250 }
-          },
-          handleScan
-        ).catch(err => console.error(err));
-      }
-    });
+        },
+        handleScan
+      ).catch(err => console.error(err));
+    }
+  });
   </script>
 </body>
 </html>
