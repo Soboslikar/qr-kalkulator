@@ -12,177 +12,57 @@
       padding: 0.5em;
       background: #f4f4f4;
     }
-    #header {
-      text-align: center;
-      color: yellow;
-      font-size: 1.2em; /* Smanjen tekst */
-      font-weight: bold;
-      margin-bottom: 0.5em;
-      position: absolute;
-      width: 100%;
-      z-index: 2; /* Izmenjeno da bi bilo iznad videa */
-    }
     #reader {
       width: 100%;
       max-width: 400px;
       margin: auto;
-      height: 30vh; /* Smanjena visina slike kamere */
-      position: relative;
-      z-index: 1; /* Postavljeno ispod teksta */
-    }
-    #total, #history-title {
-      font-size: 1.5em;
-      font-weight: bold;
-      position: absolute;
-      color: red;
-      z-index: 2;
-      background-color: rgba(255, 255, 255, 0.7); /* Dodano bijela pozadina s prozirnošću */
-      padding: 0.2em;
-    }
-    #history-title {
-      left: 10px;
-      top: 70px; /* Pomaknuto niže */
+      height: 50vh; /* Postavljanje visine na pola trenutne visine */
     }
     #total {
-      right: 10px;
-      top: 70px; /* Pomaknuto niže */
+      font-size: 1.5em;
+      font-weight: bold;
+      margin: 1em 0;
+      text-align: center;
     }
     .btns {
       display: flex;
       justify-content: center;
       gap: 1em;
-      margin-top: 1em;
-    }
-    .big-btns {
-      display: flex;
-      justify-content: center;
-      gap: 1em;
-      margin-top: 1em;
-      margin-bottom: 1em;
     }
     button {
       padding: 0.5em 1em;
       font-size: 1em;
       border: none;
       border-radius: 5px;
+      background: #007bff;
       color: white;
       cursor: pointer;
     }
-    .red-btn {
-      background: #ff0000;
-    }
-    .red-btn:active {
-      background: #cc0000;
-    }
-    .green-btn {
-      background: #00cc00;
-      height: 2em; /* Povećana visina */
-    }
-    .green-btn:active {
-      background: #009900;
-    }
-    .bold-text {
-      font-weight: bold;
-    }
-    #current-amount-section {
-      text-align: center;
-      font-size: 1.5em;
-      font-weight: bold;
-      margin-top: 1em;
-    }
-    #history {
-      max-height: 300px; /* Povećana visina */
-      overflow-y: auto;
-      margin: 1em 0;
-      padding: 1em;
-      background: white;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      margin-top: 60vh; /* Spušteno ispod slike kamere */
-      width: calc(100vw / 4); /* Smanjena širina */
-      display: flex;
-      flex-direction: column;
-      z-index: 3; /* Iznad videa */
-    }
-    #history ul {
-      list-style: none;
-      padding: 0;
-    }
-    #history li {
-      padding: 0.5em 0;
-      border-bottom: 1px solid #eee;
-      white-space: pre; /* Zadržavanje razmaka */
-    }
-    #amount-section {
-      display: flex;
-      justify-content: start;
-      align-items: center;
-      gap: 0.5em; /* Smanjen razmak nakon iznosa i gumba za 3 slova */
-      margin-top: -10em; /* Pomaknuto prema gore */
-      margin-left: calc(100vw / 4 - 2em); /* Pomaknuto lijevo za 3 slova */
-    }
-    #amount-section div {
-      font-size: 1.5em;
-      font-weight: bold;
-      margin-right: 0.5em; /* Pomaknuto u desno i smanjen razmak */
-    }
-    .button-container {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      margin-left: 1em; /* Pomaknuto u desno */
-    }
-    .button-container button {
-      margin-top: 0.5em; /* Razmak između gumba */
+    button:active {
+      background: #0056b3;
     }
   </style>
 </head>
 <body>
-  <div id="header">QR Kalkulator by Banović & GPT-4</div>
   <div id="reader"></div>
-  <div id="history-title">RAČUNI</div>
-  <div id="total">UKUPNO: 0.00 €</div>
-  <div id="history">
-    <ul id="historyList"></ul>
+  <div id="total">Zbroj: 0.00 €</div>
+  <div class="btns">
+    <button onclick="clearAll()">Obriši sve</button>
+    <button onclick="undoLast()">Obriši zadnji</button>
+    <button onclick="addCurrent()">Dodaj</button>
   </div>
-  <div id="amount-section">
-    <div id="amount-label">IZNOS:</div>
-    <div id="current-amount">0.00 €</div>
-    <div class="button-container">
-      <button class="green-btn" id="add-btn" onclick="addCurrent()">Dodaj</button>
-      <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()">Obriši</button>
-    </div>
-  </div>
-  <div class="big-btns">
-    <button class="red-btn" onclick="startRemoveFromList()">Obriši iz liste</button>
-  </div>
-  
+
   <script>
     let ukupno = 0;
     let povijest = [];
     let currentAmount = 0;
-    let removeConfirm = false;
 
     function updateDisplay() {
-      const totalText = `UKUPNO: ${ukupno.toFixed(2)} €`;
-      document.getElementById('total').innerText = totalText;
-      document.getElementById('current-amount').innerText = `${currentAmount.toFixed(2)} €`;
-      updateHistory();
+      document.getElementById('total').innerText = `Zbroj: ${ukupno.toFixed(2)} €`;
     }
 
-    function updateHistory() {
-      const historyList = document.getElementById('historyList');
-      historyList.innerHTML = '';
-      povijest.forEach((iznos, index) => {
-        const listItem = document.createElement('li');
-        listItem.classList.add('bold-text');
-        listItem.innerText = `${index + 1}.  ${iznos.toFixed(2)} €`; // Dodano dva razmaka
-        historyList.appendChild(listItem);
-      });
-    }
-
-    function playSound(url) {
-      const audio = new Audio(url);
+    function playSound() {
+      const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
       audio.play();
     }
 
@@ -204,33 +84,8 @@
         povijest.push(currentAmount);
         ukupno += currentAmount;
         updateDisplay();
-        playSound('https://www.soundjay.com/button/beep-08b.mp3');
+        playSound();
         currentAmount = 0;
-        document.getElementById('amount-label').style.display = 'none';
-        document.getElementById('current-amount').style.display = 'none';
-        document.getElementById('clear-current-btn').style.display = 'none';
-      }
-    }
-
-    function clearCurrent() {
-      currentAmount = 0;
-      document.getElementById('amount-label').style.display = 'none';
-      document.getElementById('current-amount').style.display = 'none';
-      document.getElementById('clear-current-btn').style.display = 'none';
-      updateDisplay();
-    }
-
-    function startRemoveFromList() {
-      if (!removeConfirm) {
-        document.querySelector('.big-btns button').innerText = 'Potvrdi';
-        removeConfirm = true;
-      } else {
-        if (povijest.length > 0) {
-          ukupno -= povijest.pop();
-          updateDisplay();
-        }
-        document.querySelector('.big-btns button').innerText = 'Obriši iz liste';
-        removeConfirm = false;
       }
     }
 
@@ -240,37 +95,23 @@
       if (!isNaN(iznosCenti)) {
         const iznosEuri = iznosCenti / 100; // Konvertiranje iz centi u eure
         currentAmount = iznosEuri;
-        playSound('https://www.soundjay.com/button/beep-07.wav');
-        document.getElementById('amount-label').style.display = 'block';
-        document.getElementById('current-amount').style.display = 'block';
-        document.getElementById('clear-current-btn').style.display = 'block';
-        updateDisplay();
+        playSound();
       }
     }
 
     const html5QrCode = new Html5Qrcode("reader");
-    Html5QrCode.getCameras().then(devices => {
+    Html5Qrcode.getCameras().then(devices => {
       if (devices && devices.length) {
         html5QrCode.start(
           { facingMode: "environment" },
           {
             fps: 10,
-            qrbox: { width: 300, height: 300 } // Povećanje QR kod skenera na kvadrat
-        },
-        handleScan
-      ).catch(err => console.error(err));
-    }
-  });
-
-  // StatCounter code for tracking posjeta
-  var sc_project=12702047; 
-  var sc_invisible=1; 
-  var sc_security="e75d2592"; 
-  var scJsHost = (("https:" == document.location.protocol) ?
-  "https://secure." : "http://www.");
-  document.write("<sc"+"ript type='text/javascript' src='" +
-  scJsHost+
-  "statcounter.com/counter/counter.js'></"+"script>");
+            qrbox: { width: 250, height: 250 }
+          },
+          handleScan
+        ).catch(err => console.error(err));
+      }
+    });
   </script>
 </body>
 </html>
