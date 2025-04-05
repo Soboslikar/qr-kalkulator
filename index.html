@@ -12,24 +12,33 @@
       padding: 0.5em;
       background: #f4f4f4;
     }
+
     #reader {
       width: 100%;
       max-width: 400px;
       margin: auto;
-      height: 450px;         /* Smanjena visina kamere */
-      overflow: hidden;      /* Sakrij višak */
+      overflow: hidden;
     }
+
+    #reader video {
+      height: 200px !important;
+      width: 100% !important;
+      object-fit: cover;
+    }
+
     #total {
       font-size: 1.5em;
       font-weight: bold;
       margin: 1em 0;
       text-align: center;
     }
+
     .btns {
       display: flex;
       justify-content: center;
       gap: 1em;
     }
+
     button {
       padding: 0.5em 1em;
       font-size: 1em;
@@ -37,7 +46,9 @@
       border-radius: 5px;
       background: #007bff;
       color: white;
+      cursor: pointer;
     }
+
     button:active {
       background: #0056b3;
     }
@@ -73,27 +84,4 @@
     }
 
     function handleScan(decodedText) {
-      const broj = parseFloat(decodedText.replace(',', '.'));
-      if (!isNaN(broj)) {
-        povijest.push(broj);
-        ukupno += broj;
-        updateDisplay();
-      }
-    }
-
-    const html5QrCode = new Html5Qrcode("reader");
-    Html5Qrcode.getCameras().then(devices => {
-      if (devices && devices.length) {
-        html5QrCode.start(
-          { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 }
-          },
-          handleScan
-        ).catch(err => console.error(err));
-      }
-    });
-  </script>
-</body>
-</html>
+      const broj = parseFloat(decodedText.replace
