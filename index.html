@@ -33,6 +33,7 @@
       font-size: 1.5em;
       font-weight: bold;
       position: absolute;
+      color: red;
       z-index: 2;
     }
     #history-title {
@@ -42,7 +43,6 @@
     #total {
       right: 10px;
       bottom: 10px;
-      color: red;
     }
     .btns {
       display: flex;
@@ -119,6 +119,16 @@
     #amount-section div {
       font-size: 1.5em;
       font-weight: bold;
+      margin-right: 1em; /* Pomaknuto u desno */
+    }
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-left: 1em; /* Pomaknuto u desno */
+    }
+    .button-container button {
+      margin-top: 0.5em; /* Razmak između gumba */
     }
   </style>
 </head>
@@ -133,12 +143,10 @@
   <div id="amount-section">
     <div id="amount-label">IZNOS:</div>
     <div id="current-amount">0.00 €</div>
-    <button class="green-btn" id="add-btn" onclick="addCurrent()">Dodaj</button>
-    <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()">Obriši</button>
-  </div>
-  <div class="btns">
-    <button class="red-btn" onclick="clearAll()">Obriši sve</button>
-    <button class="red-btn" onclick="undoLast()">Obriši zadnji</button>
+    <div class="button-container">
+      <button class="green-btn" id="add-btn" onclick="addCurrent()">Dodaj</button>
+      <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()">Obriši</button>
+    </div>
   </div>
   <div class="big-btns">
     <button class="red-btn" onclick="startRemoveFromList()">Obriši iz liste</button>
