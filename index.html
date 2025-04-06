@@ -28,6 +28,7 @@
       margin: auto;
       height: 50vh; /* Vraćeno na prvotnu visinu */
       position: relative;
+      background: #000; /* Dodano za pozadinu čitača */
     }
     #total {
       font-size: 1.5em;
@@ -141,4 +142,129 @@
     <div id="current-amount">0.00 €</div>
     <div class="button-container">
       <button class="green-btn" id="add-btn" onclick="addCurrent()">Dodaj</button>
-      <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()">
+      <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()">Obriši</button>
+    </div>
+  </div>
+  <div id="total">UKUPNO: 0.00 €</div>
+  <div class="big-btns">
+    <button class="red-btn" id="remove-btn" onclick="startRemoveFromList()" style="display: none;">Obriši iz liste</button>
+  </div>
+
+  <script>
+    let ukupno = 0;
+    let povijest = [];
+    let currentAmount = 0;
+    let removeConfirm = false;
+
+    function updateDisplay() {
+      const totalText = `UKUPNO: ${ukupno.toFixed(2)} €`;
+      document.getElementById('total').innerText = totalText;
+      document.getElementById('current-amount').innerText = `${currentAmount.toFixed(2)} €`;
+      updateHistory();
+    }
+
+    function updateHistory() {
+      const historyList = document.getElementById('historyList');
+      historyList.innerHTML = '';
+      povijest.forEach((iznos, index) => {
+        const listItem = document.createElement('li');
+        listItem.classList.add('bold-text');
+        listItem.innerText = `${index + 1}.  ${iznos.toFixed(2)} €`; // Dodano dva razmaka
+        historyList.appendChild(listItem);
+      });
+
+      if (povijest.length > 0) {
+        document.getElementById('remove-btn').style.display = 'inline';
+      } else {
+        document.getElementById('remove-btn').style.display = 'none';
+      }
+    }
+
+    function playSound(url) {
+      const audio = new Audio(url);
+      audio.play();
+    }
+
+    function undoLast() {
+      if (povijest.length > 0) {
+        ukupno -= povijest.pop();
+        updateDisplay();
+      }
+    }
+
+    function clearAll() {
+      ukupno = 0;
+      povijest = [];
+      updateDisplay();
+    }
+
+    function addCurrent() {
+      if (currentAmount > 0) {
+        povijest.push(currentAmount);
+        ukupno += currentAmount;
+        updateDisplay();
+        playSound('https://www.soundjay.com/button/beep-08b.mp3');
+        currentAmount = 0;
+        document.getElementById('amount-label').style.display = 'none';
+        document.getElementById('current-amount').style.display = 'none';
+        document.getElementById('clear-current-btn').style.display = 'none';
+      }
+    }
+
+    function clearCurrent() {
+      currentAmount = 0;
+      document.getElementById('amount-label').style.display = 'none';
+      document.getElementById('current-amount').style.display = 'none';
+      document.getElementById('clear-current-btn').style.display = 'none';
+      updateDisplay();
+    }
+
+    function startRemoveFromList() {
+      if (!removeConfirm) {
+        document.getElementById('remove-btn').innerText = 'Potvrdi';
+        removeConfirm = true;
+      } else {
+        if (povijest.length > 0) {
+          ukupno -= povijest.pop();
+          updateDisplay();
+        }
+        document.getElementById('remove-btn').innerText = 'Obriši iz liste';
+        removeConfirm = false;
+      }
+    }
+
+    function handleScan(decodedText) {
+      const urlParams = new URLSearchParams(decodedText);
+      const iznosCenti = parseFloat(urlParams.get('izn'));
+      if (!isNaN(iznosCenti)) {
+        const iznosEuri = iznosCenti / 100; // Konvertiranje iz centi u eure
+        currentAmount = iznosEuri;
+        playSound('https://www.soundjay.com/button/beep-07.wav');
+        document.getElementById('amount-label').style.display = 'block';
+        document.getElementById('current-amount').style.display = 'block';
+        document.getElementById('clear-current-btn').style.display = 'block';
+        updateDisplay();
+      }
+    }
+
+    const html5QrCode = new Html5Qrcode("reader");
+    Html5Qrcode.getCameras().then(devices => {
+      if (devices && devices.length) {
+        html5QrCode.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 }
+          },
+          handleScan
+        ).catch(err => {
+          console.error("Greška pri pristupu kameri: ", err);
+          alert("Došlo je do problema s pristupom kameri.");
+        });
+      } else {
+        alert("Nema dostupnih kamera.");
+      }
+    });
+  </script>
+</body>
+</html>
