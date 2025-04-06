@@ -17,6 +17,13 @@
       width: 100%;
       max-width: 400px;
       margin: auto;
+      overflow: hidden;
+    }
+
+    #reader video {
+      height: 200px !important;
+      width: 100% !important;
+      object-fit: cover;
     }
 
     #total {
@@ -86,21 +93,18 @@
     }
 
     const html5QrCode = new Html5Qrcode("reader");
-
     Html5Qrcode.getCameras().then(devices => {
       if (devices && devices.length) {
         html5QrCode.start(
           { facingMode: "environment" },
           {
             fps: 10,
-            qrbox: { width: 250, height: 250 } // Ovdje kontroliraš visinu prikaza
+            qrbox: { width: 250, height: 250 }
           },
           handleScan
-        ).catch(err => console.error("Pokretanje kamere nije uspjelo:", err));
-      } else {
-        console.error("Nije pronađena kamera.");
+        ).catch(err => console.error(err));
       }
-    }).catch(err => console.error("Greška kod dohvaćanja kamera:", err));
+    });
   </script>
 </body>
 </html>
