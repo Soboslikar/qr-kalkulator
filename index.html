@@ -55,11 +55,27 @@
       font-size: 1.5em;
       font-weight: bold;
     }
-    .big-btns {
+
+    /* POJEDINAČNE POZICIJE GUMBA */
+    #add-btn {
       position: fixed;
+      bottom: 115px; /* podignut za 100px */
       right: 10px;
+      z-index: 2;
+    }
+    #clear-current-btn {
+      position: fixed;
+      bottom: 95px; /* podignut za 80px */
+      right: 10px;
+      z-index: 2;
+    }
+    #remove-from-list-btn {
+      position: fixed;
+      bottom: 5px;
+      right: 60px; /* pomaknut lijevo za 50px */
       z-index: 3;
     }
+
     button {
       padding: 0.5em 1em;
       font-size: 1em;
@@ -116,20 +132,10 @@
     <div id="current-amount">0.00 €</div>
   </div>
 
-  <!-- Gumb DODAJ -->
-  <div class="big-btns" style="bottom: 70px;">
-    <button class="green-btn" id="add-btn" onclick="addCurrent()" style="display:none;">Dodaj</button>
-  </div>
-
-  <!-- Gumb OBRIŠI -->
-  <div class="big-btns" style="bottom: 35px;">
-    <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()" style="display:none;">Obriši</button>
-  </div>
-
-  <!-- Gumb OBRIŠI IZ LISTE -->
-  <div class="big-btns" style="bottom: 5px;">
-    <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
-  </div>
+  <!-- GUMBI -->
+  <button class="green-btn" id="add-btn" onclick="addCurrent()" style="display:none;">Dodaj</button>
+  <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()" style="display:none;">Obriši</button>
+  <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
 
   <script>
     let ukupno = 0;
@@ -158,19 +164,15 @@
 
     function checkRemoveButtonVisibility() {
       const removeButton = document.getElementById('remove-from-list-btn');
-      if (povijest.length > 0) {
-        removeButton.style.display = 'block';
-      } else {
-        removeButton.style.display = 'none';
-      }
+      removeButton.style.display = povijest.length > 0 ? 'block' : 'none';
     }
 
     function addCurrent() {
       if (currentAmount > 0) {
         povijest.push(currentAmount);
         ukupno += currentAmount;
-        updateDisplay();
         currentAmount = 0;
+        updateDisplay();
         document.getElementById('add-btn').style.display = 'none';
         document.getElementById('clear-current-btn').style.display = 'none';
       }
@@ -184,20 +186,20 @@
     }
 
     function startRemoveFromList() {
-      const btn = document.getElementById('remove-from-list-btn');
+      const removeButton = document.getElementById('remove-from-list-btn');
       if (!removeConfirm) {
-        btn.innerText = 'Potvrdi';
-        btn.style.backgroundColor = 'yellow';
-        btn.style.color = 'black';
+        removeButton.innerText = 'Potvrdi';
+        removeButton.style.backgroundColor = 'yellow';
+        removeButton.style.color = 'black';
         removeConfirm = true;
       } else {
         if (povijest.length > 0) {
           ukupno -= povijest.pop();
           updateDisplay();
         }
-        btn.innerText = 'Obriši iz liste';
-        btn.style.backgroundColor = 'red';
-        btn.style.color = 'white';
+        removeButton.innerText = 'Obriši iz liste';
+        removeButton.style.backgroundColor = 'red';
+        removeButton.style.color = 'white';
         removeConfirm = false;
       }
     }
@@ -208,11 +210,9 @@
       if (!isNaN(iznosCenti)) {
         const iznosEuri = iznosCenti / 100;
         currentAmount = iznosEuri;
-        document.getElementById('amount-label').style.display = 'block';
-        document.getElementById('current-amount').style.display = 'block';
-        document.getElementById('clear-current-btn').style.display = 'block';
-        document.getElementById('add-btn').style.display = 'block';
         updateDisplay();
+        document.getElementById('add-btn').style.display = 'block';
+        document.getElementById('clear-current-btn').style.display = 'block';
       }
     }
 
@@ -221,14 +221,18 @@
       if (devices && devices.length) {
         html5QrCode.start(
           { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 }
-          },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
           handleScan
         ).catch(err => console.error(err));
       }
     });
+
+    // StatCounter (ako ti i dalje treba)
+    var sc_project=12702047; 
+    var sc_invisible=1; 
+    var sc_security="e75d2592"; 
+    var scJsHost = (("https:" == document.location.protocol) ? "https://secure." : "http://www.");
+    document.write("<sc"+"ript type='text/javascript' src='" + scJsHost + "statcounter.com/counter/counter.js'></"+"script>");
   </script>
 </body>
 </html>
