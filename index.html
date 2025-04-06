@@ -34,7 +34,7 @@
       font-weight: bold;
       color: red;
       position: absolute;
-      bottom: 10px;
+      top: 10px;
       right: 10px;
       z-index: 2;
     }
@@ -69,6 +69,10 @@
     .red-btn {
       background: #ff0000;
     }
+    .yellow-btn {
+      background: #ffcc00;
+      color: black; /* Crni tekst */
+    }
     .green-btn {
       background: #00cc00;
     }
@@ -88,8 +92,7 @@
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       margin-top: 10vh;
       width: 230px; /* Uskoro širina liste */
-      margin-left: auto;
-      margin-right: auto;
+      float: left;
     }
     #history ul {
       list-style: none;
@@ -105,10 +108,10 @@
 <body>
   <div id="header">QR Kalkulator by Banović</div>
   <div id="reader"></div>
-  <div id="total">UKUPNO: 0.00 €</div>
   <div id="history">
     <ul id="historyList"></ul>
   </div>
+  <div id="total">UKUPNO: 0.00 €</div>
   <div id="amount-section">
     <div id="amount-label">IZNOS:</div>
     <div id="current-amount">0.00 €</div>
@@ -176,18 +179,20 @@
     }
 
     function startRemoveFromList() {
+      const removeButton = document.getElementById('remove-from-list-btn');
       if (!removeConfirm) {
-        document.getElementById('remove-from-list-btn').innerText = 'Potvrdi';
-        document.getElementById('remove-from-list-btn').style.backgroundColor = 'yellow';
-        document.getElementById('remove-from-list-btn').style.color = 'black';
+        removeButton.innerText = 'Potvrdi';
+        removeButton.classList.remove('red-btn');
+        removeButton.classList.add('yellow-btn');
         removeConfirm = true;
       } else {
         if (povijest.length > 0) {
           ukupno -= povijest.pop();
           updateDisplay();
         }
-        document.getElementById('remove-from-list-btn').innerText = 'Obriši iz liste';
-        document.getElementById('remove-from-list-btn').style.backgroundColor = 'red';
+        removeButton.innerText = 'Obriši iz liste';
+        removeButton.classList.remove('yellow-btn');
+        removeButton.classList.add('red-btn');
         removeConfirm = false;
       }
     }
@@ -206,8 +211,8 @@
       }
     }
 
-    const html5QrCode = new Html5Qrcode("reader");
-    Html5Qrcode.getCameras().then(devices => {
+    const html5QrCode = new Html5QrCode("reader");
+    Html5QrCode.getCameras().then(devices => {
       if (devices && devices.length) {
         html5QrCode.start(
           { facingMode: "environment" },
