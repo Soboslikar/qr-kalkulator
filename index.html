@@ -20,14 +20,15 @@
       margin-bottom: 0.5em;
       position: absolute;
       width: 100%;
-      z-index: 1;
+      z-index: 2; /* Izmenjeno da bi bilo iznad videa */
     }
     #reader {
       width: 100%;
       max-width: 400px;
       margin: auto;
-      height: 50vh; /* Vraćeno na prvotnu visinu */
+      height: 30vh; /* Smanjena visina slike kamere */
       position: relative;
+      z-index: 1; /* Postavljeno ispod teksta */
     }
     #total, #history-title {
       font-size: 1.5em;
@@ -35,14 +36,16 @@
       position: absolute;
       color: red;
       z-index: 2;
+      background-color: rgba(255, 255, 255, 0.7); /* Dodano bijela pozadina s prozirnošću */
+      padding: 0.2em;
     }
     #history-title {
       left: 10px;
-      bottom: 10px;
+      top: 70px; /* Pomaknuto niže */
     }
     #total {
       right: 10px;
-      bottom: 10px;
+      top: 70px; /* Pomaknuto niže */
     }
     .btns {
       display: flex;
@@ -99,6 +102,7 @@
       width: calc(100vw / 4); /* Smanjena širina */
       display: flex;
       flex-direction: column;
+      z-index: 3; /* Iznad videa */
     }
     #history ul {
       list-style: none;
@@ -111,10 +115,11 @@
     }
     #amount-section {
       display: flex;
-      justify-content: center;
+      justify-content: start;
       align-items: center;
       gap: 1em;
-      margin-top: 1em;
+      margin-top: -10em; /* Pomaknuto prema gore */
+      margin-left: calc(100vw / 4); /* Pomaknuto lijevo od liste povijesti */
     }
     #amount-section div {
       font-size: 1.5em;
@@ -134,9 +139,10 @@
 </head>
 <body>
   <div id="header">QR Kalkulator by Banović & GPT-4</div>
-  <div id="reader"></div>
-  <div id="history-title">RAČUNI</div>
-  <div id="total">UKUPNO: 0.00 €</div>
+  <div id="reader">
+    <div id="history-title">RAČUNI</div>
+    <div id="total">UKUPNO: 0.00 €</div>
+  </div>
   <div id="history">
     <ul id="historyList"></ul>
   </div>
@@ -250,7 +256,7 @@
           { facingMode: "environment" },
           {
             fps: 10,
-            qrbox: { width: 250, height: 250 }
+            qrbox: { width: 300, height: 300 } // Povećanje QR kod skenera na kvadrat
         },
         handleScan
       ).catch(err => console.error(err));
