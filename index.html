@@ -15,41 +15,43 @@
     #header {
       text-align: center;
       color: yellow;
-      font-size: 1.2em;
+      font-size: 1.2em; /* Smanjen tekst */
       font-weight: bold;
       margin-bottom: 0.5em;
       position: absolute;
       width: 100%;
-      z-index: 1;
+      z-index: 2; /* Izmenjeno da bi bilo iznad videa */
     }
     #reader {
       width: 100%;
       max-width: 400px;
       margin: auto;
-      height: 50vh;
+      height: 30vh; /* Smanjena visina slike kamere */
       position: relative;
+      z-index: 1; /* Postavljeno ispod teksta */
+    }
+    #total, #history-title {
+      font-size: 1.5em;
+      font-weight: bold;
+      position: absolute;
+      color: red;
+      z-index: 2;
+      background-color: rgba(255, 255, 255, 0.7); /* Dodano bijela pozadina s prozirnošću */
+      padding: 0.2em;
+    }
+    #history-title {
+      left: 10px;
+      top: 70px; /* Pomaknuto niže */
     }
     #total {
-      font-size: 1.5em;
-      font-weight: bold;
-      color: red;
-      position: absolute;
-      top: 10px;
       right: 10px;
-      z-index: 2;
+      top: 70px; /* Pomaknuto niže */
     }
-    #amount-section {
+    .btns {
       display: flex;
-      justify-content: flex-end;
-      align-items: center;
+      justify-content: center;
       gap: 1em;
       margin-top: 1em;
-      position: relative;
-      z-index: 1;
-    }
-    #current-amount {
-      font-size: 1.5em;
-      font-weight: bold;
     }
     .big-btns {
       display: flex;
@@ -69,12 +71,12 @@
     .red-btn {
       background: #ff0000;
     }
-    .yellow-btn {
-      background: #ffcc00;
-      color: black; /* Crni tekst */
+    .red-btn:active {
+      background: #cc0000;
     }
     .green-btn {
       background: #00cc00;
+      height: 2em; /* Povećana visina */
     }
     .green-btn:active {
       background: #009900;
@@ -82,17 +84,25 @@
     .bold-text {
       font-weight: bold;
     }
+    #current-amount-section {
+      text-align: center;
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-top: 1em;
+    }
     #history {
-      max-height: 300px;
+      max-height: 300px; /* Povećana visina */
       overflow-y: auto;
       margin: 1em 0;
       padding: 1em;
       background: white;
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      margin-top: 10vh;
-      width: 230px; /* Uskoro širina liste */
-      float: left;
+      margin-top: 60vh; /* Spušteno ispod slike kamere */
+      width: calc(100vw / 4); /* Smanjena širina */
+      display: flex;
+      flex-direction: column;
+      z-index: 3; /* Iznad videa */
     }
     #history ul {
       list-style: none;
@@ -101,31 +111,52 @@
     #history li {
       padding: 0.5em 0;
       border-bottom: 1px solid #eee;
-      white-space: pre;
+      white-space: pre; /* Zadržavanje razmaka */
+    }
+    #amount-section {
+      display: flex;
+      justify-content: start;
+      align-items: center;
+      gap: 0.5em; /* Smanjen razmak nakon iznosa i gumba za 3 slova */
+      margin-top: -10em; /* Pomaknuto prema gore */
+      margin-left: calc(100vw / 4 - 2em); /* Pomaknuto lijevo za 3 slova */
+    }
+    #amount-section div {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-right: 0.5em; /* Pomaknuto u desno i smanjen razmak */
+    }
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-left: 1em; /* Pomaknuto u desno */
+    }
+    .button-container button {
+      margin-top: 0.5em; /* Razmak između gumba */
     }
   </style>
 </head>
 <body>
-  <div id="header">QR Kalkulator by Banović</div>
+  <div id="header">QR Kalkulator by Banović & GPT-4</div>
   <div id="reader"></div>
+  <div id="history-title">RAČUNI</div>
+  <div id="total">UKUPNO: 0.00 €</div>
   <div id="history">
     <ul id="historyList"></ul>
   </div>
-  <div id="total">UKUPNO: 0.00 €</div>
   <div id="amount-section">
     <div id="amount-label">IZNOS:</div>
     <div id="current-amount">0.00 €</div>
+    <div class="button-container">
+      <button class="green-btn" id="add-btn" onclick="addCurrent()">Dodaj</button>
+      <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()">Obriši</button>
+    </div>
   </div>
   <div class="big-btns">
-    <button class="green-btn" id="add-btn" onclick="addCurrent()">Dodaj</button>
+    <button class="red-btn" onclick="startRemoveFromList()">Obriši iz liste</button>
   </div>
-  <div class="big-btns">
-    <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()">Obriši</button>
-  </div>
-  <div class="big-btns">
-    <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
-  </div>
-
+  
   <script>
     let ukupno = 0;
     let povijest = [];
@@ -137,7 +168,6 @@
       document.getElementById('total').innerText = totalText;
       document.getElementById('current-amount').innerText = `${currentAmount.toFixed(2)} €`;
       updateHistory();
-      checkRemoveButtonVisibility();
     }
 
     function updateHistory() {
@@ -146,18 +176,27 @@
       povijest.forEach((iznos, index) => {
         const listItem = document.createElement('li');
         listItem.classList.add('bold-text');
-        listItem.innerText = `${index + 1}.  ${iznos.toFixed(2)} €`;
+        listItem.innerText = `${index + 1}.  ${iznos.toFixed(2)} €`; // Dodano dva razmaka
         historyList.appendChild(listItem);
       });
     }
 
-    function checkRemoveButtonVisibility() {
-      const removeButton = document.getElementById('remove-from-list-btn');
+    function playSound(url) {
+      const audio = new Audio(url);
+      audio.play();
+    }
+
+    function undoLast() {
       if (povijest.length > 0) {
-        removeButton.style.display = 'block';
-      } else {
-        removeButton.style.display = 'none';
+        ukupno -= povijest.pop();
+        updateDisplay();
       }
+    }
+
+    function clearAll() {
+      ukupno = 0;
+      povijest = [];
+      updateDisplay();
     }
 
     function addCurrent() {
@@ -165,34 +204,32 @@
         povijest.push(currentAmount);
         ukupno += currentAmount;
         updateDisplay();
+        playSound('https://www.soundjay.com/button/beep-08b.mp3');
         currentAmount = 0;
-        document.getElementById('add-btn').style.display = 'none';
+        document.getElementById('amount-label').style.display = 'none';
+        document.getElementById('current-amount').style.display = 'none';
         document.getElementById('clear-current-btn').style.display = 'none';
       }
     }
 
     function clearCurrent() {
       currentAmount = 0;
-      updateDisplay();
-      document.getElementById('add-btn').style.display = 'none';
+      document.getElementById('amount-label').style.display = 'none';
+      document.getElementById('current-amount').style.display = 'none';
       document.getElementById('clear-current-btn').style.display = 'none';
+      updateDisplay();
     }
 
     function startRemoveFromList() {
-      const removeButton = document.getElementById('remove-from-list-btn');
       if (!removeConfirm) {
-        removeButton.innerText = 'Potvrdi';
-        removeButton.classList.remove('red-btn');
-        removeButton.classList.add('yellow-btn');
+        document.querySelector('.big-btns button').innerText = 'Potvrdi';
         removeConfirm = true;
       } else {
         if (povijest.length > 0) {
           ukupno -= povijest.pop();
           updateDisplay();
         }
-        removeButton.innerText = 'Obriši iz liste';
-        removeButton.classList.remove('yellow-btn');
-        removeButton.classList.add('red-btn');
+        document.querySelector('.big-btns button').innerText = 'Obriši iz liste';
         removeConfirm = false;
       }
     }
@@ -203,34 +240,37 @@
       if (!isNaN(iznosCenti)) {
         const iznosEuri = iznosCenti / 100; // Konvertiranje iz centi u eure
         currentAmount = iznosEuri;
+        playSound('https://www.soundjay.com/button/beep-07.wav');
         document.getElementById('amount-label').style.display = 'block';
         document.getElementById('current-amount').style.display = 'block';
         document.getElementById('clear-current-btn').style.display = 'block';
         updateDisplay();
-        document.getElementById('add-btn').style.display = 'block';
       }
     }
 
-    const html5QrCode = new Html5QrCode("reader");
+    const html5QrCode = new Html5Qrcode("reader");
     Html5QrCode.getCameras().then(devices => {
       if (devices && devices.length) {
         html5QrCode.start(
           { facingMode: "environment" },
           {
             fps: 10,
-            qrbox: { width: 250, height: 250 }
+            qrbox: { width: 300, height: 300 } // Povećanje QR kod skenera na kvadrat
         },
         handleScan
       ).catch(err => console.error(err));
     }
   });
 
-  // StatCounter code for tracking visits
+  // StatCounter code for tracking posjeta
   var sc_project=12702047; 
   var sc_invisible=1; 
   var sc_security="e75d2592"; 
-  var scJsHost = (("https:" == document.location.protocol) ? "https://secure." : "http://www.");
-  document.write("<sc"+"ript type='text/javascript' src='" + scJsHost + "statcounter.com/counter/counter.js'></"+"script>");
+  var scJsHost = (("https:" == document.location.protocol) ?
+  "https://secure." : "http://www.");
+  document.write("<sc"+"ript type='text/javascript' src='" +
+  scJsHost+
+  "statcounter.com/counter/counter.js'></"+"script>");
   </script>
 </body>
 </html>
