@@ -87,7 +87,7 @@
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       margin-top: 10vh;
-      width: 250px; /* Ovdje smo smanjili širinu */
+      width: 230px; /* Uskoro širina liste */
       margin-left: auto;
       margin-right: auto;
     }
@@ -120,7 +120,7 @@
     <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()">Obriši</button>
   </div>
   <div class="big-btns">
-    <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()">Obriši iz liste</button>
+    <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
   </div>
 
   <script>
@@ -134,6 +134,7 @@
       document.getElementById('total').innerText = totalText;
       document.getElementById('current-amount').innerText = `${currentAmount.toFixed(2)} €`;
       updateHistory();
+      checkRemoveButtonVisibility();
     }
 
     function updateHistory() {
@@ -145,6 +146,15 @@
         listItem.innerText = `${index + 1}.  ${iznos.toFixed(2)} €`;
         historyList.appendChild(listItem);
       });
+    }
+
+    function checkRemoveButtonVisibility() {
+      const removeButton = document.getElementById('remove-from-list-btn');
+      if (povijest.length > 0) {
+        removeButton.style.display = 'block';
+      } else {
+        removeButton.style.display = 'none';
+      }
     }
 
     function addCurrent() {
