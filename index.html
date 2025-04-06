@@ -28,25 +28,53 @@
       margin: auto;
       height: 50vh; /* Vraćeno na prvotnu visinu */
       position: relative;
-      background: #000; /* Dodano za pozadinu čitača */
     }
     #total {
       font-size: 1.5em;
       font-weight: bold;
-      position: absolute;
       color: red;
+      position: absolute;
+      bottom: 20px;
+      left: 10px;
       z-index: 2;
-      right: 10px;
-      top: 10px;
     }
-    #history-title {
+    #history {
+      max-height: 300px; /* Povećana visina */
+      overflow-y: auto;
+      margin: 1em 0;
+      padding: 1em;
+      background: white;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-top: 10vh; /* Spušteno ispod slike kamere */
+      width: calc(100vw / 4); /* Smanjena širina */
+      display: flex;
+      flex-direction: column;
+    }
+    #history ul {
+      list-style: none;
+      padding: 0;
+    }
+    #history li {
+      padding: 0.5em 0;
+      border-bottom: 1px solid #eee;
+      white-space: pre; /* Zadržavanje razmaka */
+    }
+    #amount-section {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 1em;
+      margin-top: 1em;
+    }
+    #amount-section div {
       font-size: 1.5em;
       font-weight: bold;
-      position: absolute;
-      color: red;
-      z-index: 2;
-      left: 10px;
-      top: 10px;
+    }
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
     }
     .btns {
       display: flex;
@@ -82,8 +110,12 @@
     .green-btn:active {
       background: #009900;
     }
-    .bold-text {
-      font-weight: bold;
+    .yellow-btn {
+      background: #f4a261;
+      color: black;
+    }
+    .yellow-btn:active {
+      background: #e76f51;
     }
     #current-amount-section {
       text-align: center;
@@ -91,49 +123,12 @@
       font-weight: bold;
       margin-top: 1em;
     }
-    #history {
-      max-height: 300px; /* Povećana visina */
-      overflow-y: auto;
-      margin: 1em 0;
-      padding: 1em;
-      background: white;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      margin-top: 10vh; /* Spušteno ispod slike kamere */
-      width: calc(100vw / 4); /* Smanjena širina */
-      display: flex;
-      flex-direction: column;
-    }
-    #history ul {
-      list-style: none;
-      padding: 0;
-    }
-    #history li {
-      padding: 0.5em 0;
-      border-bottom: 1px solid #eee;
-      white-space: pre; /* Zadržavanje razmaka */
-    }
-    #amount-section {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 1em;
-      margin-top: 1em;
-    }
-    #amount-section div {
-      font-size: 1.5em;
-      font-weight: bold;
-    }
-    .button-container {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-    }
   </style>
 </head>
 <body>
   <div id="header">QR Kalkulator by Banović</div>
   <div id="reader"></div>
+  <div id="total">UKUPNO: 0.00 €</div>
   <div id="history">
     <ul id="historyList"></ul>
   </div>
@@ -141,15 +136,15 @@
     <div id="amount-label">IZNOS:</div>
     <div id="current-amount">0.00 €</div>
     <div class="button-container">
-      <button class="green-btn" id="add-btn" onclick="addCurrent()">Dodaj</button>
+      <button class="green-btn" id="add-btn" style="display: none;" onclick="addCurrent()">Dodaj</button>
       <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()">Obriši</button>
     </div>
   </div>
-  <div id="total">UKUPNO: 0.00 €</div>
   <div class="big-btns">
-    <button class="red-btn" id="remove-btn" onclick="startRemoveFromList()" style="display: none;">Obriši iz liste</button>
+    <button class="yellow-btn" id="confirm-btn" style="display: none;" onclick="startRemoveFromList()">Potvrdi</button>
+    <button class="red-btn" id="clear-history-btn" onclick="clearAll()">Obriši povijest</button>
   </div>
-
+  
   <script>
     let ukupno = 0;
     let povijest = [];
@@ -172,12 +167,6 @@
         listItem.innerText = `${index + 1}.  ${iznos.toFixed(2)} €`; // Dodano dva razmaka
         historyList.appendChild(listItem);
       });
-
-      if (povijest.length > 0) {
-        document.getElementById('remove-btn').style.display = 'inline';
-      } else {
-        document.getElementById('remove-btn').style.display = 'none';
-      }
     }
 
     function playSound(url) {
@@ -208,6 +197,7 @@
         document.getElementById('amount-label').style.display = 'none';
         document.getElementById('current-amount').style.display = 'none';
         document.getElementById('clear-current-btn').style.display = 'none';
+        document.getElementById('add-btn').style.display = 'none'; // Hide add button after pressing
       }
     }
 
@@ -221,14 +211,14 @@
 
     function startRemoveFromList() {
       if (!removeConfirm) {
-        document.getElementById('remove-btn').innerText = 'Potvrdi';
+        document.getElementById('confirm-btn').innerText = 'Potvrdi';
         removeConfirm = true;
       } else {
         if (povijest.length > 0) {
           ukupno -= povijest.pop();
           updateDisplay();
         }
-        document.getElementById('remove-btn').innerText = 'Obriši iz liste';
+        document.getElementById('confirm-btn').innerText = 'Potvrdi';
         removeConfirm = false;
       }
     }
@@ -243,6 +233,7 @@
         document.getElementById('amount-label').style.display = 'block';
         document.getElementById('current-amount').style.display = 'block';
         document.getElementById('clear-current-btn').style.display = 'block';
+        document.getElementById('add-btn').style.display = 'inline-block'; // Show add button
         updateDisplay();
       }
     }
@@ -257,12 +248,7 @@
             qrbox: { width: 250, height: 250 }
           },
           handleScan
-        ).catch(err => {
-          console.error("Greška pri pristupu kameri: ", err);
-          alert("Došlo je do problema s pristupom kameri.");
-        });
-      } else {
-        alert("Nema dostupnih kamera.");
+        ).catch(err => console.error(err));
       }
     });
   </script>
