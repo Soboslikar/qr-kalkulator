@@ -44,8 +44,10 @@
       align-items: center;
       gap: 1em;
       margin-top: 1em;
-      position: relative;
-      z-index: 1;
+      position: fixed;
+      bottom: 80px; /* Pomaknite prema gore na željeno mjesto */
+      right: 10px;
+      z-index: 2;
     }
     #current-amount {
       font-size: 1.5em;
@@ -87,7 +89,7 @@
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       margin-top: 10vh;
-      width: 80px; /* Uskoro širina liste */
+      width: 80px; 
       margin-left: 0;
       margin-right: 0;
     }
