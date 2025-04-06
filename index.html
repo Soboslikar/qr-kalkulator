@@ -56,24 +56,30 @@
       font-weight: bold;
     }
 
+    /* POJEDINAČNE POZICIJE GUMBA */
     #add-btn {
       position: fixed;
-      bottom: 150px;
+      bottom: 150px; /* podignut za 100px */
       right: 80px;
       z-index: 2;
-      transform: scale(1.5); /* povećan 50% */
+      font-size: 1.5em;
+      padding: 0.75em 1.25em;
     }
     #clear-current-btn {
       position: fixed;
-      bottom: 80px;
+      bottom: 80px; /* podignut za 80px */
       right: 80px;
       z-index: 2;
+      font-size: 1.2em;
+      padding: 0.5em 1em;
     }
     #remove-from-list-btn {
       position: fixed;
       bottom: 5px;
-      right: 120px;
+      right: 120px; /* pomaknut lijevo za 50px */
       z-index: 3;
+      font-size: 1.2em;
+      padding: 0.5em 1em;
     }
 
     button {
@@ -81,27 +87,22 @@
       font-size: 1em;
       border: none;
       border-radius: 5px;
-      color: black;
+      color: white;
       cursor: pointer;
     }
-
     .red-btn {
       background: #ff0000;
-      color: yellow; /* žuti tekst za crvene gumbe */
+      color: yellow;
     }
-
     .green-btn {
       background: #00cc00;
     }
-
     .green-btn:active {
       background: #009900;
     }
-
     .bold-text {
       font-weight: bold;
     }
-
     #history {
       max-height: 300px;
       overflow-y: auto;
@@ -115,12 +116,10 @@
       margin-left: 0;
       margin-right: 0;
     }
-
     #history ul {
       list-style: none;
       padding: 0;
     }
-
     #history li {
       padding: 0.5em 0;
       border-bottom: 1px solid #eee;
@@ -145,19 +144,24 @@
   <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()" style="display:none;">Obriši</button>
   <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
 
-  <!-- AUDIO EFEKTI -->
-  <audio id="scan-sound" src="https://github.com/himalayasingh/music-player/blob/master/music/3.mp3?raw=true"></audio>
-  <audio id="click-sound" src="https://github.com/himalayasingh/music-player/blob/master/music/2.mp3?raw=true"></audio>
-  <audio id="remove-sound" src="https://github.com/himalayasingh/music-player/blob/master/music/1.mp3?raw=true"></audio>
-
   <script>
     let ukupno = 0;
     let povijest = [];
     let currentAmount = 0;
     let removeConfirm = false;
 
+    // Definiraj zvukove
+    const soundAdd = new Audio('https://www.soundjay.com/button/beep-07.wav');
+    const soundClear = new Audio('https://www.soundjay.com/button/beep-06.wav');
+    const soundRemove = new Audio('https://www.soundjay.com/button/beep-05.wav');
+
+    function playSound(sound) {
+      sound.play();
+    }
+
     function updateDisplay() {
-      document.getElementById('total').innerText = `UKUPNO: ${ukupno.toFixed(2)} €`;
+      const totalText = `UKUPNO: ${ukupno.toFixed(2)} €`;
+      document.getElementById('total').innerText = totalText;
       document.getElementById('current-amount').innerText = `${currentAmount.toFixed(2)} €`;
       updateHistory();
       checkRemoveButtonVisibility();
@@ -179,14 +183,6 @@
       removeButton.style.display = povijest.length > 0 ? 'block' : 'none';
     }
 
-    function playSound(id) {
-      const sound = document.getElementById(id);
-      if (sound) {
-        sound.currentTime = 0;
-        sound.play().catch(err => console.warn('Zvuk nije mogao biti reproduciran:', err));
-      }
-    }
-
     function addCurrent() {
       if (currentAmount > 0) {
         povijest.push(currentAmount);
@@ -195,7 +191,7 @@
         updateDisplay();
         document.getElementById('add-btn').style.display = 'none';
         document.getElementById('clear-current-btn').style.display = 'none';
-        playSound('click-sound');
+        playSound(soundAdd); // Igra zvuk kad se dodaje iznos
       }
     }
 
@@ -204,7 +200,7 @@
       updateDisplay();
       document.getElementById('add-btn').style.display = 'none';
       document.getElementById('clear-current-btn').style.display = 'none';
-      playSound('remove-sound');
+      playSound(soundClear); // Igra zvuk kad se briše trenutni iznos
     }
 
     function startRemoveFromList() {
@@ -214,16 +210,17 @@
         removeButton.style.backgroundColor = 'yellow';
         removeButton.style.color = 'black';
         removeConfirm = true;
+        playSound(soundRemove); // Igra zvuk kad se započne brisanje
       } else {
         if (povijest.length > 0) {
           ukupno -= povijest.pop();
           updateDisplay();
-          playSound('remove-sound');
         }
         removeButton.innerText = 'Obriši iz liste';
         removeButton.style.backgroundColor = 'red';
         removeButton.style.color = 'yellow';
         removeConfirm = false;
+        playSound(soundRemove); // Igra zvuk kad se potvrdi brisanje
       }
     }
 
@@ -236,7 +233,7 @@
         updateDisplay();
         document.getElementById('add-btn').style.display = 'block';
         document.getElementById('clear-current-btn').style.display = 'block';
-        playSound('scan-sound');
+        playSound(soundAdd); // Igra zvuk kad se skenira QR kod
       }
     }
 
@@ -250,6 +247,7 @@
         ).catch(err => console.error(err));
       }
     });
+
   </script>
 </body>
 </html>
