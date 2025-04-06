@@ -75,6 +75,16 @@
     .red-btn {
       background: #ff0000;
     }
+    .red-btn:active {
+      background: #cc0000;
+    }
+    .yellow-btn {
+      background: #ffcc00;
+      color: black; /* Crni tekst */
+    }
+    .yellow-btn:active {
+      background: #cca300;
+    }
     .green-btn {
       background: #00cc00;
     }
@@ -93,7 +103,7 @@
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       margin-top: 10vh;
-      width: 80px; 
+      width: 80px;
       margin-left: 0;
       margin-right: 0;
     }
@@ -188,18 +198,20 @@
     }
 
     function startRemoveFromList() {
+      const removeButton = document.getElementById('remove-from-list-btn');
       if (!removeConfirm) {
-        document.getElementById('remove-from-list-btn').innerText = 'Potvrdi';
-        document.getElementById('remove-from-list-btn').style.backgroundColor = 'yellow';
-        document.getElementById('remove-from-list-btn').style.color = 'black';
+        removeButton.innerText = 'Potvrdi';
+        removeButton.classList.remove('red-btn');
+        removeButton.classList.add('yellow-btn');
         removeConfirm = true;
       } else {
         if (povijest.length > 0) {
           ukupno -= povijest.pop();
           updateDisplay();
         }
-        document.getElementById('remove-from-list-btn').innerText = 'Obriši iz liste';
-        document.getElementById('remove-from-list-btn').style.backgroundColor = 'red';
+        removeButton.innerText = 'Obriši iz liste';
+        removeButton.classList.remove('yellow-btn');
+        removeButton.classList.add('red-btn');
         removeConfirm = false;
       }
     }
@@ -218,8 +230,8 @@
       }
     }
 
-    const html5QrCode = new Html5Qrcode("reader");
-    Html5Qrcode.getCameras().then(devices => {
+    const html5QrCode = new Html5QrCode("reader");
+    Html5QrCode.getCameras().then(devices => {
       if (devices && devices.length) {
         html5QrCode.start(
           { facingMode: "environment" },
