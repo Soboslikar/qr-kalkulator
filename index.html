@@ -119,7 +119,7 @@
       align-items: center;
       gap: 0.5em; /* Smanjen razmak nakon iznosa i gumba za 3 slova */
       margin-top: -10em; /* Pomaknuto prema gore */
-      margin-left: calc(100vw / 4 - 2em); /* Pomaknuto lijevo za 3 slova */
+      margin-left: calc(100vw / 4 - 5em); /* Pomaknuto lijevo za 5 slova */
     }
     #amount-section div {
       font-size: 1.5em;
@@ -139,9 +139,10 @@
 </head>
 <body>
   <div id="header">QR Kalkulator by Banović & GPT-4</div>
-  <div id="reader"></div>
-  <div id="history-title">RAČUNI</div>
-  <div id="total">UKUPNO: 0.00 €</div>
+  <div id="reader">
+    <div id="history-title">RAČUNI</div>
+    <div id="total">UKUPNO: 0.00 €</div>
+  </div>
   <div id="history">
     <ul id="historyList"></ul>
   </div>
@@ -249,7 +250,7 @@
     }
 
     const html5QrCode = new Html5Qrcode("reader");
-    Html5QrCode.getCameras().then(devices => {
+    Html5Qrcode.getCameras().then(devices => {
       if (devices && devices.length) {
         html5QrCode.start(
           { facingMode: "environment" },
@@ -262,7 +263,7 @@
     }
   });
 
-  // StatCounter code for tracking posjeta
+  // StatCounter code for tracking visits
   var sc_project=12702047; 
   var sc_invisible=1; 
   var sc_security="e75d2592"; 
