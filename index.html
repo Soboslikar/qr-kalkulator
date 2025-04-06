@@ -1,63 +1,57 @@
 <!DOCTYPE html>
 <html lang="hr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QR Kalkulator</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     body {
       font-family: sans-serif;
       margin: 0;
       padding: 0.5em;
       background: #f4f4f4;
-      position: relative;
     }
-
     #header {
       text-align: center;
       color: yellow;
-      font-size: 1.2em;
+      font-size: 1.2em; /* Smanjen tekst */
       font-weight: bold;
       margin-bottom: 0.5em;
       position: absolute;
       width: 100%;
       z-index: 1;
     }
-
     #reader {
       width: 100%;
       max-width: 400px;
       margin: auto;
-      height: 50vh;
+      height: 30vh; /* Smanjena visina slike kamere */
       position: relative;
     }
-
     #total, #history-title {
       font-size: 1.5em;
       font-weight: bold;
       position: absolute;
       color: red;
       z-index: 2;
+      background-color: rgba(255, 255, 255, 0.7); /* Dodano bijela pozadina s prozirnošću */
+      padding: 0.2em;
     }
-
     #history-title {
       left: 10px;
-      bottom: 10px;
+      bottom: 10px; /* Pomaknuto na dno */
     }
-
     #total {
       right: 10px;
-      bottom: 10px;
+      bottom: 10px; /* Pomaknuto na dno */
     }
-
     .btns {
       display: flex;
       justify-content: center;
       gap: 1em;
       margin-top: 1em;
     }
-
     .big-btns {
       display: flex;
       justify-content: center;
@@ -65,7 +59,6 @@
       margin-top: 1em;
       margin-bottom: 1em;
     }
-
     button {
       padding: 0.5em 1em;
       font-size: 1em;
@@ -74,63 +67,78 @@
       color: white;
       cursor: pointer;
     }
-
     .red-btn {
       background: #ff0000;
     }
-
     .red-btn:active {
       background: #cc0000;
     }
-
+    .yellow-btn {
+      background: #ffcc00;
+    }
+    .yellow-btn:active {
+      background: #cca300;
+    }
     .green-btn {
       background: #00cc00;
-      height: 2em;
+      height: 2em; /* Povećana visina */
+      display: none; /* Dodano da bude nevidljiv */
     }
-
     .green-btn:active {
       background: #009900;
     }
-
     .bold-text {
       font-weight: bold;
     }
-
     #current-amount-section {
       text-align: center;
       font-size: 1.5em;
       font-weight: bold;
       margin-top: 1em;
     }
-
     #history {
-      max-height: 300px;
+      max-height: 300px; /* Povećana visina */
       overflow-y: auto;
       margin: 1em 0;
       padding: 1em;
       background: white;
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      margin-top: 60vh;
-      width: calc(100vw / 4);
+      margin-top: 40vh; /* Spušteno ispod slike kamere */
+      width: calc(100vw / 4); /* Smanjena širina */
       display: flex;
       flex-direction: column;
     }
-
     #history ul {
       list-style: none;
       padding: 0;
     }
-
     #history li {
       padding: 0.5em 0;
       border-bottom: 1px solid #eee;
+      white-space: pre; /* Zadržavanje razmaka */
     }
-
+    #amount-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5em; /* Smanjen razmak nakon iznosa i gumba za 3 slova */
+      margin-top: -10em; /* Pomaknuto prema gore */
+      margin-left: calc(100vw / 4 - 2em); /* Pomaknuto lijevo za 3 slova */
+    }
+    #amount-section div {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-right: 0.5em; /* Pomaknuto u desno i smanjen razmak */
+    }
     .button-container {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
+      margin-left: 1em; /* Pomaknuto u desno */
+    }
+    .button-container button {
+      margin-top: 0.5em; /* Razmak između gumba */
     }
   </style>
 </head>
@@ -142,20 +150,18 @@
   <div id="history">
     <ul id="historyList"></ul>
   </div>
-
-  <div id="current-amount-section">
+  <div id="amount-section">
     <div id="amount-label">IZNOS:</div>
     <div id="current-amount">0.00 €</div>
     <div class="button-container">
-      <button class="green-btn" id="add-btn" onclick="addCurrent()" style="display:none;">Dodaj</button>
-      <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()" style="display:none;">Obriši</button>
+      <button class="green-btn" id="add-btn" onclick="addCurrent()">Dodaj</button>
+      <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()">Obriši</button>
     </div>
   </div>
-
   <div class="big-btns">
-    <button class="red-btn" id="remove-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
+    <button class="red-btn" id="remove-btn" onclick="startRemoveFromList()">Obriši iz liste</button>
   </div>
-
+  
   <script>
     let ukupno = 0;
     let povijest = [];
@@ -167,6 +173,8 @@
       document.getElementById('total').innerText = totalText;
       document.getElementById('current-amount').innerText = `${currentAmount.toFixed(2)} €`;
       updateHistory();
+      // Update visibility of remove button
+      document.getElementById('remove-btn').style.display = povijest.length > 0 ? 'block' : 'none';
     }
 
     function updateHistory() {
@@ -175,7 +183,7 @@
       povijest.forEach((iznos, index) => {
         const listItem = document.createElement('li');
         listItem.classList.add('bold-text');
-        listItem.innerText = `${index + 1}.  ${iznos.toFixed(2)} €`;
+        listItem.innerText = `${index + 1}.  ${iznos.toFixed(2)} €`; // Dodano dva razmaka
         historyList.appendChild(listItem);
       });
     }
@@ -208,7 +216,7 @@
         document.getElementById('amount-label').style.display = 'none';
         document.getElementById('current-amount').style.display = 'none';
         document.getElementById('clear-current-btn').style.display = 'none';
-        document.getElementById('add-btn').style.display = 'none';
+        document.getElementById('add-btn').style.display = 'none'; // Dodano da nestane
       }
     }
 
@@ -221,15 +229,20 @@
     }
 
     function startRemoveFromList() {
+      const removeBtn = document.getElementById('remove-btn');
       if (!removeConfirm) {
-        document.getElementById('remove-btn').innerText = 'Potvrdi';
+        removeBtn.innerText = 'Potvrdi';
+        removeBtn.classList.remove('red-btn');
+        removeBtn.classList.add('yellow-btn');
         removeConfirm = true;
       } else {
         if (povijest.length > 0) {
           ukupno -= povijest.pop();
           updateDisplay();
         }
-        document.getElementById('remove-btn').innerText = 'Obriši iz liste';
+        removeBtn.innerText = 'Obriši iz liste';
+        removeBtn.classList.remove('yellow-btn');
+        removeBtn.classList.add('red-btn');
         removeConfirm = false;
       }
     }
@@ -238,30 +251,40 @@
       const urlParams = new URLSearchParams(decodedText);
       const iznosCenti = parseFloat(urlParams.get('izn'));
       if (!isNaN(iznosCenti)) {
-        const iznosEuri = iznosCenti / 100;
+        const iznosEuri = iznosCenti / 100; // Konvertiranje iz centi u eure
         currentAmount = iznosEuri;
         playSound('https://www.soundjay.com/button/beep-07.wav');
         document.getElementById('amount-label').style.display = 'block';
         document.getElementById('current-amount').style.display = 'block';
         document.getElementById('clear-current-btn').style.display = 'block';
-        document.getElementById('add-btn').style.display = 'block';
+        document.getElementById('add-btn').style.display = 'block'; // Dodano da se prikaže
         updateDisplay();
       }
     }
 
     const html5QrCode = new Html5Qrcode("reader");
-    Html5Qrcode.getCameras().then(devices => {
+    Html5QrCode.getCameras().then(devices => {
       if (devices && devices.length) {
         html5QrCode.start(
           { facingMode: "environment" },
           {
             fps: 10,
-            qrbox: { width: 250, height: 250 }
-          },
-          handleScan
-        ).catch(err => console.error(err));
-      }
-    });
+            qrbox: { width: 300, height: 300 } // Povećanje QR kod skenera na kvadrat
+        },
+        handleScan
+      ).catch(err => console.error(err));
+    }
+  });
+
+  // StatCounter code for tracking posjeta
+  var sc_project=12702047; 
+  var sc_invisible=1; 
+  var sc_security="e75d2592"; 
+  var scJsHost = (("https:" == document.location.protocol) ?
+  "https://secure." : "http://www.");
+  document.write("<sc"+"ript type='text/javascript' src='" +
+  scJsHost+
+  "statcounter.com/counter/counter.js'></"+"script>");
   </script>
 </body>
 </html>
