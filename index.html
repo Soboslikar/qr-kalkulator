@@ -230,11 +230,11 @@
       }
     }
 
-    const html5QrCode = new Html5QrCode("reader");
+    const html5QrCode = new Html5Qrcode("reader");
     Html5QrCode.getCameras().then(devices => {
       if (devices && devices.length) {
         html5QrCode.start(
-          { facingMode: "environment" },
+          devices[0].id,
           {
             fps: 10,
             qrbox: { width: 250, height: 250 }
