@@ -32,9 +32,9 @@
     #total {
       font-size: 1.5em;
       font-weight: bold;
-      color: yellow; /* Promijenjena boja na žutu za UKUPNO */
+      color: yellow;
       position: fixed;
-      top: 19em; /* Pomaknuto gore za 6 redova */
+      top: 19em;
       right: 100px;
       z-index: 2;
     }
@@ -45,13 +45,13 @@
       gap: 1em;
       margin-top: 1em;
       position: fixed;
-      top: 31em; /* Pomaknuto gore za 4 reda */
+      top: 31em;
       right: 50px;
       z-index: 2;
     }
     #current-amount {
       font-size: 1.5em;
-      font-weight: bold; /* IZNOS sada je boldan */
+      font-weight: bold;
     }
     .big-btns {
       display: flex;
@@ -60,7 +60,7 @@
       margin-top: 1em;
       margin-bottom: 1em;
       position: fixed;
-      bottom: 15px; /* Gumbi pomaknuti prema dolje */
+      bottom: 15px;
       right: 10px;
       z-index: 2;
     }
@@ -109,7 +109,7 @@
     #remove-from-list-btn {
       position: fixed;
       bottom: 5px;
-      right: 10px; /* Pomaknuto udesno */
+      right: 10px;
       z-index: 3;
     }
   </style>
@@ -126,10 +126,10 @@
     <div id="current-amount">0.00 €</div>
   </div>
   <div class="big-btns">
-    <button class="green-btn" id="add-btn" onclick="addCurrent()">Dodaj</button>
+    <button class="green-btn" id="add-btn" onclick="addCurrent()" style="display:none;">Dodaj</button>
   </div>
   <div class="big-btns">
-    <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()">Obriši</button>
+    <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()" style="display:none;">Obriši</button>
   </div>
   <div class="big-btns">
     <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
@@ -175,11 +175,8 @@
         ukupno += currentAmount;
         updateDisplay();
         currentAmount = 0;
-        document.getElementById('add-btn').style.display = 'none';
-        document.getElementById('clear-current-btn').style.display = 'none';
-      }
-      else {
-        document.getElementById('add-btn').style.display = 'block'; // Prikazivanje gumba 'DODAJ' ako nije dodan iznos
+        document.getElementById('add-btn').style.display = 'none'; // Gumb 'DODAJ' nestaje nakon dodavanja
+        document.getElementById('clear-current-btn').style.display = 'none'; // Gumb 'OBRIŠI' nestaje
       }
     }
 
@@ -216,8 +213,8 @@
         document.getElementById('amount-label').style.display = 'block';
         document.getElementById('current-amount').style.display = 'block';
         document.getElementById('clear-current-btn').style.display = 'block';
+        document.getElementById('add-btn').style.display = 'block'; // Prikazivanje gumba 'DODAJ' nakon skeniranja
         updateDisplay();
-        document.getElementById('add-btn').style.display = 'block'; // Prikazivanje gumba 'DODAJ'
       }
     }
 
@@ -229,18 +226,11 @@
           {
             fps: 10,
             qrbox: { width: 250, height: 250 }
-        },
-        handleScan
-      ).catch(err => console.error(err));
-    }
-  });
-
-  // StatCounter code for tracking visits
-  var sc_project=12702047; 
-  var sc_invisible=1; 
-  var sc_security="e75d2592"; 
-  var scJsHost = (("https:" == document.location.protocol) ? "https://secure." : "http://www.");
-  document.write("<sc"+"ript type='text/javascript' src='" + scJsHost + "statcounter.com/counter/counter.js'></"+"script>");
+          },
+          handleScan
+        ).catch(err => console.error(err));
+      }
+    });
   </script>
 </body>
 </html>
