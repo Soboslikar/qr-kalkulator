@@ -26,7 +26,7 @@
       width: 100%;
       max-width: 400px;
       margin: auto;
-      height: 100vh; /* Smanjena visina slike kamere */
+      height: 50vh; /* Vraćeno na prvotnu visinu */
       position: relative;
       z-index: 1; /* Postavljeno ispod teksta */
     }
@@ -256,7 +256,7 @@
           { facingMode: "environment" },
           {
             fps: 10,
-            qrbox: { width: 300, height: 300 } // Povećanje QR kod skenera na kvadrat
+            qrbox: { width: 250, height: 250 }
         },
         handleScan
       ).catch(err => console.error(err));
