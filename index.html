@@ -232,6 +232,7 @@
     function startRemoveFromList() {
       if (!removeConfirm) {
         document.getElementById('confirm-btn').innerText = 'Potvrdi';
+        document.getElementById('confirm-btn').style.backgroundColor = '#e76f51';
         removeConfirm = true;
       } else {
         if (povijest.length > 0) {
@@ -239,6 +240,7 @@
           updateDisplay();
         }
         document.getElementById('confirm-btn').innerText = 'Potvrdi';
+        document.getElementById('confirm-btn').style.backgroundColor = '#f4a261';
         removeConfirm = false;
       }
     }
@@ -267,7 +269,7 @@
     }
 
     const html5QrCode = new Html5Qrcode("reader");
-    Html5Qrcode.getCameras().then(devices => {
+    Html5QrCode.getCameras().then(devices => {
       if (devices && devices.length) {
         html5QrCode.start(
           { facingMode: "environment" },
