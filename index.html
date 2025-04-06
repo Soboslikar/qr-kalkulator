@@ -15,7 +15,7 @@
     #header {
       text-align: center;
       color: yellow;
-      font-size: 1.2em;
+      font-size: 1.2em; /* Smanjen tekst */
       font-weight: bold;
       margin-bottom: 0.5em;
       position: absolute;
@@ -26,23 +26,26 @@
       width: 100%;
       max-width: 400px;
       margin: auto;
-      height: 50vh;
+      height: 50vh; /* Vraćeno na prvotnu visinu */
       position: relative;
     }
-    #total, #history-title {
+    #total {
       font-size: 1.5em;
       font-weight: bold;
       position: absolute;
       color: red;
       z-index: 2;
+      right: 10px;
+      top: 10px;
     }
     #history-title {
+      font-size: 1.5em;
+      font-weight: bold;
+      position: absolute;
+      color: red;
+      z-index: 2;
       left: 10px;
-      bottom: 10px;
-    }
-    #total {
-      right: 10px;
-      bottom: 10px;
+      top: 10px;
     }
     .btns {
       display: flex;
@@ -72,3 +75,70 @@
       background: #cc0000;
     }
     .green-btn {
+      background: #00cc00;
+      height: 2em; /* Povećana visina */
+    }
+    .green-btn:active {
+      background: #009900;
+    }
+    .bold-text {
+      font-weight: bold;
+    }
+    #current-amount-section {
+      text-align: center;
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-top: 1em;
+    }
+    #history {
+      max-height: 300px; /* Povećana visina */
+      overflow-y: auto;
+      margin: 1em 0;
+      padding: 1em;
+      background: white;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-top: 10vh; /* Spušteno ispod slike kamere */
+      width: calc(100vw / 4); /* Smanjena širina */
+      display: flex;
+      flex-direction: column;
+    }
+    #history ul {
+      list-style: none;
+      padding: 0;
+    }
+    #history li {
+      padding: 0.5em 0;
+      border-bottom: 1px solid #eee;
+      white-space: pre; /* Zadržavanje razmaka */
+    }
+    #amount-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1em;
+      margin-top: 1em;
+    }
+    #amount-section div {
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  </style>
+</head>
+<body>
+  <div id="header">QR Kalkulator by Banović</div>
+  <div id="reader"></div>
+  <div id="history">
+    <ul id="historyList"></ul>
+  </div>
+  <div id="amount-section">
+    <div id="amount-label">IZNOS:</div>
+    <div id="current-amount">0.00 €</div>
+    <div class="button-container">
+      <button class="green-btn" id="add-btn" onclick="addCurrent()">Dodaj</button>
+      <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()">
