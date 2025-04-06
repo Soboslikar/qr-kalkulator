@@ -29,20 +29,14 @@
       height: 50vh; /* Vraćeno na prvotnu visinu */
       position: relative;
     }
-    #total, #history-title {
+    #total {
       font-size: 1.5em;
       font-weight: bold;
       position: absolute;
       color: red;
       z-index: 2;
-    }
-    #history-title {
-      left: 10px;
-      bottom: 10px;
-    }
-    #total {
+      top: 10px;
       right: 10px;
-      bottom: 10px;
     }
     .btns {
       display: flex;
@@ -71,9 +65,17 @@
     .red-btn:active {
       background: #cc0000;
     }
+    .yellow-btn {
+      background: #ffcc00;
+      color: black; /* Crni tekst */
+    }
+    .yellow-btn:active {
+      background: #cca300;
+    }
     .green-btn {
       background: #00cc00;
       height: 2em; /* Povećana visina */
+      display: none; /* Dodano da bude nevidljiv */
     }
     .green-btn:active {
       background: #009900;
@@ -130,7 +132,6 @@
 <body>
   <div id="header">QR Kalkulator by Banović</div>
   <div id="reader"></div>
-  <div id="history-title">RAČUNI</div>
   <div id="total">UKUPNO: 0.00 €</div>
   <div id="history">
     <ul id="historyList"></ul>
@@ -144,7 +145,7 @@
     </div>
   </div>
   <div class="big-btns">
-    <button class="red-btn" onclick="startRemoveFromList()">Obriši iz liste</button>
+    <button class="red-btn" id="remove-btn" onclick="startRemoveFromList()">Obriši iz liste</button>
   </div>
   
   <script>
@@ -158,6 +159,8 @@
       document.getElementById('total').innerText = totalText;
       document.getElementById('current-amount').innerText = `${currentAmount.toFixed(2)} €`;
       updateHistory();
+      // Update visibility of remove button
+      document.getElementById('remove-btn').style.display = povijest.length > 0 ? 'block' : 'none';
     }
 
     function updateHistory() {
@@ -199,6 +202,7 @@
         document.getElementById('amount-label').style.display = 'none';
         document.getElementById('current-amount').style.display = 'none';
         document.getElementById('clear-current-btn').style.display = 'none';
+        document.getElementById('add-btn').style.display = 'none'; // Dodano da nestane
       }
     }
 
@@ -211,15 +215,20 @@
     }
 
     function startRemoveFromList() {
+      const removeBtn = document.getElementById('remove-btn');
       if (!removeConfirm) {
-        document.querySelector('.big-btns button').innerText = 'Potvrdi';
+        removeBtn.innerText = 'Potvrdi';
+        removeBtn.classList.remove('red-btn');
+        removeBtn.classList.add('yellow-btn');
         removeConfirm = true;
       } else {
         if (povijest.length > 0) {
           ukupno -= povijest.pop();
           updateDisplay();
         }
-        document.querySelector('.big-btns button').innerText = 'Obriši iz liste';
+        removeBtn.innerText = 'Obriši iz liste';
+        removeBtn.classList.remove('yellow-btn');
+        removeBtn.classList.add('red-btn');
         removeConfirm = false;
       }
     }
@@ -234,12 +243,13 @@
         document.getElementById('amount-label').style.display = 'block';
         document.getElementById('current-amount').style.display = 'block';
         document.getElementById('clear-current-btn').style.display = 'block';
+        document.getElementById('add-btn').style.display = 'block'; // Dodano da se prikaže
         updateDisplay();
       }
     }
 
-    const html5QrCode = new Html5Qrcode("reader");
-    Html5Qrcode.getCameras().then(devices => {
+    const html5QrCode = new Html5QrCode("reader");
+    Html5QrCode.getCameras().then(devices => {
       if (devices && devices.length) {
         html5QrCode.start(
           { facingMode: "environment" },
