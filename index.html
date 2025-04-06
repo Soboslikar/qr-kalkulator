@@ -29,54 +29,20 @@
       height: 50vh; /* Vraćeno na prvotnu visinu */
       position: relative;
     }
-    #total {
+    #total, #history-title {
       font-size: 1.5em;
       font-weight: bold;
-      color: red;
       position: absolute;
-      bottom: 15vh; /* Pomaknuto 5 redova gore */
-      right: 4ch; /* Pomaknuto udesno za 4 slova */
-      width: 100%;
-      text-align: center;
+      color: red;
       z-index: 2;
     }
-    #history {
-      max-height: 300px; /* Povećana visina */
-      overflow-y: auto;
-      margin: 1em 0;
-      padding: 1em;
-      background: white;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      margin-top: 10vh; /* Spušteno ispod slike kamere */
-      width: calc(100vw / 4); /* Smanjena širina */
-      display: flex;
-      flex-direction: column;
+    #history-title {
+      left: 10px;
+      bottom: 10px;
     }
-    #history ul {
-      list-style: none;
-      padding: 0;
-    }
-    #history li {
-      padding: 0.5em 0;
-      border-bottom: 1px solid #eee;
-      white-space: pre; /* Zadržavanje razmaka */
-    }
-    #amount-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1em;
-      margin-top: 1em;
-    }
-    #amount-section div {
-      font-size: 1.5em;
-      font-weight: bold;
-    }
-    .button-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    #total {
+      right: 10px;
+      bottom: 10px;
     }
     .btns {
       display: flex;
@@ -112,12 +78,8 @@
     .green-btn:active {
       background: #009900;
     }
-    .yellow-btn {
-      background: #f4a261;
-      color: black;
-    }
-    .yellow-btn:active {
-      background: #e76f51;
+    .bold-text {
+      font-weight: bold;
     }
     #current-amount-section {
       text-align: center;
@@ -125,11 +87,50 @@
       font-weight: bold;
       margin-top: 1em;
     }
+    #history {
+      max-height: 300px; /* Povećana visina */
+      overflow-y: auto;
+      margin: 1em 0;
+      padding: 1em;
+      background: white;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-top: 10vh; /* Spušteno ispod slike kamere */
+      width: calc(100vw / 4); /* Smanjena širina */
+      display: flex;
+      flex-direction: column;
+    }
+    #history ul {
+      list-style: none;
+      padding: 0;
+    }
+    #history li {
+      padding: 0.5em 0;
+      border-bottom: 1px solid #eee;
+      white-space: pre; /* Zadržavanje razmaka */
+    }
+    #amount-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1em;
+      margin-top: 1em;
+    }
+    #amount-section div {
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
   </style>
 </head>
 <body>
   <div id="header">QR Kalkulator by Banović</div>
   <div id="reader"></div>
+  <div id="history-title">RAČUNI</div>
   <div id="total">UKUPNO: 0.00 €</div>
   <div id="history">
     <ul id="historyList"></ul>
@@ -138,23 +139,14 @@
     <div id="amount-label">IZNOS:</div>
     <div id="current-amount">0.00 €</div>
     <div class="button-container">
-      <button class="green-btn" id="add-btn" style="display: none;" onclick="addCurrent()">Dodaj</button>
+      <button class="green-btn" id="add-btn" onclick="addCurrent()">Dodaj</button>
       <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()">Obriši</button>
     </div>
   </div>
   <div class="big-btns">
-    <button class="yellow-btn" id="confirm-btn" style="display: none;" onclick="startRemoveFromList()">Potvrdi</button>
-    <button class="red-btn" id="clear-history-btn" style="display: none;" onclick="clearLast()">Obriši iz liste</button>
+    <button class="red-btn" id="remove-btn" onclick="startRemoveFromList()">Obriši iz liste</button>
+    <button class="green-btn" id="confirm-btn" onclick="confirmRemove()" style="display:none;">Potvrdi</button>
   </div>
-  
-  <!-- StatCounter kod -->
-  <script type="text/javascript">
-    var sc_project=12702047; 
-    var sc_invisible=1; 
-    var sc_security="e75d2592"; 
-    var sc_https=1; 
-  </script>
-  <script type="text/javascript" src="https://c.statcounter.com/12702047/0/e75d2592/1/"></script>
 
   <script>
     let ukupno = 0;
@@ -178,14 +170,6 @@
         listItem.innerText = `${index + 1}.  ${iznos.toFixed(2)} €`; // Dodano dva razmaka
         historyList.appendChild(listItem);
       });
-
-      // Prikazivanje gumba "Obriši iz liste" ako postoji unos u povijesti
-      const clearHistoryBtn = document.getElementById('clear-history-btn');
-      if (povijest.length > 0) {
-        clearHistoryBtn.style.display = 'inline-block';
-      } else {
-        clearHistoryBtn.style.display = 'none';
-      }
     }
 
     function playSound(url) {
@@ -216,7 +200,7 @@
         document.getElementById('amount-label').style.display = 'none';
         document.getElementById('current-amount').style.display = 'none';
         document.getElementById('clear-current-btn').style.display = 'none';
-        document.getElementById('add-btn').style.display = 'none'; // Hide add button after pressing
+        hideAddRemoveButtons();
       }
     }
 
@@ -225,31 +209,44 @@
       document.getElementById('amount-label').style.display = 'none';
       document.getElementById('current-amount').style.display = 'none';
       document.getElementById('clear-current-btn').style.display = 'none';
-      document.getElementById('add-btn').style.display = 'none'; // Hide add button after pressing
       updateDisplay();
+    }
+
+    function hideAddRemoveButtons() {
+      document.getElementById('add-btn').style.display = 'none';
+      document.getElementById('clear-current-btn').style.display = 'none';
+    }
+
+    function showAddRemoveButtons() {
+      document.getElementById('add-btn').style.display = 'inline-block';
+      document.getElementById('clear-current-btn').style.display = 'inline-block';
     }
 
     function startRemoveFromList() {
       if (!removeConfirm) {
-        document.getElementById('confirm-btn').innerText = 'Potvrdi';
-        document.getElementById('confirm-btn').style.backgroundColor = '#e76f51';
+        document.getElementById('remove-btn').innerText = 'Potvrdi';
+        document.getElementById('confirm-btn').style.display = 'inline-block';
         removeConfirm = true;
       } else {
         if (povijest.length > 0) {
           ukupno -= povijest.pop();
           updateDisplay();
         }
-        document.getElementById('confirm-btn').innerText = 'Potvrdi';
-        document.getElementById('confirm-btn').style.backgroundColor = '#f4a261';
+        document.getElementById('remove-btn').innerText = 'Obriši iz liste';
+        document.getElementById('confirm-btn').style.display = 'none';
         removeConfirm = false;
       }
     }
 
-    function clearLast() {
-      if (povijest.length > 0) {
-        povijest.pop();
-        ukupno -= currentAmount;
-        updateDisplay();
+    function confirmRemove() {
+      if (removeConfirm) {
+        if (povijest.length > 0) {
+          ukupno -= povijest.pop();
+          updateDisplay();
+        }
+        document.getElementById('remove-btn').innerText = 'Obriši iz liste';
+        document.getElementById('confirm-btn').style.display = 'none';
+        removeConfirm = false;
       }
     }
 
@@ -263,7 +260,7 @@
         document.getElementById('amount-label').style.display = 'block';
         document.getElementById('current-amount').style.display = 'block';
         document.getElementById('clear-current-btn').style.display = 'block';
-        document.getElementById('add-btn').style.display = 'inline-block'; // Show add button
+        showAddRemoveButtons();
         updateDisplay();
       }
     }
@@ -276,11 +273,21 @@
           {
             fps: 10,
             qrbox: { width: 250, height: 250 }
-          },
-          handleScan
-        ).catch(err => console.error(err));
-      }
-    });
-  </script>
+        },
+        handleScan
+      ).catch(err => {
+        console.error("Greška pri pokretanju kamere: ", err);
+        alert("Kamera nije dostupna ili nije omogućena. Provjerite dopuštenja za kameru u postavkama preglednika.");
+      });
+    }
+  });
+
+  // StatCounter code for tracking visits
+  var sc_project=12702047; 
+  var sc_invisible=1; 
+  var sc_security="e75d2592"; 
+  var sc_https=1; 
+  var sc_impression=1; 
+</script>
 </body>
 </html>
