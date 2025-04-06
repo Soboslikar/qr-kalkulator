@@ -33,8 +33,8 @@
       font-size: 1.5em;
       font-weight: bold;
       color: red;
-      position: absolute;
-      bottom: 10px;
+      position: fixed;
+      top: 6em; /* Pomaknuto gore za 6 redova */
       right: 10px;
       z-index: 2;
     }
@@ -45,7 +45,7 @@
       gap: 1em;
       margin-top: 1em;
       position: fixed;
-      bottom: 80px; /* Pomaknite prema gore na željeno mjesto */
+      top: 4em; /* Pomaknuto gore za 4 reda */
       right: 10px;
       z-index: 2;
     }
@@ -59,6 +59,10 @@
       gap: 1em;
       margin-top: 1em;
       margin-bottom: 1em;
+      position: fixed;
+      bottom: 15px; /* Gumbi pomaknuti prema dolje */
+      right: 10px;
+      z-index: 2;
     }
     button {
       padding: 0.5em 1em;
@@ -101,6 +105,12 @@
       padding: 0.5em 0;
       border-bottom: 1px solid #eee;
       white-space: pre;
+    }
+    #remove-from-list-btn {
+      position: fixed;
+      bottom: 5px;
+      right: 10px; /* Pomaknuto udesno */
+      z-index: 3;
     }
   </style>
 </head>
