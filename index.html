@@ -40,7 +40,7 @@
       font-weight: bold;
       color: yellow;
       position: fixed;
-      top: 15em; /* Smanjeno iz 30em */
+      top: 15em;
       left: 50%;
       transform: translateX(-50%);
       z-index: 2;
@@ -52,14 +52,14 @@
       align-items: center;
       gap: 1em;
       position: fixed;
-      top: 28em; /* Smanjeno iz 31em */
+      top: 28em;
       width: 100%;
       z-index: 2;
     }
     #amount-label {
       font-weight: bold;
       color: yellow;
-      display: none; /* Sakriven dok nema skeniranog iznosa */
+      display: none;
     }
     #amount-label.delete-mode {
       color: red;
@@ -68,7 +68,7 @@
       font-size: 1.5em;
       font-weight: bold;
       color: yellow;
-      display: none; /* Sakriven dok nema skeniranog iznosa */
+      display: none;
     }
     #duplicate-warning {
       font-weight: bold;
@@ -76,7 +76,6 @@
       display: none;
       animation: fadeOut 2s forwards;
     }
-
     #clear-current-btn {
       position: fixed;
       bottom: 80px;
@@ -89,7 +88,6 @@
       right: 100px;
       z-index: 3;
     }
-
     button {
       padding: 0.5em 1em;
       font-size: 1em;
@@ -98,24 +96,19 @@
       color: black;
       cursor: pointer;
     }
-
     .red-btn {
       background: #ff0000;
-      color: yellow; /* žuti tekst za crvene gumbe */
+      color: yellow;
     }
-
     .green-btn {
       background: #00cc00;
     }
-
     .green-btn:active {
       background: #009900;
     }
-
     .bold-text {
       font-weight: bold;
     }
-
     #history {
       max-height: 300px;
       overflow-y: auto;
@@ -129,18 +122,15 @@
       margin-left: 0;
       margin-right: 0;
     }
-
     #history ul {
       list-style: none;
       padding: 0;
     }
-
     #history li {
       padding: 0.5em 0;
       border-bottom: 1px solid #eee;
       white-space: pre;
     }
-
     #delete-warning {
       color: red;
       font-weight: bold;
@@ -157,7 +147,7 @@
     <ul id="historyList"></ul>
   </div>
   <div id="amount-section">
-    <div id="amount-label">DODAJ IZNOS:</div>
+    <div id="amount-label">ZADNJE DODANO:</div>
     <div id="current-amount">0.00 €</div>
     <div id="duplicate-warning">TAJ RAČUN JE URAČUNAT</div>
   </div>
@@ -262,6 +252,7 @@
     }
 
     function handleScan(decodedText) {
+      console.log('Decoded text:', decodedText);
       const urlParams = new URLSearchParams(decodedText);
       const iznosCenti = parseFloat(urlParams.get('izn'));
       const vrijeme = urlParams.get('time'); // Assumes QR code has 'time' parameter in HH:MM format
@@ -283,19 +274,24 @@
           updateDisplay();
           playSound('scan-sound');
         }
+      } else {
+        console.warn('Invalid QR code format or missing parameters');
       }
     }
 
     const html5QrCode = new Html5Qrcode("reader");
     Html5Qrcode.getCameras().then(devices => {
+      console.log('Devices found:', devices);
       if (devices && devices.length) {
         html5QrCode.start(
           { facingMode: "environment" },
           { fps: 10, qrbox: { width: 250, height: 250 } },
           handleScan
-        ).catch(err => console.error(err));
+        ).catch(err => console.error('Failed to start QR code scanner:', err));
+      } else {
+        console.warn('No cameras found');
       }
-    });
+    }).catch(err => console.error('Error getting cameras:', err));
   </script>
 
   <!-- StatCounter -->
