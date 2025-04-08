@@ -1,153 +1,246 @@
-<!-- UNUTAR <script> BLOKA PRI DNU -->
-<script>
-  let ukupno = 0;
-  let povijest = [];
-  let currentAmount = 0;
-  let currentQRCode = '';
-  let currentTime = '';
-  let removeConfirm = false;
-
-  function updateDisplay() {
-    document.getElementById('total').innerText = `UKUPNO: ${ukupno.toFixed(2)} €`;
-    document.getElementById('current-amount').innerText = `${currentAmount.toFixed(2)} €`;
-    updateHistory();
-    checkRemoveButtonVisibility();
-    handleAmountLabelVisibility();
-  }
-
-  function updateHistory() {
-    const historyList = document.getElementById('historyList');
-    historyList.innerHTML = '';
-    povijest.forEach((item, index) => {
-      const listItem = document.createElement('li');
-      listItem.classList.add('bold-text');
-      listItem.innerText = `${index + 1}. ${item.amount.toFixed(2)} €  (${item.time})`;
-      historyList.appendChild(listItem);
-    });
-  }
-
-  function checkRemoveButtonVisibility() {
-    const removeButton = document.getElementById('remove-from-list-btn');
-    removeButton.style.display = povijest.length > 0 ? 'block' : 'none';
-  }
-
-  function handleAmountLabelVisibility() {
-    const amountLabel = document.getElementById('amount-label');
-    const currentAmountDiv = document.getElementById('current-amount');
-    const duplicateWarning = document.getElementById('duplicate-warning');
-    if (removeConfirm && povijest.length > 0) {
-      const lastItem = povijest[povijest.length - 1];
-      amountLabel.innerText = `OBRIŠI IZNOS: ${lastItem.amount.toFixed(2)} € (${lastItem.time})`;
-      amountLabel.classList.add('delete-mode');
-      amountLabel.style.display = 'block';
-      currentAmountDiv.style.display = 'none';
-      duplicateWarning.style.display = 'none';
-    } else if (currentAmount > 0) {
-      amountLabel.innerText = 'DODAJ IZNOS:';
-      amountLabel.classList.remove('delete-mode');
-      amountLabel.style.display = 'block';
-      currentAmountDiv.style.display = 'block';
-      duplicateWarning.style.display = 'none';
-    } else {
-      amountLabel.style.display = 'none';
-      currentAmountDiv.style.display = 'none';
-      duplicateWarning.style.display = 'none';
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Kalkulator</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f3f3;
+      margin: 0;
+      padding: 0;
+      text-align: center;
     }
-  }
-
-  function playSound(id) {
-    const sound = document.getElementById(id);
-    if (sound) {
-      sound.currentTime = 0;
-      sound.play().catch(err => console.warn('Zvuk nije mogao biti reproduciran:', err));
+    #reader {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
     }
-  }
+    .bold-text {
+      font-weight: bold;
+    }
+    #total, #current-amount {
+      font-size: 2em;
+      margin: 10px 0;
+    }
+    #add-btn, #clear-current-btn, #remove-from-list-btn, #clear-history-btn {
+      font-size: 1.2em;
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #add-btn {
+      background-color: #4CAF50;
+      color: white;
+    }
+    #clear-current-btn {
+      background-color: #f0ad4e;
+      color: white;
+    }
+    #remove-from-list-btn {
+      background-color: red;
+      color: yellow;
+    }
+    #clear-history-btn {
+      background-color: #555;
+      color: white;
+    }
+    #historyList {
+      list-style: none;
+      padding: 0;
+    }
+    #amount-label {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    #amount-label.delete-mode {
+      color: yellow;
+      background-color: red;
+      padding: 5px;
+      border-radius: 5px;
+    }
+    #duplicate-warning {
+      color: red;
+      font-weight: bold;
+      display: none;
+    }
+  </style>
+</head>
+<body>
 
-  function addCurrent() {
-    if (currentAmount > 0) {
-      povijest.push({ amount: currentAmount, qrCode: currentQRCode, time: currentTime });
-      ukupno += currentAmount;
+  <h1>QR Kalkulator</h1>
+  <div id="reader"></div>
+
+  <div id="amount-label"></div>
+  <div id="current-amount"></div>
+  <div id="duplicate-warning">Ovaj kod je već skeniran!</div>
+
+  <button id="add-btn" style="display:none;" onclick="addCurrent()">DODAJ</button>
+  <button id="clear-current-btn" style="display:none;" onclick="clearCurrent()">OBRIŠI ZADNJI UNOS</button>
+
+  <h2 id="total">UKUPNO: 0.00 €</h2>
+  <ul id="historyList"></ul>
+
+  <button id="remove-from-list-btn" style="display:none;" onclick="startRemoveFromList()">Obriši iz liste</button>
+
+  <audio id="click-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
+  <audio id="remove-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
+  <audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/slide_whistle_to_drum_hit.ogg" preload="auto"></audio>
+
+  <script>
+    let ukupno = 0;
+    let povijest = [];
+    let currentAmount = 0;
+    let currentQRCode = '';
+    let currentTime = '';
+    let removeConfirm = false;
+
+    function updateDisplay() {
+      document.getElementById('total').innerText = `UKUPNO: ${ukupno.toFixed(2)} €`;
+      document.getElementById('current-amount').innerText = `${currentAmount.toFixed(2)} €`;
+      updateHistory();
+      checkRemoveButtonVisibility();
+      handleAmountLabelVisibility();
+    }
+
+    function updateHistory() {
+      const historyList = document.getElementById('historyList');
+      historyList.innerHTML = '';
+      povijest.forEach((item, index) => {
+        const listItem = document.createElement('li');
+        listItem.classList.add('bold-text');
+        listItem.innerText = `${index + 1}. ${item.amount.toFixed(2)} €  (${item.time})`;
+        historyList.appendChild(listItem);
+      });
+    }
+
+    function checkRemoveButtonVisibility() {
+      const removeButton = document.getElementById('remove-from-list-btn');
+      removeButton.style.display = povijest.length > 0 ? 'block' : 'none';
+    }
+
+    function handleAmountLabelVisibility() {
+      const amountLabel = document.getElementById('amount-label');
+      const currentAmountDiv = document.getElementById('current-amount');
+      const duplicateWarning = document.getElementById('duplicate-warning');
+      if (removeConfirm && povijest.length > 0) {
+        const lastItem = povijest[povijest.length - 1];
+        amountLabel.innerText = `OBRIŠI IZNOS: ${lastItem.amount.toFixed(2)} € (${lastItem.time})`;
+        amountLabel.classList.add('delete-mode');
+        amountLabel.style.display = 'block';
+        currentAmountDiv.style.display = 'none';
+        duplicateWarning.style.display = 'none';
+      } else if (currentAmount > 0) {
+        amountLabel.innerText = 'DODAJ IZNOS:';
+        amountLabel.classList.remove('delete-mode');
+        amountLabel.style.display = 'block';
+        currentAmountDiv.style.display = 'block';
+        duplicateWarning.style.display = 'none';
+      } else {
+        amountLabel.style.display = 'none';
+        currentAmountDiv.style.display = 'none';
+        duplicateWarning.style.display = 'none';
+      }
+    }
+
+    function playSound(id) {
+      const sound = document.getElementById(id);
+      if (sound) {
+        sound.currentTime = 0;
+        sound.play().catch(err => console.warn('Zvuk nije mogao biti reproduciran:', err));
+      }
+    }
+
+    function addCurrent() {
+      if (currentAmount > 0) {
+        povijest.push({ amount: currentAmount, qrCode: currentQRCode, time: currentTime });
+        ukupno += currentAmount;
+        currentAmount = 0;
+        currentQRCode = '';
+        currentTime = '';
+        updateDisplay();
+        document.getElementById('add-btn').style.display = 'none';
+        document.getElementById('clear-current-btn').style.display = 'none';
+        playSound('click-sound');
+      }
+    }
+
+    function clearCurrent() {
       currentAmount = 0;
       currentQRCode = '';
       currentTime = '';
       updateDisplay();
       document.getElementById('add-btn').style.display = 'none';
       document.getElementById('clear-current-btn').style.display = 'none';
-      playSound('click-sound');
-    }
-  }
-
-  function clearCurrent() {
-    currentAmount = 0;
-    currentQRCode = '';
-    currentTime = '';
-    updateDisplay();
-    document.getElementById('add-btn').style.display = 'none';
-    document.getElementById('clear-current-btn').style.display = 'none';
-    playSound('remove-sound');
-  }
-
-  function startRemoveFromList() {
-    const removeButton = document.getElementById('remove-from-list-btn');
-    if (!removeConfirm) {
-      removeButton.innerText = 'Potvrdi';
-      removeButton.style.backgroundColor = 'yellow';
-      removeButton.style.color = 'black';
-      removeConfirm = true;
-      handleAmountLabelVisibility();
-    } else {
-      if (povijest.length > 0) {
-        const removed = povijest.pop();
-        ukupno -= removed.amount;
-        updateDisplay();
-        playSound('remove-sound');
-      }
-      removeButton.innerText = 'Obriši iz liste';
-      removeButton.style.backgroundColor = 'red';
-      removeButton.style.color = 'yellow';
-      removeConfirm = false;
-      handleAmountLabelVisibility();
-    }
-  }
-
-  function handleScan(decodedText) {
-    const urlParams = new URLSearchParams(decodedText);
-    const iznosCenti = parseFloat(urlParams.get('izn'));
-
-    const datumVrijeme = urlParams.get('dat') || ''; // npr. 20240408T140732
-    let hhmm = '';
-    if (datumVrijeme.length >= 15) {
-      hhmm = datumVrijeme.slice(9, 11) + ':' + datumVrijeme.slice(11, 13); // 14:07
+      playSound('remove-sound');
     }
 
-    if (!isNaN(iznosCenti)) {
-      const iznosEuri = iznosCenti / 100;
-      if (povijest.some(item => item.qrCode === decodedText)) {
-        document.getElementById('duplicate-warning').style.display = 'block';
-        document.getElementById('amount-label').style.display = 'none';
-        document.getElementById('current-amount').style.display = 'none';
-        document.getElementById('add-btn').style.display = 'none';
-        document.getElementById('clear-current-btn').style.display = 'none';
+    function startRemoveFromList() {
+      const removeButton = document.getElementById('remove-from-list-btn');
+      if (!removeConfirm) {
+        removeButton.innerText = 'Potvrdi';
+        removeButton.style.backgroundColor = 'yellow';
+        removeButton.style.color = 'black';
+        removeConfirm = true;
+        handleAmountLabelVisibility();
       } else {
-        currentAmount = iznosEuri;
-        currentQRCode = decodedText;
-        currentTime = hhmm;
-        updateDisplay();
-        document.getElementById('add-btn').style.display = 'block';
-        document.getElementById('clear-current-btn').style.display = 'block';
-        playSound('scan-sound');
+        if (povijest.length > 0) {
+          const removed = povijest.pop();
+          ukupno -= removed.amount;
+          updateDisplay();
+          playSound('remove-sound');
+        }
+        removeButton.innerText = 'Obriši iz liste';
+        removeButton.style.backgroundColor = 'red';
+        removeButton.style.color = 'yellow';
+        removeConfirm = false;
+        handleAmountLabelVisibility();
       }
     }
-  }
 
-  const html5QrCode = new Html5Qrcode("reader");
-  Html5Qrcode.getCameras().then(devices => {
-    if (devices && devices.length) {
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        handleScan
-      ).catch(err => console.error(err));
+    function handleScan(decodedText) {
+      const urlParams = new URLSearchParams(decodedText);
+      const iznosCenti = parseFloat(urlParams.get('izn'));
+      const datumVrijeme = urlParams.get('dat') || '';
+      let hhmm = '';
+      if (datumVrijeme.length >= 15) {
+        hhmm = datumVrijeme.slice(9, 11) + ':' + datumVrijeme.slice(11, 13);
+      }
+
+      if (!isNaN(iznosCenti)) {
+        const iznosEuri = iznosCenti / 100;
+        if (povijest.some(item => item.qrCode === decodedText)) {
+          document.getElementById('duplicate-warning').style.display = 'block';
+          document.getElementById('amount-label').style.display = 'none';
+          document.getElementById('current-amount').style.display = 'none';
+          document.getElementById('add-btn').style.display = 'none';
+          document.getElementById('clear-current-btn').style.display = 'none';
+        } else {
+          currentAmount = iznosEuri;
+          currentQRCode = decodedText;
+          currentTime = hhmm;
+          updateDisplay();
+          document.getElementById('add-btn').style.display = 'block';
+          document.getElementById('clear-current-btn').style.display = 'block';
+          playSound('scan-sound');
+        }
+      }
     }
-  });
-</script>
+
+    const html5QrCode = new Html5Qrcode("reader");
+    Html5Qrcode.getCameras().then(devices => {
+      if (devices && devices.length) {
+        html5QrCode.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          handleScan
+        ).catch(err => console.error(err));
+      }
+    });
+  </script>
+</body>
+</html>
