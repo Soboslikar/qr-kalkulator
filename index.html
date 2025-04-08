@@ -13,33 +13,18 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
     }
     #reader {
       width: 90vw;
       max-width: 600px;
       margin-top: 10px;
     }
-    #history {
-      width: 90vw;
-      max-width: 600px;
-      margin-top: 20px;
-    }
-    .item {
-      display: flex;
-      justify-content: space-between;
-      margin: 4px 0;
-      padding: 4px;
-      background: #111;
-      border-radius: 8px;
-      font-size: 18px;
-    }
     #total {
       font-size: 24px;
-      margin-top: 20px;
+      margin-top: 10px;
     }
     button {
-      margin: 10px;
+      margin: 5px;
       padding: 10px 20px;
       font-size: 16px;
       border: none;
@@ -67,8 +52,26 @@
     #loadedText {
       font-size: 36px;
       color: lime;
-      margin-top: 10px;
+      margin: 10px;
       animation: fadeOut 1s ease-in-out forwards;
+    }
+    #counter {
+      font-size: 20px;
+      color: white;
+    }
+    #history {
+      width: 90vw;
+      max-width: 600px;
+      margin-top: 10px;
+    }
+    .item {
+      display: flex;
+      justify-content: space-between;
+      margin: 4px 0;
+      padding: 4px;
+      background: #111;
+      border-radius: 8px;
+      font-size: 18px;
     }
     @keyframes pulse {
       0% { transform: scale(1); opacity: 1; }
@@ -79,17 +82,12 @@
       0% { opacity: 1; }
       100% { opacity: 0; }
     }
-    #counter {
-      font-size: 20px;
-      margin-top: 10px;
-      color: white;
-    }
   </style>
 </head>
 <body>
   <div id="loadedText" style="display:none;">UČITANO</div>
   <div id="reader"></div>
-  <div id="total">UKUPNO: 0.00 €</div>
+  <div id="total">UKUPNO: 0,00 €</div>
   <button id="clearLast">OBRIŠI ZADNJI UNOS</button>
   <div id="counter">0 RAČUNA</div>
   <button id="clearAll">OBRIŠI IZ LISTE</button>
@@ -112,23 +110,24 @@
     let total = 0;
     let items = [];
     let confirmTimeout;
+    let lastScanned = "";
 
     function updateDisplay() {
       history.innerHTML = "";
       items.forEach(item => {
         const div = document.createElement("div");
         div.className = "item";
-        div.textContent = `${item.time} - ${item.amount.toFixed(2)} €`;
+        div.textContent = `${item.time} - ${item.amount.toFixed(2).replace('.', ',')} €`;
         history.appendChild(div);
       });
-      totalText.textContent = `UKUPNO: ${total.toFixed(2)} €`;
+      totalText.textContent = `UKUPNO: ${total.toFixed(2).replace('.', ',')} €`;
       counter.textContent = `${items.length} RAČUNA`;
     }
 
     function parseQRCodeText(text) {
       try {
         const url = new URL(text);
-        const amount = parseFloat(url.searchParams.get("izn"));
+        const amount = parseFloat(url.searchParams.get("izn")) / 100;
         const timeRaw = url.searchParams.get("datv").split("_")[1];
         const time = timeRaw.substring(0, 2) + ":" + timeRaw.substring(2);
         return { amount, time };
@@ -142,10 +141,8 @@
       el.style.display = "block";
       el.classList.remove("fadeOut");
       void el.offsetWidth;
-      if (id === "loadedText") {
-        el.style.animation = "fadeOut 1s ease-in-out forwards";
-        setTimeout(() => el.style.display = "none", 1000);
-      }
+      el.style.animation = "fadeOut 1s ease-in-out forwards";
+      setTimeout(() => el.style.display = "none", 1000);
     }
 
     reader.start(
@@ -155,6 +152,9 @@
         qrbox: { width: 250, height: 250 }
       },
       (text) => {
+        if (text === lastScanned) return;
+        lastScanned = text;
+
         const data = parseQRCodeText(text);
         if (!data) return;
         items.push(data);
@@ -162,6 +162,10 @@
         updateDisplay();
         showAnimatedText("loadedText");
         scanSound.play();
+
+        setTimeout(() => {
+          lastScanned = "";
+        }, 2000);
       },
       (error) => {}
     );
