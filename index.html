@@ -69,6 +69,7 @@
       font-weight: bold;
       color: red;
       display: none;
+      animation: enlarge 2s;
     }
 
     #add-btn {
@@ -126,7 +127,7 @@
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       margin-top: 10vh;
-      width: 80px; 
+      width: 140px; 
       margin-left: 0;
       margin-right: 0;
     }
@@ -147,6 +148,12 @@
       font-weight: bold;
       display: none;
       text-align: center;
+    }
+
+    @keyframes enlarge {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
     }
   </style>
 </head>
@@ -171,9 +178,9 @@
   <div id="delete-warning">OBRIŠI IZNOS</div>
 
   <!-- AUDIO EFEKTI -->
-  <audio id="scan-sound" src="https://github.com/himalayasingh/music-player/blob/master/music/3.mp3?raw=true"></audio>
-  <audio id="click-sound" src="https://github.com/himalayasingh/music-player/blob/master/music/2.mp3?raw=true"></audio>
-  <audio id="remove-sound" src="https://github.com/himalayasingh/music-player/blob/master/music/1.mp3?raw=true"></audio>
+  <audio id="scan-sound" src="https://github.com/himalayasingh/music-player/raw/master/music/3.mp3" type="audio/mp3"></audio>
+  <audio id="click-sound" src="https://github.com/himalayasingh/music-player/raw/master/music/2.mp3" type="audio/mp3"></audio>
+  <audio id="remove-sound" src="https://github.com/himalayasingh/music-player/raw/master/music/1.mp3" type="audio/mp3"></audio>
 
   <script>
     let ukupno = 0;
@@ -196,14 +203,14 @@
       povijest.forEach((item, index) => {
         const listItem = document.createElement('li');
         listItem.classList.add('bold-text');
-        listItem.innerText = `${index + 1}.  ${item.amount.toFixed(2)} €`;
+        listItem.innerText = `${index + 1}.  ${item.amount.toFixed(2)} € (${item.time})`;
         historyList.appendChild(listItem);
       });
     }
 
     function checkRemoveButtonVisibility() {
       const removeButton = document.getElementById('remove-from-list-btn');
-      removeButton.style.display = povijest.length > 0 ? 'block' : 'none';
+      removeButton.style.display = povijest.length > 0 && !removeConfirm && currentAmount === 0 ? 'block' : 'none';
     }
 
     function handleAmountLabelVisibility() {
@@ -239,7 +246,8 @@
 
     function addCurrent() {
       if (currentAmount > 0) {
-        povijest.push({ amount: currentAmount, qrCode: currentQRCode });
+        const timeString = new Date().toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' });
+        povijest.push({ amount: currentAmount, qrCode: currentQRCode, time: timeString });
         ukupno += currentAmount;
         currentAmount = 0;
         currentQRCode = '';
@@ -289,6 +297,9 @@
         const iznosEuri = iznosCenti / 100;
         if (povijest.some(item => item.qrCode === decodedText)) {
           document.getElementById('duplicate-warning').style.display = 'block';
+          setTimeout(() => {
+            document.getElementById('duplicate-warning').style.display = 'none';
+          }, 2000);
           document.getElementById('amount-label').style.display = 'none';
           document.getElementById('current-amount').style.display = 'none';
           document.getElementById('add-btn').style.display = 'none';
