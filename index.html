@@ -1,186 +1,102 @@
-
 <!DOCTYPE html>
 <html lang="hr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>QR Kalkulator</title>
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
   <style>
     body {
       font-family: sans-serif;
+      background: #f0f0f0;
       margin: 0;
-      padding: 0.5em;
-      background: #f4f4f4;
-    }
-    #header {
+      padding: 0;
       text-align: center;
-      color: yellow;
-      font-size: 1.2em;
-      font-weight: bold;
-      margin-bottom: 0.5em;
-      position: absolute;
-      width: 100%;
-      z-index: 1;
     }
+
     #reader {
       width: 100%;
       max-width: 400px;
-      margin: auto;
-      height: 55vh;
-      position: relative;
-    }
-    #total {
-      display: block;
-      font-size: 1.6em !important;
-      font-weight: bold;
-      color: yellow;
-      position: fixed;
-      top: 15em; /* Smanjeno iz 30em */
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 2;
-      text-align: center;
-    }
-    #amount-section {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 1em;
-      position: fixed;
-      top: 28em; /* Smanjeno iz 31em */
-      width: 100%;
-      z-index: 2;
-    }
-    #amount-label {
-      font-weight: bold;
-      color: yellow;
-      display: none; /* Sakriven dok nema skeniranog iznosa */
-    }
-    #amount-label.delete-mode {
-      color: red;
-    }
-    #current-amount {
-      font-size: 1.5em;
-      font-weight: bold;
-      color: yellow;
-      display: none; /* Sakriven dok nema skeniranog iznosa */
-    }
-    #duplicate-warning {
-      font-weight: bold;
-      color: red;
-      display: none;
-    }
-
-    #add-btn {
-      position: fixed;
-      bottom: 150px;
-      right: 80px;
-      z-index: 2;
-      transform: scale(1.5); /* povećan 50% */
-    }
-    #clear-current-btn {
-      position: fixed;
-      bottom: 80px;
-      right: 80px;
-      z-index: 2;
-    }
-    #remove-from-list-btn {
-      position: fixed;
-      bottom: 15px;
-      right: 120px;
-      z-index: 3;
-    }
-
-    button {
-      padding: 0.5em 1em;
-      font-size: 1em;
-      border: none;
-      border-radius: 5px;
-      color: black;
-      cursor: pointer;
-    }
-
-    .red-btn {
-      background: #ff0000;
-      color: yellow; /* žuti tekst za crvene gumbe */
-    }
-
-    .green-btn {
-      background: #00cc00;
-    }
-
-    .green-btn:active {
-      background: #009900;
+      margin: 0 auto;
     }
 
     .bold-text {
       font-weight: bold;
+      margin-bottom: 4px;
     }
 
-    #history {
-      max-height: 300px;
-      overflow-y: auto;
-      margin: 1em 0;
-      padding: 1em;
-      background: white;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      margin-top: 10vh;
-      width: 80px; 
-      margin-left: 0;
-      margin-right: 0;
+    #total, #amount-label, #current-amount {
+      font-size: 24px;
+      margin: 10px 0;
     }
 
-    #history ul {
+    #add-btn, #clear-current-btn, #remove-from-list-btn {
+      padding: 10px 20px;
+      font-size: 18px;
+      margin: 5px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    #add-btn {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    #clear-current-btn {
+      background-color: #777;
+      color: white;
+    }
+
+    #remove-from-list-btn {
+      background-color: red;
+      color: yellow;
+    }
+
+    #historyList {
       list-style: none;
       padding: 0;
+      margin: 10px 0;
     }
 
-    #history li {
-      padding: 0.5em 0;
-      border-bottom: 1px solid #eee;
-      white-space: pre;
+    .delete-mode {
+      color: red;
     }
 
-    #delete-warning {
+    #duplicate-warning {
       color: red;
       font-weight: bold;
       display: none;
-      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div id="header">QR Kalkulator by Banović</div>
+
   <div id="reader"></div>
-  <div id="total">UKUPNO: 0.00 €</div>
-  <div id="history">
-    <ul id="historyList"></ul>
-  </div>
-  <div id="amount-section">
-    <div id="amount-label">DODAJ IZNOS:</div>
-    <div id="current-amount">0.00 €</div>
-    <div id="duplicate-warning">TAJ RAČUN JE URAČUNAT</div>
-  </div>
 
-  <!-- GUMBI -->
-  <button class="green-btn" id="add-btn" onclick="addCurrent()" style="display:none;">Dodaj</button>
-  <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()" style="display:none;">Obriši</button>
-  <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
+  <div id="amount-label" class="bold-text" style="display:none;"></div>
+  <div id="current-amount" class="bold-text"></div>
+  <div id="duplicate-warning">Taj QR je već dodan!</div>
 
-  <div id="delete-warning">OBRIŠI IZNOS</div>
+  <button id="add-btn" onclick="addCurrent()" style="display:none;">DODAJ</button>
+  <button id="clear-current-btn" onclick="clearCurrent()" style="display:none;">OBRIŠI ZADNJI UNOS</button>
+  <button id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
 
-  <!-- AUDIO EFEKTI -->
-  <audio id="scan-sound" src="https://github.com/himalayasingh/music-player/blob/master/music/3.mp3?raw=true"></audio>
-  <audio id="click-sound" src="https://github.com/himalayasingh/music-player/blob/master/music/2.mp3?raw=true"></audio>
-  <audio id="remove-sound" src="https://github.com/himalayasingh/music-player/blob/master/music/1.mp3?raw=true"></audio>
+  <h3 id="total">UKUPNO: 0.00 €</h3>
+
+  <ul id="historyList"></ul>
+
+  <!-- Zvučni efekti -->
+  <audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+  <audio id="click-sound" src="https://actions.google.com/sounds/v1/buttons/button_click.ogg"></audio>
+  <audio id="remove-sound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
 
   <script>
     let ukupno = 0;
     let povijest = [];
     let currentAmount = 0;
     let currentQRCode = '';
+    let currentTime = '';
     let removeConfirm = false;
 
     function updateDisplay() {
@@ -197,7 +113,8 @@
       povijest.forEach((item, index) => {
         const listItem = document.createElement('li');
         listItem.classList.add('bold-text');
-        listItem.innerText = `${index + 1}.  ${item.amount.toFixed(2)} €`;
+        const vrijeme = item.time ? `   ${item.time}` : '';
+        listItem.innerText = `${index + 1}.  ${item.amount.toFixed(2)} €${vrijeme}`;
         historyList.appendChild(listItem);
       });
     }
@@ -240,10 +157,11 @@
 
     function addCurrent() {
       if (currentAmount > 0) {
-        povijest.push({ amount: currentAmount, qrCode: currentQRCode });
+        povijest.push({ amount: currentAmount, qrCode: currentQRCode, time: currentTime });
         ukupno += currentAmount;
         currentAmount = 0;
         currentQRCode = '';
+        currentTime = '';
         updateDisplay();
         document.getElementById('add-btn').style.display = 'none';
         document.getElementById('clear-current-btn').style.display = 'none';
@@ -254,6 +172,7 @@
     function clearCurrent() {
       currentAmount = 0;
       currentQRCode = '';
+      currentTime = '';
       updateDisplay();
       document.getElementById('add-btn').style.display = 'none';
       document.getElementById('clear-current-btn').style.display = 'none';
@@ -286,6 +205,8 @@
     function handleScan(decodedText) {
       const urlParams = new URLSearchParams(decodedText);
       const iznosCenti = parseFloat(urlParams.get('izn'));
+      const vrijeme = urlParams.get('vrij'); // očekujemo hh:mm
+
       if (!isNaN(iznosCenti)) {
         const iznosEuri = iznosCenti / 100;
         if (povijest.some(item => item.qrCode === decodedText)) {
@@ -297,6 +218,7 @@
         } else {
           currentAmount = iznosEuri;
           currentQRCode = decodedText;
+          currentTime = vrijeme || '';
           updateDisplay();
           document.getElementById('add-btn').style.display = 'block';
           document.getElementById('clear-current-btn').style.display = 'block';
@@ -316,22 +238,6 @@
       }
     });
   </script>
-
-  <!-- StatCounter -->
-  <script type="text/javascript">
-    var sc_project=12702047; 
-    var sc_invisible=1; 
-    var sc_security="e75d2592"; 
-    var scJsHost = (("https:" == document.location.protocol) ? "https://secure." : "http://www.");
-    document.write("<sc"+"ript type='text/javascript' src='" + scJsHost +
-    "statcounter.com/counter/counter.js'></"+"script>");
-  </script>
-  <noscript>
-    <div class="statcounter">
-      <img class="statcounter" src="https://c.statcounter.com/12702047/0/e75d2592/1/" alt="web analitika">
-    </div>
-  </noscript>
-  <!-- /StatCounter -->
 
 </body>
 </html>
