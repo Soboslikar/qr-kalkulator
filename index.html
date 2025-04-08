@@ -121,7 +121,7 @@
         text-align: center;
         font-size: 2em;
         position: fixed;
-        top: 50%;
+        top: 40%;
         left: 50%;
         transform: translate(-50%, -50%);
         animation: zoomFade 1s ease-out;
@@ -235,10 +235,14 @@
 
   <div id="delete-warning">OBRIŠI IZNOS</div>
 
-  <!-- Zvukovi -->
-  <audio id="scan-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/3.mp3" preload="auto"></audio>
-  <audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
-  <audio id="remove-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/1.mp3" preload="auto"></audio>
+ <!-- Novi zvuk za skeniranje -->
+<audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
+
+<!-- Zadržan stari zvuk za klik (ako ga želiš) -->
+<audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
+
+<!-- Novi zvuk za brisanje/upozorenje -->
+<audio id="remove-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
 
   <!-- JavaScript ostaje potpuno isti kao u prethodnoj verziji -->
   <script>
