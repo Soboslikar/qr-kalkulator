@@ -6,6 +6,7 @@
   <title>QR Kalkulator</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
+    /* CSS ostaje isti kao u prethodnoj verziji - pozicije su dobre */
     body {
       font-family: sans-serif;
       margin: 0;
@@ -51,13 +52,12 @@
       text-align: center;
       text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
-    /* AŽURIRAN STIL I POZICIJA ZA BROJAČ RAČUNA */
     #invoice-count {
       font-size: 1.4em;
       color: black;
       padding: 0.1em 0.4em;
       position: fixed;
-      bottom: 125px; /* Podignuto još više */
+      bottom: 125px; /* Ostavljamo ovu poziciju */
       right: 50px;
       z-index: 2;
       text-align: right;
@@ -229,12 +229,12 @@
 
   <div id="delete-warning">OBRIŠI IZNOS</div>
 
-  <!-- AŽURIRANI ZVUKOVI - PONOVO GOOGLE UI ZA CLICK/REMOVE -->
+  <!-- AŽURIRANI ZVUKOVI - VRAĆENI STARI ZA CLICK/REMOVE + POP za scan -->
   <audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
-  <audio id="click-sound" src="https://actions.google.com/sounds/v1/ui/tap_forward.ogg" preload="auto"></audio>
-  <audio id="remove-sound" src="https://actions.google.com/sounds/v1/ui/tap_back.ogg" preload="auto"></audio>
+  <audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
+  <audio id="remove-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/1.mp3" preload="auto"></audio>
 
-  <!-- JavaScript ostaje isti -->
+  <!-- JavaScript s odgodom za zvuk duplikata -->
   <script>
     let ukupno = 0;
     let povijest = [];
@@ -294,7 +294,6 @@
         }
     }
 
-    // PlaySound funkcija ostaje ista, uključuje pauzu i premotavanje
     function playSound(id) {
       const sound = document.getElementById(id);
       if (sound) {
@@ -303,7 +302,6 @@
         const playPromise = sound.play();
         if (playPromise !== undefined) {
           playPromise.then(_ => {}).catch(error => {
-            // Logiraj upozorenje, ali ne prekidaj izvršavanje
             console.warn(`Zvuk "${id}" nije mogao biti reproduciran:`, error);
           });
         }
@@ -311,7 +309,6 @@
           console.warn(`Audio element s ID-jem "${id}" nije pronađen.`);
       }
     }
-
 
     function clearCurrent() {
       console.log("clearCurrent pozvan, ali nema efekta.");
@@ -323,13 +320,13 @@
         removeButton.classList.remove('red-btn');
         removeButton.classList.add('yellow-btn');
         removeConfirm = true;
-        playSound('click-sound'); // Pokušaj s tap_forward.ogg
+        playSound('click-sound'); // Stari zvuk klika
         handleAmountLabelVisibility();
       } else {
         if (povijest.length > 0) {
           const removed = povijest.pop();
           ukupno -= removed.amount;
-          playSound('remove-sound'); // Pokušaj s tap_back.ogg
+          playSound('remove-sound'); // Stari zvuk brisanja
         }
         removeButton.innerText = removeBtnInitialText;
         removeButton.classList.remove('yellow-btn');
@@ -349,6 +346,7 @@
         }
     }, true);
 
+    // *** AŽURIRANA handleScan FUNKCIJA S ODGODOM ZVUKA DUPLIKATA ***
     function handleScan(decodedText) {
        if (removeConfirm) {
            removeButton.innerText = removeBtnInitialText;
@@ -375,26 +373,34 @@
                    }
                }
 
+               // Provjera duplikata
                if (povijest.some(item => item.qrCode === decodedText)) {
                    duplicateWarning.style.display = 'block';
                    duplicateWarning.style.animation = 'none';
-                   duplicateWarning.offsetHeight;
+                   duplicateWarning.offsetHeight; // Reflow
                    duplicateWarning.style.animation = 'pulse 0.5s ease-in-out 4 alternate';
-                   playSound('remove-sound'); // Pokušaj s tap_back.ogg za upozorenje
+
+                   // <<< ODGODA ZVUKA ZA DUPLIKAT >>>
+                   setTimeout(() => {
+                       playSound('remove-sound'); // Stari zvuk upozorenja, s odgodom
+                   }, 300); // Odgoda od 300 milisekundi
+
                    setTimeout(() => {
                        if (duplicateWarning.style.display === 'block') {
                            duplicateWarning.style.display = 'none';
                        }
                    }, 2000);
                } else {
+                   // Nije duplikat - dodaj u povijest
                    povijest.push({ amount: iznosEura, qrCode: decodedText, time: time });
                    ukupno += iznosEura;
                    updateDisplay();
-                   playSound('scan-sound'); // Koristi 'pop.ogg'
+                   playSound('scan-sound'); // Zvuk skeniranja ('pop.ogg')
 
+                   // Prikaz "UČITANO"
                    loadedMsg.style.display = 'block';
                    loadedMsg.style.animation = 'none';
-                   loadedMsg.offsetHeight;
+                   loadedMsg.offsetHeight; // Reflow
                    loadedMsg.style.animation = 'zoomFade 1s ease-out';
                    setTimeout(() => loadedMsg.style.display = 'none', 1000);
                }
@@ -406,6 +412,7 @@
        }
     }
 
+    // Inicijalizacija skenera ostaje ista
     const html5QrCode = new Html5Qrcode("reader");
     const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
 
