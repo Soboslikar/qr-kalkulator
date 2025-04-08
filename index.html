@@ -229,13 +229,12 @@
 
   <div id="delete-warning">OBRIŠI IZNOS</div>
 
-  <!-- AŽURIRANI ZVUKOVI - Google UI + poseban za duplikat -->
+  <!-- ZVUKOVI PREMA TVOJOJ ISPRAVLJENOJ SPECIFIKACIJI -->
   <audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
-  <audio id="click-sound" src="https://actions.google.com/sounds/v1/ui/tap_forward.ogg" preload="auto"></audio>
-  <audio id="remove-sound" src="https://actions.google.com/sounds/v1/ui/tap_back.ogg" preload="auto"></audio>
-  <audio id="duplicate-sound" src="https://actions.google.com/sounds/v1/cartoon/error.ogg" preload="auto"></audio>
+  <audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
+  <audio id="remove-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
 
-  <!-- JavaScript s pozivom novog zvuka za duplikat -->
+  <!-- JavaScript ostaje isti, ali će koristiti nove izvore za zvukove -->
   <script>
     let ukupno = 0;
     let povijest = [];
@@ -315,19 +314,20 @@
       console.log("clearCurrent pozvan, ali nema efekta.");
     }
 
+    // Koristi ID-eve 'click-sound' i 'remove-sound'
     function startRemoveFromList() {
       if (!removeConfirm) {
         removeButton.innerText = 'Potvrdi';
         removeButton.classList.remove('red-btn');
         removeButton.classList.add('yellow-btn');
         removeConfirm = true;
-        playSound('click-sound'); // Google tap_forward
+        playSound('click-sound'); // Trebao bi svirati cdn .../2.mp3
         handleAmountLabelVisibility();
       } else {
         if (povijest.length > 0) {
           const removed = povijest.pop();
           ukupno -= removed.amount;
-          playSound('remove-sound'); // Google tap_back
+          playSound('remove-sound'); // Trebao bi svirati google .../wood_plank_flicks.ogg
         }
         removeButton.innerText = removeBtnInitialText;
         removeButton.classList.remove('yellow-btn');
@@ -347,7 +347,7 @@
         }
     }, true);
 
-    // *** AŽURIRANA handleScan FUNKCIJA S NOVIM ZVUKOM ZA DUPLIKAT ***
+    // Koristi ID-eve 'scan-sound' i 'remove-sound' (za duplikat)
     function handleScan(decodedText) {
        if (removeConfirm) {
            removeButton.innerText = removeBtnInitialText;
@@ -381,10 +381,10 @@
                    duplicateWarning.offsetHeight; // Reflow
                    duplicateWarning.style.animation = 'pulse 0.5s ease-in-out 4 alternate';
 
-                   // <<< ODGODA ZVUKA ZA DUPLIKAT (NOVI ZVUK) >>>
+                   // Odgoda zvuka za duplikat (koristi 'remove-sound')
                    setTimeout(() => {
-                       playSound('duplicate-sound'); // Novi 'error.ogg' zvuk s odgodom
-                   }, 300); // Odgoda od 300 milisekundi
+                       playSound('remove-sound'); // Trebao bi svirati google .../wood_plank_flicks.ogg
+                   }, 300);
 
                    setTimeout(() => {
                        if (duplicateWarning.style.display === 'block') {
@@ -392,11 +392,11 @@
                        }
                    }, 2000);
                } else {
-                   // Nije duplikat - dodaj u povijest
+                   // Nije duplikat
                    povijest.push({ amount: iznosEura, qrCode: decodedText, time: time });
                    ukupno += iznosEura;
                    updateDisplay();
-                   playSound('scan-sound'); // Zvuk skeniranja ('pop.ogg')
+                   playSound('scan-sound'); // Trebao bi svirati google .../pop.ogg
 
                    // Prikaz "UČITANO"
                    loadedMsg.style.display = 'block';
@@ -413,7 +413,7 @@
        }
     }
 
-    // Inicijalizacija skenera ostaje ista
+    // Inicijalizacija skenera
     const html5QrCode = new Html5Qrcode("reader");
     const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
 
