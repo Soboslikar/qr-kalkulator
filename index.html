@@ -44,7 +44,7 @@
       padding: 0.2em 0.5em;
       border-radius: 5px;
       position: fixed;
-      top: 15em; /* Prilagodi ako treba više mjesta iznad */
+      top: 15em;
       left: 50%;
       transform: translateX(-50%);
       z-index: 2;
@@ -53,14 +53,14 @@
     }
     /* AŽURIRAN STIL I POZICIJA ZA BROJAČ RAČUNA */
     #invoice-count {
-      font-size: 1.2em; /* Povećan font */
+      font-size: 1.4em; /* Još povećan font */
       color: black;
       padding: 0.1em 0.4em;
       position: fixed;
-      bottom: 45px; /* Malo iznad gumba Obriši (koji je na 15px) */
-      right: 50px; /* Poravnato s desnim rubom gumba Obriši */
+      bottom: 85px; /* Podignuto još više (iznad gumba Obriši) */
+      right: 50px;
       z-index: 2;
-      text-align: right; /* Poravnaj tekst desno */
+      text-align: right;
       font-weight: bold;
     }
     #amount-section {
@@ -69,7 +69,7 @@
       align-items: center;
       gap: 1em;
       position: fixed;
-      top: 28em; /* Prilagodi ako treba više mjesta ispod Total */
+      top: 28em;
       width: 100%;
       z-index: 2;
       min-height: 2.5em;
@@ -139,13 +139,13 @@
     #clear-current-btn {
       position: fixed;
       bottom: 80px;
-      right: 80px; /* Ovaj gumb se ne prikazuje, ali ostaje pozicija */
+      right: 80px;
       z-index: 2;
     }
     #remove-from-list-btn {
       position: fixed;
       bottom: 15px;
-      right: 50px; /* Ostavljeno 50px s desna */
+      right: 50px;
       z-index: 3;
     }
     button {
@@ -169,7 +169,7 @@
         color: black;
     }
     #history {
-      max-height: 200px; /* Malo smanjeno da stane više na ekran */
+      max-height: 200px;
       overflow-y: auto;
       margin: 0;
       padding: 1em;
@@ -190,7 +190,7 @@
     #history li {
       padding: 0.5em 0;
       border-bottom: 1px solid #eee;
-      white-space: pre; /* Omogućuje formatiranje razmacima */
+      white-space: pre;
       font-weight: bold;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -229,11 +229,12 @@
 
   <div id="delete-warning">OBRIŠI IZNOS</div>
 
-  <!-- AŽURIRANI ZVUKOVI -->
+  <!-- AŽURIRANI ZVUKOVI - VRAĆENI STARI ZA CLICK I REMOVE -->
   <audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
-  <audio id="click-sound" src="https://actions.google.com/sounds/v1/ui/tap_forward.ogg" preload="auto"></audio>
-  <audio id="remove-sound" src="https://actions.google.com/sounds/v1/ui/tap_back.ogg" preload="auto"></audio>
+  <audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
+  <audio id="remove-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/1.mp3" preload="auto"></audio>
 
+  <!-- JavaScript ostaje isti kao u prethodnoj verziji -->
   <script>
     let ukupno = 0;
     let povijest = [];
@@ -259,24 +260,21 @@
       if (count === 0) invoiceCountDiv.innerText = '0 RAČUNA';
 
       currentAmountDiv.style.display = 'none';
-      updateHistory(); // Poziva ažuriranje povijesti s novim formatom
+      updateHistory();
       checkRemoveButtonVisibility();
       handleAmountLabelVisibility();
     }
 
-    // AŽURIRANA FUNKCIJA ZA PRIKAZ POVIJESTI
     function updateHistory() {
       historyList.innerHTML = '';
       povijest.forEach((item, index) => {
         const listItem = document.createElement('li');
-        // Novi format: Redni broj. Vrijeme - Iznos €
         listItem.innerText = `${index + 1}. ${item.time} - ${item.amount.toFixed(2)} €`;
         historyList.appendChild(listItem);
       });
       historyList.parentNode.scrollTop = historyList.parentNode.scrollHeight;
     }
 
-    // Ostale JS funkcije ostaju iste...
     function checkRemoveButtonVisibility() {
       removeButton.style.display = povijest.length > 0 ? 'block' : 'none';
       clearCurrentBtn.style.display = 'none';
@@ -322,13 +320,13 @@
         removeButton.classList.remove('red-btn');
         removeButton.classList.add('yellow-btn');
         removeConfirm = true;
-        playSound('click-sound'); // Koristi novi zvuk 'tap_forward.ogg'
+        playSound('click-sound'); // Sada koristi stari zvuk
         handleAmountLabelVisibility();
       } else {
         if (povijest.length > 0) {
           const removed = povijest.pop();
           ukupno -= removed.amount;
-          playSound('remove-sound'); // Koristi novi zvuk 'tap_back.ogg'
+          playSound('remove-sound'); // Sada koristi stari zvuk
         }
         removeButton.innerText = removeBtnInitialText;
         removeButton.classList.remove('yellow-btn');
@@ -379,7 +377,7 @@
                    duplicateWarning.style.animation = 'none';
                    duplicateWarning.offsetHeight;
                    duplicateWarning.style.animation = 'pulse 0.5s ease-in-out 4 alternate';
-                   playSound('remove-sound'); // Koristi novi zvuk 'tap_back.ogg' za upozorenje
+                   playSound('remove-sound'); // Sada koristi stari zvuk za upozorenje
                    setTimeout(() => {
                        if (duplicateWarning.style.display === 'block') {
                            duplicateWarning.style.display = 'none';
