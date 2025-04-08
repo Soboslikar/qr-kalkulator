@@ -11,49 +11,55 @@
       margin: 0;
       padding: 0.5em;
       background: #f4f4f4;
+      /* Dodano da spriječi pomicanje tijela dok se animacija poruke prikazuje */
+      overflow-x: hidden; 
     }
     #header {
       text-align: center;
-      color: yellow;
+      color: yellow; /* Promijenjeno iz bijele radi vidljivosti na svijetloj pozadini */
+      background-color: #333; /* Dodana pozadina za bolju vidljivost */
+      padding: 0.3em 0;
       font-size: 1.2em;
       font-weight: bold;
       margin-bottom: 0.5em;
-      position: absolute;
+      /* Maknuto position: absolute da ne preklapa reader nepotrebno */
       width: 100%;
+      left: 0; /* Dodano da se osigura poravnanje */
+      top: 0; /* Dodano da se osigura poravnanje */
       z-index: 1;
     }
     #reader {
       width: 100%;
       max-width: 400px;
-      margin: auto;
-      height: 55vh;
+      margin: 1em auto; /* Dodan gornji margin da ne bude ispod headera */
+      height: 45vh; /* Malo smanjeno da stane više elemenata */
       position: relative;
+      border: 1px solid #ccc; /* Dodan okvir radi vizualizacije */
+      background: #e0e0e0; /* Pozadina da se razlikuje */
     }
     #total {
       display: block;
       font-size: 1.6em !important;
       font-weight: bold;
-      color: yellow;
-      position: fixed;
-      top: 15em;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 2;
+      color: #333; /* Tamnija boja za bolju čitljivost */
       text-align: center;
+      margin-top: 0.5em; /* Dodan razmak */
+      z-index: 2; /* Zadržano */
     }
     #amount-section {
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 1em;
-      position: fixed;
-      top: 28em;
+      /* Maknuto position: fixed, koristiće normalan tok */
+      margin-top: 0.5em;
       width: 100%;
       z-index: 2;
+      min-height: 2em; /* Osigurava prostor čak i kad je prazno */
     }
     #amount-label {
       font-weight: bold;
-      color: yellow;
+      color: #006400; /* Tamno zelena */
       display: none;
     }
     #amount-label.delete-mode {
@@ -62,7 +68,7 @@
     #current-amount {
       font-size: 1.5em;
       font-weight: bold;
-      color: yellow;
+      color: #006400; /* Tamno zelena */
       display: none;
     }
 
@@ -72,6 +78,7 @@
       display: none;
       text-align: center;
       animation: pulse 0.5s ease-in-out 4 alternate;
+      font-size: 1.2em; /* Malo povećano */
     }
 
     #loaded-message {
@@ -79,95 +86,125 @@
       color: green;
       display: none;
       text-align: center;
-      font-size: 2em;
-      position: absolute;
-      top: -2em;
+      font-size: 2.5em; /* Povećano za bolju vidljivost */
+      position: fixed; /* Koristi fixed da bude preko svega */
+      top: 45%; /* Pozicionirano bliže centru ekrana */
       left: 50%;
-      transform: translateX(-50%);
+      transform: translate(-50%, -50%); /* Centriranje */
       animation: zoomFade 1s ease-out;
-      z-index: 3;
+      z-index: 10; /* Visok z-index da bude iznad svega */
+      background-color: rgba(255, 255, 255, 0.8); /* Lagana pozadina */
+      padding: 1em;
+      border-radius: 10px;
     }
 
     @keyframes pulse {
       0% { transform: scale(1); }
-      50% { transform: scale(2); }
+      50% { transform: scale(1.2); } /* Malo manji puls */
       100% { transform: scale(1); }
     }
 
     @keyframes zoomFade {
-      0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
-      50% { transform: translateX(-50%) scale(1.2); opacity: 1; }
-      100% { transform: translateX(-50%) scale(1); opacity: 0; }
+      0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
     }
 
-    #add-btn {
-      position: fixed;
-      bottom: 150px;
-      right: 80px;
-      z-index: 2;
-      transform: scale(1.5);
+    /* Button Container */
+    .button-container {
+        display: flex;
+        justify-content: space-around; /* Raspoređuje gumbe */
+        align-items: center;
+        padding: 1em 0;
+        /* Maknuto position: fixed */
+        width: 100%;
+        max-width: 400px; /* Ista širina kao reader za konzistenciju */
+        margin: 0.5em auto; /* Centriranje */
+        z-index: 2;
     }
-    #clear-current-btn {
-      position: fixed;
-      bottom: 80px;
-      right: 80px;
-      z-index: 2;
-    }
-    #remove-from-list-btn {
-      position: fixed;
-      bottom: 15px;
-      right: 100px;
-      z-index: 3;
-    }
+
 
     button {
-      padding: 0.5em 1em;
+      padding: 0.8em 1.2em; /* Povećan padding */
       font-size: 1em;
       border: none;
       border-radius: 5px;
-      color: black;
+      color: white; /* Bijeli tekst na gumbima */
       cursor: pointer;
+      min-width: 100px; /* Minimalna širina gumba */
+      text-align: center;
     }
 
     .red-btn {
-      background: #ff0000;
-      color: yellow;
+      background: #dc3545; /* Bootstrap crvena */
+    }
+    .red-btn:hover {
+       background: #c82333;
     }
 
-    .green-btn {
-      background: #00cc00;
+    .yellow-btn {
+        background-color: #ffc107; /* Bootstrap žuta */
+        color: black; /* Crni tekst na žutom */
     }
+    .yellow-btn:hover {
+        background-color: #e0a800;
+    }
+
 
     #history {
-      max-height: 300px;
+      max-height: 150px; /* Smanjena visina da stane na ekran */
       overflow-y: auto;
-      margin: 1em 0;
+      margin: 1em auto; /* Centriranje */
       padding: 1em;
       background: white;
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      margin-top: 10vh;
-      width: 130px; 
-      margin-left: 0;
+      width: 90%; /* Šire za bolju preglednost */
+      max-width: 380px; /* Malo uže od readera */
     }
 
     #history ul {
       list-style: none;
       padding: 0;
+      margin: 0; /* Uklonjen defaultni margin */
     }
 
     #history li {
-      padding: 0.5em 0;
+      padding: 0.5em 0.2em; /* Dodan horizontalni padding */
       border-bottom: 1px solid #eee;
-      white-space: pre;
+      white-space: nowrap; /* Sprječava prelamanje teksta */
+      overflow: hidden; /* Sakriva višak teksta */
+      text-overflow: ellipsis; /* Dodaje ... za predugačak tekst */
+      font-size: 0.9em; /* Malo manji font */
+    }
+    #history li:last-child {
+        border-bottom: none; /* Uklanja donju liniju zadnjeg elementa */
     }
 
-    #delete-warning {
-      color: red;
-      font-weight: bold;
-      display: none;
-      text-align: center;
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+        #reader {
+            height: 40vh;
+        }
+        #total {
+            font-size: 1.4em !important;
+        }
+        #current-amount {
+            font-size: 1.3em;
+        }
+        #loaded-message {
+            font-size: 2em;
+            padding: 0.8em;
+        }
+        button {
+            padding: 0.7em 1em;
+            font-size: 0.9em;
+        }
+        #history {
+            max-height: 120px;
+        }
     }
+
   </style>
 </head>
 <body>
@@ -175,158 +212,278 @@
   <div id="reader"></div>
   <div id="loaded-message">UČITANO</div>
   <div id="total">UKUPNO: 0.00 €</div>
-  <div id="history">
-    <ul id="historyList"></ul>
-  </div>
+
   <div id="amount-section">
     <div id="amount-label">DODAJ IZNOS:</div>
     <div id="current-amount">0.00 €</div>
-    <div id="duplicate-warning">TAJ RAČUN JE URAČUNAT</div>
+    <div id="duplicate-warning">TAJ RAČUN JE VEĆ URAČUNAT!</div>
   </div>
 
-  <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()" style="display:none;">Obriši</button>
-  <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
+  <div id="history">
+    <ul id="historyList"></ul>
+  </div>
 
-  <div id="delete-warning">OBRIŠI IZNOS</div>
+  <!-- Button Container -->
+  <div class="button-container">
+      <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()" style="display:none;">Obriši Trenutni</button>
+      <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši Zadnji</button>
+  </div>
 
-  <audio id="scan-sound" src="https://github.com/himalayasingh/music-player/blob/master/music/3.mp3?raw=true"></audio>
-  <audio id="click-sound" src="https://github.com/himalayasingh/music-player/blob/master/music/2.mp3?raw=true"></audio>
-  <audio id="remove-sound" src="https://github.com/himalayasingh/music-player/blob/master/music/1.mp3?raw=true"></audio>
+  <audio id="scan-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/3.mp3" preload="auto"></audio>
+  <audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
+  <audio id="remove-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/1.mp3" preload="auto"></audio>
 
   <script>
     let ukupno = 0;
-    let povijest = [];
-    let currentAmount = 0;
-    let currentQRCode = '';
-    let removeConfirm = false;
+    let povijest = []; // Sadržavat će objekte { amount: N, qrCode: "...", time: "HH:MM" }
+    let currentAmount = 0; // Iznos zadnjeg *uspješno skeniranog* ali još neobrađenog QR-a (trenutno se ne koristi puno)
+    let currentQRCode = ''; // Sadržaj zadnjeg *uspješno skeniranog* QR-a (trenutno se ne koristi puno)
+    let removeConfirm = false; // Zastavica za potvrdu brisanja zadnjeg unosa
+
+    // Dohvaćanje DOM elemenata jednom radi performansi
+    const totalDiv = document.getElementById('total');
+    const currentAmountDiv = document.getElementById('current-amount');
+    const historyList = document.getElementById('historyList');
+    const removeButton = document.getElementById('remove-from-list-btn');
+    const clearCurrentBtn = document.getElementById('clear-current-btn'); // Trenutno nema funkcionalnost jer se iznos odmah dodaje
+    const amountLabel = document.getElementById('amount-label');
+    const duplicateWarning = document.getElementById('duplicate-warning');
+    const loadedMsg = document.getElementById('loaded-message');
+    const removeBtnInitialText = 'Obriši Zadnji'; // Originalni tekst gumba
 
     function updateDisplay() {
-      document.getElementById('total').innerText = `UKUPNO: ${ukupno.toFixed(2)} €`;
-      document.getElementById('current-amount').innerText = `${currentAmount.toFixed(2)} €`;
+      totalDiv.innerText = `UKUPNO: ${ukupno.toFixed(2)} €`;
+      // Trenutni iznos (currentAmountDiv) se ne prikazuje jer se iznos odmah dodaje u ukupno
+      // currentAmountDiv.innerText = `${currentAmount.toFixed(2)} €`;
       updateHistory();
       checkRemoveButtonVisibility();
-      handleAmountLabelVisibility();
+      handleAmountLabelVisibility(); // Ažurira labelu za brisanje ili dodavanje
     }
 
     function updateHistory() {
-      const historyList = document.getElementById('historyList');
-      historyList.innerHTML = '';
-      povijest.forEach((item, index) => {
+      historyList.innerHTML = ''; // Očisti postojeću listu
+      // Prikazujemo obrnutim redoslijedom (zadnji dodan na vrhu)
+      [...povijest].reverse().forEach((item, index) => {
         const listItem = document.createElement('li');
-        listItem.classList.add('bold-text');
-        listItem.innerText = `${index + 1}.  ${item.amount.toFixed(2)} € - ${item.time}`;
+        // Prikazujemo redni broj od zadnjeg prema prvom radi lakšeg brisanja
+        listItem.innerText = `${povijest.length - index}. ${item.amount.toFixed(2)} € (${item.time})`;
         historyList.appendChild(listItem);
       });
+       // Scroll to top of history list after update
+       historyList.parentNode.scrollTop = 0;
     }
 
     function checkRemoveButtonVisibility() {
-      const removeButton = document.getElementById('remove-from-list-btn');
-      removeButton.style.display = povijest.length > 0 ? 'block' : 'none';
+      removeButton.style.display = povijest.length > 0 ? 'inline-block' : 'none'; // Koristi inline-block za gumbe
+       // Gumb 'clear-current-btn' se ne prikazuje jer nema stanja "trenutnog iznosa"
+       clearCurrentBtn.style.display = 'none';
     }
 
     function handleAmountLabelVisibility() {
-      const label = document.getElementById('amount-label');
-      const currentAmountDiv = document.getElementById('current-amount');
-      const warning = document.getElementById('duplicate-warning');
-      if (removeConfirm && povijest.length > 0) {
-        label.innerText = `OBRIŠI IZNOS: ${povijest[povijest.length - 1].amount.toFixed(2)} €`;
-        label.classList.add('delete-mode');
-        label.style.display = 'block';
+        // Sakrij sve poruke inicijalno
+        amountLabel.style.display = 'none';
         currentAmountDiv.style.display = 'none';
-        warning.style.display = 'none';
-      } else if (currentAmount > 0) {
-        label.innerText = 'DODAJ IZNOS:';
-        label.classList.remove('delete-mode');
-        label.style.display = 'block';
-        currentAmountDiv.style.display = 'block';
-        warning.style.display = 'none';
-      } else {
-        label.style.display = 'none';
-        currentAmountDiv.style.display = 'none';
-        warning.style.display = 'none';
-      }
+        duplicateWarning.style.display = 'none'; // Sakrij upozorenje o duplikatu
+
+        if (removeConfirm && povijest.length > 0) {
+            const lastItemAmount = povijest[povijest.length - 1].amount;
+            amountLabel.innerText = `OBRIŠI ${lastItemAmount.toFixed(2)} €?`; // Jasnija poruka
+            amountLabel.classList.add('delete-mode');
+            amountLabel.style.display = 'block'; // Prikaži labelu za brisanje
+        } else {
+            // Ne prikazujemo ništa ovdje jer se iznos odmah dodaje
+             amountLabel.classList.remove('delete-mode');
+        }
+        // Ako se upozorenje o duplikatu treba prikazati, to će se riješiti u handleScan
     }
+
 
     function playSound(id) {
       const sound = document.getElementById(id);
       if (sound) {
-        sound.currentTime = 0;
+        sound.currentTime = 0; // Premotaj na početak
         sound.play().catch(err => console.warn('Zvuk nije mogao biti reproduciran:', err));
       }
     }
 
+    // Funkcija clearCurrent() nema smisla u trenutnoj logici jer se iznos odmah dodaje
+    // Zadržana je ali se gumb ne prikazuje
     function clearCurrent() {
-      currentAmount = 0;
-      currentQRCode = '';
-      updateDisplay();
-      document.getElementById('clear-current-btn').style.display = 'none';
-      playSound('remove-sound');
+       console.log("Clear current pozvan, ali nema efekta u trenutnoj logici.");
+      // currentAmount = 0;
+      // currentQRCode = '';
+      // updateDisplay();
+      // clearCurrentBtn.style.display = 'none';
+      // playSound('remove-sound'); // Zvuk za brisanje
     }
 
     function startRemoveFromList() {
-      const btn = document.getElementById('remove-from-list-btn');
       if (!removeConfirm) {
-        btn.innerText = 'Potvrdi';
-        btn.style.backgroundColor = 'yellow';
-        btn.style.color = 'black';
+        // Prvi klik - ulazak u mod potvrde
+        removeButton.innerText = 'Potvrdi Brisanje';
+        removeButton.classList.remove('red-btn'); // Makni crvenu klasu
+        removeButton.classList.add('yellow-btn'); // Dodaj žutu klasu
         removeConfirm = true;
-        handleAmountLabelVisibility();
+        playSound('click-sound'); // Zvuk klika za potvrdu
+        handleAmountLabelVisibility(); // Ažuriraj prikaz labele
       } else {
+        // Drugi klik - potvrda brisanja
         if (povijest.length > 0) {
-          const removed = povijest.pop();
-          ukupno -= removed.amount;
-          updateDisplay();
-          playSound('remove-sound');
+          const removed = povijest.pop(); // Ukloni zadnji element iz povijesti
+          ukupno -= removed.amount; // Oduzmi njegov iznos od ukupnog
+          playSound('remove-sound'); // Zvuk uspješnog brisanja
         }
-        btn.innerText = 'Obriši iz liste';
-        btn.style.backgroundColor = 'red';
-        btn.style.color = 'yellow';
+        // Resetiraj stanje gumba i zastavice
+        removeButton.innerText = removeBtnInitialText; // Vrati originalni tekst
+        removeButton.classList.remove('yellow-btn'); // Makni žutu
+        removeButton.classList.add('red-btn'); // Vrati crvenu
+        removeConfirm = false;
+        updateDisplay(); // Ažuriraj cijeli prikaz (ukupno, povijest, vidljivost gumba, labelu)
+      }
+    }
+
+    // Resetiraj stanje gumba za brisanje ako se klikne bilo gdje drugdje (opcionalno)
+    document.body.addEventListener('click', (event) => {
+        if (removeConfirm && event.target !== removeButton) {
+            removeButton.innerText = removeBtnInitialText;
+            removeButton.classList.remove('yellow-btn');
+            removeButton.classList.add('red-btn');
+            removeConfirm = false;
+            handleAmountLabelVisibility();
+        }
+    }, true); // Koristi capture fazu da uhvati klik prije gumba
+
+    function handleScan(decodedText) {
+      // Resetiraj mod potvrde brisanja ako je bio aktivan
+      if (removeConfirm) {
+        removeButton.innerText = removeBtnInitialText;
+        removeButton.classList.remove('yellow-btn');
+        removeButton.classList.add('red-btn');
         removeConfirm = false;
         handleAmountLabelVisibility();
       }
-    }
 
-    function handleScan(decodedText) {
-      const params = new URLSearchParams(decodedText.split('?')[1]);
-      const iznosCenti = parseFloat(params.get('izn'));
-      const datv = params.get('datv');
+      try {
+        const params = new URLSearchParams(decodedText.split('?')[1]);
+        const iznosCentStr = params.get('izn');
+        const datv = params.get('datv'); // Format: YYYYMMDDTHHMMSS
 
-      if (!isNaN(iznosCenti)) {
-        const iznosEura = iznosCenti / 100;
-        const time = datv ? datv.substring(9, 11) + ':' + datv.substring(11, 13) : '??:??';
+        // Provjeri je li iznos validan broj
+        if (iznosCentStr && !isNaN(parseFloat(iznosCentStr))) {
+          const iznosCenti = parseFloat(iznosCentStr);
+          const iznosEura = iznosCenti / 100;
 
-        if (povijest.some(item => item.qrCode === decodedText)) {
-          const warning = document.getElementById('duplicate-warning');
-          warning.style.display = 'block';
-          warning.style.animation = 'pulse 0.5s ease-in-out 4 alternate';
-          setTimeout(() => warning.style.display = 'none', 2000);
+          // Ekstrahiraj vrijeme (HH:MM) ako datv postoji i ima očekivani format
+          let time = '??:??';
+          if (datv && datv.length >= 13) { // Treba nam barem YYYYMMDDTHHMM
+              const hour = datv.substring(9, 11);
+              const minute = datv.substring(11, 13);
+              if (!isNaN(parseInt(hour)) && !isNaN(parseInt(minute))) {
+                  time = `${hour}:${minute}`;
+              }
+          }
+
+          // Provjera duplikata na temelju cijelog QR koda
+          if (povijest.some(item => item.qrCode === decodedText)) {
+            duplicateWarning.style.display = 'block'; // Prikaži upozorenje
+            // Restartaj animaciju
+            duplicateWarning.style.animation = 'none';
+            duplicateWarning.offsetHeight; // Trigger reflow
+            duplicateWarning.style.animation = 'pulse 0.5s ease-in-out 4 alternate';
+            playSound('remove-sound'); // Zvuk greške/upozorenja
+            // Sakrij upozorenje nakon nekog vremena
+            setTimeout(() => {
+                 if (duplicateWarning.style.display === 'block') { // Provjeri da ga nije sakrilo nešto drugo
+                      duplicateWarning.style.display = 'none';
+                 }
+            }, 2500); // Produženo vrijeme prikaza
+          } else {
+            // Nije duplikat - dodaj u povijest i ažuriraj ukupno
+            povijest.push({ amount: iznosEura, qrCode: decodedText, time: time });
+            ukupno += iznosEura;
+
+            // Resetiraj trenutno stanje (nije više potrebno jer se odmah dodaje)
+            // currentAmount = 0;
+            // currentQRCode = '';
+
+            updateDisplay(); // Ažuriraj prikaz ukupnog iznosa i povijesti
+            playSound('scan-sound'); // Zvuk uspješnog skeniranja
+
+            // Prikaži "UČITANO" poruku
+            loadedMsg.style.display = 'block';
+            // Ponovno pokreni animaciju
+            loadedMsg.style.animation = 'none';
+            loadedMsg.offsetHeight; // Trigger reflow
+            loadedMsg.style.animation = 'zoomFade 1s ease-out';
+            // Sakrij poruku nakon završetka animacije
+            setTimeout(() => loadedMsg.style.display = 'none', 1000);
+          }
         } else {
-          currentAmount = iznosEura;
-          currentQRCode = decodedText;
-          povijest.push({ amount: currentAmount, qrCode: currentQRCode, time: time });
-          ukupno += currentAmount;
-          currentAmount = 0;
-          currentQRCode = '';
-          updateDisplay();
-          playSound('scan-sound');
-
-          const loadedMsg = document.getElementById('loaded-message');
-          loadedMsg.style.display = 'block';
-          setTimeout(() => loadedMsg.style.display = 'none', 1000);
+          console.warn("Skeniran QR kod ne sadrži validan iznos ('izn').", decodedText);
+          // Opcionalno: Prikazati poruku korisniku da QR nije validan
         }
+      } catch (error) {
+        console.error("Greška pri obradi QR koda:", error, decodedText);
+        // Opcionalno: Prikazati poruku korisniku
       }
     }
 
+    // Inicijalizacija QR skenera
     const html5QrCode = new Html5Qrcode("reader");
+    const qrConfig = { fps: 10, qrbox: { width: 200, height: 200 } }; // Malo manji qrbox
+
     Html5Qrcode.getCameras().then(devices => {
       if (devices && devices.length) {
+        // Preferiraj stražnju kameru
+        const cameraId = devices.find(device => device.label.toLowerCase().includes('back'))?.id || devices[0].id;
         html5QrCode.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: { width: 250, height: 250 } },
-          handleScan
-        ).catch(err => console.error(err));
+          // { facingMode: "environment" }, // Alternativa ako odabir po ID-u ne radi svugdje
+          cameraId,
+          qrConfig,
+          handleScan,
+          (errorMessage) => {
+            // parse error, Zadrži skeniranje aktivnim
+            // console.warn(`QR Code no longer in front of camera or parse error: ${errorMessage}`);
+          }
+        ).then(() => {
+            console.log("QR skener uspješno pokrenut.");
+            // Inicijalni prikaz nakon pokretanja kamere
+             updateDisplay();
+        }).catch(err => {
+          console.error("Greška pri pokretanju QR skenera:", err);
+          // Prikazati poruku korisniku da kamera nije dostupna ili je došlo do greške
+          document.getElementById('reader').innerText = 'Greška pri pokretanju kamere.';
+        });
+      } else {
+          console.error("Nema dostupnih kamera.");
+          document.getElementById('reader').innerText = 'Nema dostupnih kamera.';
       }
+    }).catch(err => {
+      console.error("Greška pri dohvaćanju kamera:", err);
+      document.getElementById('reader').innerText = 'Greška pri pristupu kamerama.';
     });
+
+    // Inicijalno ažuriranje prikaza kod učitavanja stranice
+    // updateDisplay(); // Premješteno u .then() od startanja kamere
+
   </script>
+
+  <!-- Statcounter code -->
+  <script type="text/javascript">
+  var sc_project=12702047;
+  var sc_invisible=1;
+  var sc_security="e75d2592";
+  var scJsHost = "https://";
+  document.write("<sc"+"ript type='text/javascript' src='" + scJsHost +
+  "statcounter.com/counter/counter.js'></"+"script>");
+  </script>
+  <noscript><div class="statcounter"><a title="Web Analytics"
+  href="https://statcounter.com/" target="_blank"><img
+  class="statcounter"
+  src="https://c.statcounter.com/12702047/0/e75d2592/1/"
+  alt="Web Analytics"
+  referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
+  <!-- End of Statcounter Code -->
+
 </body>
 </html>
