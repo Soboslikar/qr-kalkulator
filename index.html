@@ -53,11 +53,11 @@
     }
     /* AŽURIRAN STIL I POZICIJA ZA BROJAČ RAČUNA */
     #invoice-count {
-      font-size: 1.4em; /* Još povećan font */
+      font-size: 1.4em;
       color: black;
       padding: 0.1em 0.4em;
       position: fixed;
-      bottom: 85px; /* Podignuto još više (iznad gumba Obriši) */
+      bottom: 125px; /* Podignuto još više */
       right: 50px;
       z-index: 2;
       text-align: right;
@@ -229,12 +229,12 @@
 
   <div id="delete-warning">OBRIŠI IZNOS</div>
 
-  <!-- AŽURIRANI ZVUKOVI - VRAĆENI STARI ZA CLICK I REMOVE -->
+  <!-- AŽURIRANI ZVUKOVI - PONOVO GOOGLE UI ZA CLICK/REMOVE -->
   <audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
-  <audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
-  <audio id="remove-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/1.mp3" preload="auto"></audio>
+  <audio id="click-sound" src="https://actions.google.com/sounds/v1/ui/tap_forward.ogg" preload="auto"></audio>
+  <audio id="remove-sound" src="https://actions.google.com/sounds/v1/ui/tap_back.ogg" preload="auto"></audio>
 
-  <!-- JavaScript ostaje isti kao u prethodnoj verziji -->
+  <!-- JavaScript ostaje isti -->
   <script>
     let ukupno = 0;
     let povijest = [];
@@ -294,6 +294,7 @@
         }
     }
 
+    // PlaySound funkcija ostaje ista, uključuje pauzu i premotavanje
     function playSound(id) {
       const sound = document.getElementById(id);
       if (sound) {
@@ -302,6 +303,7 @@
         const playPromise = sound.play();
         if (playPromise !== undefined) {
           playPromise.then(_ => {}).catch(error => {
+            // Logiraj upozorenje, ali ne prekidaj izvršavanje
             console.warn(`Zvuk "${id}" nije mogao biti reproduciran:`, error);
           });
         }
@@ -309,6 +311,7 @@
           console.warn(`Audio element s ID-jem "${id}" nije pronađen.`);
       }
     }
+
 
     function clearCurrent() {
       console.log("clearCurrent pozvan, ali nema efekta.");
@@ -320,13 +323,13 @@
         removeButton.classList.remove('red-btn');
         removeButton.classList.add('yellow-btn');
         removeConfirm = true;
-        playSound('click-sound'); // Sada koristi stari zvuk
+        playSound('click-sound'); // Pokušaj s tap_forward.ogg
         handleAmountLabelVisibility();
       } else {
         if (povijest.length > 0) {
           const removed = povijest.pop();
           ukupno -= removed.amount;
-          playSound('remove-sound'); // Sada koristi stari zvuk
+          playSound('remove-sound'); // Pokušaj s tap_back.ogg
         }
         removeButton.innerText = removeBtnInitialText;
         removeButton.classList.remove('yellow-btn');
@@ -377,7 +380,7 @@
                    duplicateWarning.style.animation = 'none';
                    duplicateWarning.offsetHeight;
                    duplicateWarning.style.animation = 'pulse 0.5s ease-in-out 4 alternate';
-                   playSound('remove-sound'); // Sada koristi stari zvuk za upozorenje
+                   playSound('remove-sound'); // Pokušaj s tap_back.ogg za upozorenje
                    setTimeout(() => {
                        if (duplicateWarning.style.display === 'block') {
                            duplicateWarning.style.display = 'none';
