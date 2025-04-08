@@ -6,7 +6,7 @@
   <title>QR Kalkulator</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    /* CSS ostaje isti */
+    /* CSS */
     body {
       font-family: sans-serif;
       margin: 0;
@@ -176,7 +176,7 @@
       background: white;
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      width: 130px;
+      width: 130px; /* Ostavljamo širinu */
       position: fixed;
       bottom: 10px;
       left: 10px;
@@ -187,6 +187,7 @@
       padding: 0;
       margin: 0;
     }
+    /* POVEĆAN FONT U POVIJESTI */
     #history li {
       padding: 0.5em 0;
       border-bottom: 1px solid #eee;
@@ -194,7 +195,7 @@
       font-weight: bold;
       overflow: hidden;
       text-overflow: ellipsis;
-      font-size: 0.9em;
+      font-size: 1em; /* Povećano na 1em */
     }
      #history li:last-child {
         border-bottom: none;
@@ -208,7 +209,7 @@
   </style>
 </head>
 <body>
-  <!-- HTML struktura ista -->
+  <!-- HTML -->
   <div id="header">QR Kalkulator by Banović</div>
   <div id="reader"></div>
   <div id="loaded-message">UČITANO</div>
@@ -229,15 +230,16 @@
 
   <div id="delete-warning">OBRIŠI IZNOS</div>
 
-  <!-- Zvukovi ostaju kako si zadnje specificirao -->
+  <!-- Zvukovi -->
   <audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
   <audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
   <audio id="remove-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
 
-  <!-- JavaScript s uklonjenim zvukom za duplikat -->
+  <!-- JavaScript -->
   <script>
     let ukupno = 0;
-    let povijest = [];
+    // Uklonjen 'addedTimestamp' iz povijesti
+    let povijest = []; // Primjer: { amount: 12.34, qrCode: "...", time: "10:30" }
     let currentAmount = 0;
     let currentQRCode = '';
     let removeConfirm = false;
@@ -346,7 +348,7 @@
         }
     }, true);
 
-    // *** AŽURIRANA handleScan FUNKCIJA - BEZ ZVUKA ZA DUPLIKAT ***
+    // *** AŽURIRANA handleScan FUNKCIJA - UKLONJEN GRACE PERIOD I ZVUK DUPLIKATA ***
     function handleScan(decodedText) {
        if (removeConfirm) {
            removeButton.innerText = removeBtnInitialText;
@@ -373,43 +375,36 @@
                    }
                }
 
+               // --- JEDNOSTAVNA DUPLIKAT PROVJERA (BEZ VREMENA) ---
                const existingItem = povijest.find(item => item.qrCode === decodedText);
 
                if (existingItem) {
-                   const timeSinceAdded = Date.now() - existingItem.addedTimestamp;
+                   // --- DUPLIKAT PRONAĐEN ---
+                   // Pokaži upozorenje ODMAH, BEZ ZVUKA
+                   duplicateWarning.style.display = 'block';
+                   duplicateWarning.style.animation = 'none';
+                   duplicateWarning.offsetHeight; // Reflow
+                   duplicateWarning.style.animation = 'pulse 0.5s ease-in-out 4 alternate';
 
-                   if (timeSinceAdded < 2000) {
-                       console.log("Isti kod skeniran unutar 2 sekunde. Ignoriram.");
-                       return;
-                   } else {
-                       // Pokaži upozorenje, ali NE SVIRAJ ZVUK
-                       duplicateWarning.style.display = 'block';
-                       duplicateWarning.style.animation = 'none';
-                       duplicateWarning.offsetHeight; // Reflow
-                       duplicateWarning.style.animation = 'pulse 0.5s ease-in-out 4 alternate';
+                   // Sakrij upozorenje nakon 2 sekunde
+                   setTimeout(() => {
+                       if (duplicateWarning.style.display === 'block') {
+                           duplicateWarning.style.display = 'none';
+                       }
+                   }, 2000);
 
-                       // // <<< UKLONJEN ZVUK ZA DUPLIKAT >>>
-                       // setTimeout(() => {
-                       //     playSound('remove-sound');
-                       // }, 300);
-
-                       setTimeout(() => {
-                           if (duplicateWarning.style.display === 'block') {
-                               duplicateWarning.style.display = 'none';
-                           }
-                       }, 2000);
-                   }
                } else {
-                   // Novi račun
+                   // --- NOVI RAČUN ---
+                   // Dodaj u povijest (bez timestampa)
                    povijest.push({
                        amount: iznosEura,
                        qrCode: decodedText,
-                       time: time,
-                       addedTimestamp: Date.now()
+                       time: time
+                       // addedTimestamp više nije potreban
                    });
                    ukupno += iznosEura;
                    updateDisplay();
-                   playSound('scan-sound'); // Google pop.ogg
+                   playSound('scan-sound'); // Zvuk uspjeha (Google pop.ogg)
 
                    // Prikaz "UČITANO"
                    loadedMsg.style.display = 'block';
