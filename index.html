@@ -163,8 +163,6 @@
     <div id="duplicate-warning">TAJ RAČUN JE URAČUNAT</div>
   </div>
 
-  <!-- GUMBI -->
-  <button class="green-btn" id="add-btn" onclick="addCurrent()" style="display:none;">Dodaj</button>
   <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()" style="display:none;">Obriši</button>
   <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
 
@@ -196,7 +194,7 @@
       povijest.forEach((item, index) => {
         const listItem = document.createElement('li');
         listItem.classList.add('bold-text');
-        listItem.innerText = `${index + 1}.  ${item.amount.toFixed(2)} €`;
+        listItem.innerText = `${index + 1}.  ${item.amount.toFixed(2)} € - ${item.time}`;
         historyList.appendChild(listItem);
       });
     }
@@ -237,24 +235,10 @@
       }
     }
 
-    function addCurrent() {
-      if (currentAmount > 0) {
-        povijest.push({ amount: currentAmount, qrCode: currentQRCode });
-        ukupno += currentAmount;
-        currentAmount = 0;
-        currentQRCode = '';
-        updateDisplay();
-        document.getElementById('add-btn').style.display = 'none';
-        document.getElementById('clear-current-btn').style.display = 'none';
-        playSound('click-sound');
-      }
-    }
-
     function clearCurrent() {
       currentAmount = 0;
       currentQRCode = '';
       updateDisplay();
-      document.getElementById('add-btn').style.display = 'none';
       document.getElementById('clear-current-btn').style.display = 'none';
       playSound('remove-sound');
     }
@@ -287,18 +271,21 @@
       const iznosCenti = parseFloat(urlParams.get('izn'));
       if (!isNaN(iznosCenti)) {
         const iznosEuri = iznosCenti / 100;
+        const now = new Date();
+        const time = now.toTimeString().substring(0, 5);
         if (povijest.some(item => item.qrCode === decodedText)) {
           document.getElementById('duplicate-warning').style.display = 'block';
           document.getElementById('amount-label').style.display = 'none';
           document.getElementById('current-amount').style.display = 'none';
-          document.getElementById('add-btn').style.display = 'none';
           document.getElementById('clear-current-btn').style.display = 'none';
         } else {
           currentAmount = iznosEuri;
           currentQRCode = decodedText;
+          povijest.push({ amount: currentAmount, qrCode: currentQRCode, time: time });
+          ukupno += currentAmount;
+          currentAmount = 0;
+          currentQRCode = '';
           updateDisplay();
-          document.getElementById('add-btn').style.display = 'block';
-          document.getElementById('clear-current-btn').style.display = 'block';
           playSound('scan-sound');
         }
       }
