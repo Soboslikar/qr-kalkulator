@@ -6,11 +6,6 @@
   <title>QR Kalkulator</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    @keyframes fadeOut {
-      0% { opacity: 1; }
-      100% { opacity: 0; }
-    }
-
     body {
       font-family: sans-serif;
       margin: 0;
@@ -40,7 +35,7 @@
       font-weight: bold;
       color: yellow;
       position: fixed;
-      top: 15em;
+      top: 15em; /* Smanjeno iz 30em */
       left: 50%;
       transform: translateX(-50%);
       z-index: 2;
@@ -52,14 +47,14 @@
       align-items: center;
       gap: 1em;
       position: fixed;
-      top: 28em;
+      top: 28em; /* Smanjeno iz 31em */
       width: 100%;
       z-index: 2;
     }
     #amount-label {
       font-weight: bold;
       color: yellow;
-      display: none;
+      display: none; /* Sakriven dok nema skeniranog iznosa */
     }
     #amount-label.delete-mode {
       color: red;
@@ -68,13 +63,20 @@
       font-size: 1.5em;
       font-weight: bold;
       color: yellow;
-      display: none;
+      display: none; /* Sakriven dok nema skeniranog iznosa */
     }
     #duplicate-warning {
       font-weight: bold;
       color: red;
       display: none;
-      animation: fadeOut 2s forwards;
+    }
+
+    #add-btn {
+      position: fixed;
+      bottom: 150px;
+      right: 80px;
+      z-index: 2;
+      transform: scale(1.5); /* povećan 50% */
     }
     #clear-current-btn {
       position: fixed;
@@ -88,6 +90,7 @@
       right: 100px;
       z-index: 3;
     }
+
     button {
       padding: 0.5em 1em;
       font-size: 1em;
@@ -96,19 +99,24 @@
       color: black;
       cursor: pointer;
     }
+
     .red-btn {
       background: #ff0000;
-      color: yellow;
+      color: yellow; /* žuti tekst za crvene gumbe */
     }
+
     .green-btn {
       background: #00cc00;
     }
+
     .green-btn:active {
       background: #009900;
     }
+
     .bold-text {
       font-weight: bold;
     }
+
     #history {
       max-height: 300px;
       overflow-y: auto;
@@ -122,15 +130,18 @@
       margin-left: 0;
       margin-right: 0;
     }
+
     #history ul {
       list-style: none;
       padding: 0;
     }
+
     #history li {
       padding: 0.5em 0;
       border-bottom: 1px solid #eee;
       white-space: pre;
     }
+
     #delete-warning {
       color: red;
       font-weight: bold;
@@ -147,7 +158,7 @@
     <ul id="historyList"></ul>
   </div>
   <div id="amount-section">
-    <div id="amount-label">ZADNJE DODANO:</div>
+    <div id="amount-label">DODAJ IZNOS:</div>
     <div id="current-amount">0.00 €</div>
     <div id="duplicate-warning">TAJ RAČUN JE URAČUNAT</div>
   </div>
@@ -196,19 +207,23 @@
     function handleAmountLabelVisibility() {
       const amountLabel = document.getElementById('amount-label');
       const currentAmountDiv = document.getElementById('current-amount');
+      const duplicateWarning = document.getElementById('duplicate-warning');
       if (removeConfirm && povijest.length > 0) {
         amountLabel.innerText = `OBRIŠI IZNOS: ${povijest[povijest.length - 1].amount.toFixed(2)} €`;
         amountLabel.classList.add('delete-mode');
         amountLabel.style.display = 'block';
         currentAmountDiv.style.display = 'none';
+        duplicateWarning.style.display = 'none';
       } else if (currentAmount > 0) {
-        amountLabel.innerText = 'ZADNJE DODANO:';
+        amountLabel.innerText = 'DODAJ IZNOS:';
         amountLabel.classList.remove('delete-mode');
         amountLabel.style.display = 'block';
         currentAmountDiv.style.display = 'block';
+        duplicateWarning.style.display = 'none';
       } else {
         amountLabel.style.display = 'none';
         currentAmountDiv.style.display = 'none';
+        duplicateWarning.style.display = 'none';
       }
     }
 
@@ -252,46 +267,40 @@
     }
 
     function handleScan(decodedText) {
-      console.log('Decoded text:', decodedText);
       const urlParams = new URLSearchParams(decodedText);
       const iznosCenti = parseFloat(urlParams.get('izn'));
-      const vrijeme = urlParams.get('time'); // Assumes QR code has 'time' parameter in HH:MM format
-      if (!isNaN(iznosCenti) && vrijeme) {
+      if (!isNaN(iznosCenti)) {
         const iznosEuri = iznosCenti / 100;
+        const now = new Date();
+        const time = now.toTimeString().substring(0, 5);
         if (povijest.some(item => item.qrCode === decodedText)) {
-          const duplicateWarning = document.getElementById('duplicate-warning');
-          duplicateWarning.style.display = 'block';
-          setTimeout(() => {
-            duplicateWarning.style.display = 'none';
-          }, 2000);
+          document.getElementById('duplicate-warning').style.display = 'block';
+          document.getElementById('amount-label').style.display = 'none';
+          document.getElementById('current-amount').style.display = 'none';
+          document.getElementById('clear-current-btn').style.display = 'none';
         } else {
           currentAmount = iznosEuri;
           currentQRCode = decodedText;
-          povijest.push({ amount: currentAmount, qrCode: currentQRCode, time: vrijeme });
+          povijest.push({ amount: currentAmount, qrCode: currentQRCode, time: time });
           ukupno += currentAmount;
           currentAmount = 0;
           currentQRCode = '';
           updateDisplay();
           playSound('scan-sound');
         }
-      } else {
-        console.warn('Invalid QR code format or missing parameters');
       }
     }
 
     const html5QrCode = new Html5Qrcode("reader");
     Html5Qrcode.getCameras().then(devices => {
-      console.log('Devices found:', devices);
       if (devices && devices.length) {
         html5QrCode.start(
           { facingMode: "environment" },
           { fps: 10, qrbox: { width: 250, height: 250 } },
           handleScan
-        ).catch(err => console.error('Failed to start QR code scanner:', err));
-      } else {
-        console.warn('No cameras found');
+        ).catch(err => console.error(err));
       }
-    }).catch(err => console.error('Error getting cameras:', err));
+    });
   </script>
 
   <!-- StatCounter -->
