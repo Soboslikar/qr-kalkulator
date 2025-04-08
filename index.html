@@ -6,6 +6,11 @@
   <title>QR Kalkulator</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
     body {
       font-family: sans-serif;
       margin: 0;
@@ -69,15 +74,9 @@
       font-weight: bold;
       color: red;
       display: none;
+      animation: fadeOut 2s forwards;
     }
 
-    #add-btn {
-      position: fixed;
-      bottom: 150px;
-      right: 80px;
-      z-index: 2;
-      transform: scale(1.5); /* povećan 50% */
-    }
     #clear-current-btn {
       position: fixed;
       bottom: 80px;
@@ -207,23 +206,19 @@
     function handleAmountLabelVisibility() {
       const amountLabel = document.getElementById('amount-label');
       const currentAmountDiv = document.getElementById('current-amount');
-      const duplicateWarning = document.getElementById('duplicate-warning');
       if (removeConfirm && povijest.length > 0) {
         amountLabel.innerText = `OBRIŠI IZNOS: ${povijest[povijest.length - 1].amount.toFixed(2)} €`;
         amountLabel.classList.add('delete-mode');
         amountLabel.style.display = 'block';
         currentAmountDiv.style.display = 'none';
-        duplicateWarning.style.display = 'none';
       } else if (currentAmount > 0) {
-        amountLabel.innerText = 'DODAJ IZNOS:';
+        amountLabel.innerText = 'ZADNJE DODANO:';
         amountLabel.classList.remove('delete-mode');
         amountLabel.style.display = 'block';
         currentAmountDiv.style.display = 'block';
-        duplicateWarning.style.display = 'none';
       } else {
         amountLabel.style.display = 'none';
         currentAmountDiv.style.display = 'none';
-        duplicateWarning.style.display = 'none';
       }
     }
 
@@ -269,19 +264,19 @@
     function handleScan(decodedText) {
       const urlParams = new URLSearchParams(decodedText);
       const iznosCenti = parseFloat(urlParams.get('izn'));
-      if (!isNaN(iznosCenti)) {
+      const vrijeme = urlParams.get('time'); // Assumes QR code has 'time' parameter in HH:MM format
+      if (!isNaN(iznosCenti) && vrijeme) {
         const iznosEuri = iznosCenti / 100;
-        const now = new Date();
-        const time = now.toTimeString().substring(0, 5);
         if (povijest.some(item => item.qrCode === decodedText)) {
-          document.getElementById('duplicate-warning').style.display = 'block';
-          document.getElementById('amount-label').style.display = 'none';
-          document.getElementById('current-amount').style.display = 'none';
-          document.getElementById('clear-current-btn').style.display = 'none';
+          const duplicateWarning = document.getElementById('duplicate-warning');
+          duplicateWarning.style.display = 'block';
+          setTimeout(() => {
+            duplicateWarning.style.display = 'none';
+          }, 2000);
         } else {
           currentAmount = iznosEuri;
           currentQRCode = decodedText;
-          povijest.push({ amount: currentAmount, qrCode: currentQRCode, time: time });
+          povijest.push({ amount: currentAmount, qrCode: currentQRCode, time: vrijeme });
           ukupno += currentAmount;
           currentAmount = 0;
           currentQRCode = '';
