@@ -6,42 +6,40 @@
   <title>QR Kalkulator</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    /* Vraćeni/Ažurirani stilovi */
     body {
       font-family: sans-serif;
       margin: 0;
       padding: 0.5em;
       background: #f4f4f4;
-      /* Dodano da spriječi pomicanje tijela dok se animacija poruke prikazuje */
       overflow-x: hidden;
     }
-    /* VRAĆEN ORIGINALNI STIL ZA HEADER */
+    /* VRAĆEN ORIGINALNI CSS ZA HEADER ZA PREKLAPANJE */
     #header {
       text-align: center;
-      color: yellow; /* Vraćeno na žuto */
-      /* background-color: #333;  Uklonjena pozadina */
-      /* padding: 0.2em 0; Uklonjen padding */
+      color: yellow;
       font-size: 1.2em;
       font-weight: bold;
-      margin-bottom: 0.5em;
-      position: absolute; /* Vraćeno na absolute */
-      width: 100%;
-      left: 0; /* Osigurava punu širinu */
-      top: 0.2em; /* Mali pomak od vrha */
-      z-index: 1;
+      margin-bottom: 0.5em; /* Originalno je bilo, utječe na prostor ispod */
+      position: absolute;
+      width: 100%; /* Raširi preko cijele širine */
+      left: 0; /* Dodano radi sigurnosti poravnanja */
+      top: 0.5em; /* Mali odmak od samog vrha ekrana */
+      z-index: 1; /* Da bude iznad readera (koji je po defaultu z-index: auto) */
+      /* Dodajemo malo sjene tekstu radi čitljivosti preko kamere */
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
     }
+    /* VRAĆEN ORIGINALNI CSS ZA READER (BEZ MARGIN-TOP) */
     #reader {
       width: 100%;
       max-width: 400px;
-      margin: auto;
-      /* Povećan margin-top da ne ide ispod apsolutnog headera */
-      margin-top: 3em;
+      margin: auto; /* Samo horizontalno centriranje */
       height: 55vh;
-      position: relative;
-      border: 1px solid #ccc; /* Ostavljen okvir radi vizualizacije */
-      background: #e0e0e0; /* Ostavljena pozadina */
+      position: relative; /* Važno da bi z-index headera radio u odnosu na njega */
+      border: 1px solid #ccc;
+      background: #e0e0e0;
+      /* margin-top: 3em; UKLONJENO */
     }
-     /* TOTAL ostaje isti kao u prošloj verziji */
+    /* Ostali stilovi ostaju nepromijenjeni od prethodne verzije */
     #total {
       display: block;
       font-size: 1.6em !important;
@@ -57,21 +55,19 @@
       z-index: 2;
       text-align: center;
     }
-    /* NOVI STIL ZA BROJAČ RAČUNA */
     #invoice-count {
       font-size: 0.9em;
-      color: #eee; /* Svijetla boja */
-      background-color: rgba(0, 0, 0, 0.4); /* Malo tamnija pozadina */
+      color: #eee;
+      background-color: rgba(0, 0, 0, 0.4);
       padding: 0.1em 0.4em;
       border-radius: 3px;
       position: fixed;
-      top: 18em; /* Pozicioniran ispod totala */
+      top: 18em;
       left: 50%;
       transform: translateX(-50%);
       z-index: 2;
       text-align: center;
     }
-    /* AMOUNT SECTION ostaje isti */
     #amount-section {
       display: flex;
       justify-content: center;
@@ -90,12 +86,14 @@
       padding: 0.2em 0.4em;
       border-radius: 3px;
       display: none;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Sjena radi čitljivosti */
     }
     #amount-label.delete-mode {
       background-color: rgba(255, 255, 0, 0.8);
       color: black;
+      text-shadow: none; /* Makni sjenu na žutoj pozadini */
     }
-    #current-amount { /* Iako se ne koristi, stil ostaje */
+    #current-amount {
       font-size: 1.5em;
       font-weight: bold;
       color: yellow;
@@ -103,8 +101,9 @@
       padding: 0.2em 0.4em;
       border-radius: 3px;
       display: none;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Sjena radi čitljivosti */
     }
-    #duplicate-warning { /* Ostaje isto */
+    #duplicate-warning {
       font-weight: bold;
       color: red;
       background-color: rgba(255, 255, 255, 0.8);
@@ -115,7 +114,7 @@
       text-align: center;
       animation: pulse 0.5s ease-in-out 4 alternate;
     }
-    #loaded-message { /* Ostaje isto */
+    #loaded-message {
         font-weight: bold;
         color: green;
         display: none;
@@ -132,19 +131,16 @@
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-
-    @keyframes pulse { /* Ostaje isto */
+    @keyframes pulse {
       0% { transform: scale(1); }
       50% { transform: scale(1.1); }
       100% { transform: scale(1); }
     }
-    @keyframes zoomFade { /* Ostaje isto */
+    @keyframes zoomFade {
       0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
       50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
       100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
     }
-
-    /* Button positioning ostaje isto */
     #clear-current-btn {
       position: fixed;
       bottom: 80px;
@@ -157,28 +153,31 @@
       right: 100px;
       z-index: 3;
     }
-
-    button { /* Ostaje isto */
+    button {
       padding: 0.5em 1em;
       font-size: 1em;
       border: none;
       border-radius: 5px;
       color: black;
       cursor: pointer;
+      /* Dodana sjena radi izgleda */
+       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-    .red-btn { /* Ostaje isto */
+    button:active {
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); /* Efekt pritiska */
+    }
+    .red-btn {
       background: #ff0000;
       color: yellow;
     }
-    .yellow-btn { /* Ostaje isto */
+    .yellow-btn {
         background-color: yellow;
         color: black;
     }
-    /* History ostaje isto */
     #history {
       max-height: 300px;
       overflow-y: auto;
-      margin: 0; /* Uklonjen margin jer koristimo fixed */
+      margin: 0;
       padding: 1em;
       background: white;
       border-radius: 5px;
@@ -187,24 +186,26 @@
       position: fixed;
       bottom: 10px;
       left: 10px;
-      z-index: 1;
+      z-index: 1; /* Niži od gumba i ostalih fiksnih elemenata */
     }
-    #history ul { /* Ostaje isto */
+    #history ul {
       list-style: none;
       padding: 0;
       margin: 0;
     }
-    #history li { /* Ostaje isto */
+    #history li {
       padding: 0.5em 0;
       border-bottom: 1px solid #eee;
       white-space: pre;
       font-weight: bold;
+      /* Dodano radi potencijalno dugih vremena/iznosa */
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-     #history li:last-child { /* Ostaje isto */
+     #history li:last-child {
         border-bottom: none;
      }
-
-    #delete-warning { /* Ostaje isto, ne koristi se */
+    #delete-warning {
       color: red;
       font-weight: bold;
       display: none;
@@ -213,13 +214,11 @@
   </style>
 </head>
 <body>
-  <!-- VRAĆEN ORIGINALNI HEADER -->
+  <!-- HTML struktura ostaje ista -->
   <div id="header">QR Kalkulator by Banović</div>
-
   <div id="reader"></div>
   <div id="loaded-message">UČITANO</div>
   <div id="total">UKUPNO: 0.00 €</div>
-  <!-- DODAN ELEMENT ZA BROJAČ RAČUNA -->
   <div id="invoice-count">0 RAČUNA</div>
 
   <div id="history">
@@ -234,24 +233,23 @@
   <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()" style="display:none;">Obriši</button>
   <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
 
-  <!-- Ovaj element se nije koristio u JS-u, ostavljam ga -->
   <div id="delete-warning">OBRIŠI IZNOS</div>
 
-  <!-- Zvukovi ostaju isti -->
+  <!-- Zvukovi -->
   <audio id="scan-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/3.mp3" preload="auto"></audio>
   <audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
   <audio id="remove-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/1.mp3" preload="auto"></audio>
 
+  <!-- JavaScript ostaje potpuno isti kao u prethodnoj verziji -->
   <script>
     let ukupno = 0;
     let povijest = [];
-    let currentAmount = 0; // Ne koristi se aktivno
-    let currentQRCode = ''; // Ne koristi se aktivno
+    let currentAmount = 0;
+    let currentQRCode = '';
     let removeConfirm = false;
 
-    // Dohvaćanje elemenata
     const totalDiv = document.getElementById('total');
-    const invoiceCountDiv = document.getElementById('invoice-count'); // DODANO: Element za broj računa
+    const invoiceCountDiv = document.getElementById('invoice-count');
     const currentAmountDiv = document.getElementById('current-amount');
     const amountLabel = document.getElementById('amount-label');
     const historyList = document.getElementById('historyList');
@@ -263,18 +261,14 @@
 
     function updateDisplay() {
       totalDiv.innerText = `UKUPNO: ${ukupno.toFixed(2)} €`;
-
-      // AŽURIRANJE BROJAČA RAČUNA
       const count = povijest.length;
-      invoiceCountDiv.innerText = `${count} ${count === 1 ? 'RAČUN' : 'RAČUNA'}`; // Pazi na jedninu/množinu
-
+      invoiceCountDiv.innerText = `${count} ${count === 1 ? 'RAČUN' : 'RAČUNA'}`;
       currentAmountDiv.style.display = 'none';
       updateHistory();
       checkRemoveButtonVisibility();
       handleAmountLabelVisibility();
     }
 
-    // Funkcija updateHistory ostaje ista
     function updateHistory() {
       historyList.innerHTML = '';
       povijest.forEach((item, index) => {
@@ -285,18 +279,15 @@
       historyList.parentNode.scrollTop = historyList.parentNode.scrollHeight;
     }
 
-    // Funkcija checkRemoveButtonVisibility ostaje ista
     function checkRemoveButtonVisibility() {
       removeButton.style.display = povijest.length > 0 ? 'block' : 'none';
       clearCurrentBtn.style.display = 'none';
     }
 
-    // Funkcija handleAmountLabelVisibility ostaje ista
     function handleAmountLabelVisibility() {
         amountLabel.style.display = 'none';
         currentAmountDiv.style.display = 'none';
         duplicateWarning.style.display = 'none';
-
         if (removeConfirm && povijest.length > 0) {
             const lastItem = povijest[povijest.length - 1];
             amountLabel.innerText = `OBRIŠI ${lastItem.amount.toFixed(2)} €?`;
@@ -307,22 +298,15 @@
         }
     }
 
-    // Funkcija playSound ostaje ista - NAPOMENA: rad ovisi o pregledniku
     function playSound(id) {
       const sound = document.getElementById(id);
       if (sound) {
-        // Pokušaj zaustaviti i premotati prije ponovnog pokretanja
         sound.pause();
         sound.currentTime = 0;
-        // Pokreni zvuk
         const playPromise = sound.play();
         if (playPromise !== undefined) {
-          playPromise.then(_ => {
-            // Automatska reprodukcija je krenula
-          }).catch(error => {
-            // Automatska reprodukcija je spriječena
+          playPromise.then(_ => {}).catch(error => {
             console.warn(`Zvuk "${id}" nije mogao biti automatski reproduciran:`, error);
-            // Možda prikazati poruku korisniku da omogući zvukove?
           });
         }
       } else {
@@ -330,36 +314,32 @@
       }
     }
 
-
-    // Funkcija clearCurrent ostaje ista (nema efekta)
     function clearCurrent() {
       console.log("clearCurrent pozvan, ali nema efekta.");
     }
 
-    // Funkcija startRemoveFromList ostaje ista (uključuje playSound)
     function startRemoveFromList() {
       if (!removeConfirm) {
         removeButton.innerText = 'Potvrdi';
         removeButton.classList.remove('red-btn');
         removeButton.classList.add('yellow-btn');
         removeConfirm = true;
-        playSound('click-sound'); // Zvuk klika
+        playSound('click-sound');
         handleAmountLabelVisibility();
       } else {
         if (povijest.length > 0) {
           const removed = povijest.pop();
           ukupno -= removed.amount;
-          playSound('remove-sound'); // Zvuk brisanja
+          playSound('remove-sound');
         }
         removeButton.innerText = removeBtnInitialText;
         removeButton.classList.remove('yellow-btn');
         removeButton.classList.add('red-btn');
         removeConfirm = false;
-        updateDisplay(); // Ažurira sve, uključujući brojač računa
+        updateDisplay();
       }
     }
 
-     // Resetiranje potvrde brisanja klikom izvan gumba - ostaje isto
     document.body.addEventListener('click', (event) => {
         if (removeConfirm && event.target !== removeButton) {
             removeButton.innerText = removeBtnInitialText;
@@ -370,7 +350,6 @@
         }
     }, true);
 
-    // Funkcija handleScan ostaje ista (uključuje playSound)
     function handleScan(decodedText) {
        if (removeConfirm) {
            removeButton.innerText = removeBtnInitialText;
@@ -402,7 +381,7 @@
                    duplicateWarning.style.animation = 'none';
                    duplicateWarning.offsetHeight;
                    duplicateWarning.style.animation = 'pulse 0.5s ease-in-out 4 alternate';
-                   playSound('remove-sound'); // Zvuk upozorenja/greške
+                   playSound('remove-sound');
                    setTimeout(() => {
                        if (duplicateWarning.style.display === 'block') {
                            duplicateWarning.style.display = 'none';
@@ -411,8 +390,8 @@
                } else {
                    povijest.push({ amount: iznosEura, qrCode: decodedText, time: time });
                    ukupno += iznosEura;
-                   updateDisplay(); // Ažurira sve, uključujući brojač računa
-                   playSound('scan-sound'); // Zvuk uspješnog skeniranja
+                   updateDisplay();
+                   playSound('scan-sound');
 
                    loadedMsg.style.display = 'block';
                    loadedMsg.style.animation = 'none';
@@ -428,7 +407,6 @@
        }
     }
 
-    // Inicijalizacija QR skenera - ostaje ista
     const html5QrCode = new Html5Qrcode("reader");
     const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
 
@@ -441,7 +419,7 @@
           (errorMessage) => { /* Ignoriraj greške */ }
         ).then(() => {
             console.log("QR skener pokrenut.");
-            updateDisplay(); // Inicijalni prikaz (uključujući brojač računa)
+            updateDisplay();
         }).catch(err => {
             console.error("Greška kod startanja QR skenera:", err);
             document.getElementById('reader').innerText = 'Greška pri pokretanju kamere.';
@@ -457,7 +435,7 @@
 
   </script>
 
-  <!-- Statcounter kod ostaje isti -->
+  <!-- Statcounter kod -->
   <script type="text/javascript">
   var sc_project=12702047;
   var sc_invisible=1;
