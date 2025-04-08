@@ -6,7 +6,7 @@
   <title>QR Kalkulator</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    /* CSS ostaje isti kao u prethodnoj verziji - pozicije su dobre */
+    /* CSS ostaje isti */
     body {
       font-family: sans-serif;
       margin: 0;
@@ -57,7 +57,7 @@
       color: black;
       padding: 0.1em 0.4em;
       position: fixed;
-      bottom: 125px; /* Ostavljamo ovu poziciju */
+      bottom: 125px;
       right: 50px;
       z-index: 2;
       text-align: right;
@@ -229,12 +229,13 @@
 
   <div id="delete-warning">OBRIŠI IZNOS</div>
 
-  <!-- AŽURIRANI ZVUKOVI - VRAĆENI STARI ZA CLICK/REMOVE + POP za scan -->
+  <!-- AŽURIRANI ZVUKOVI - Google UI + poseban za duplikat -->
   <audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
-  <audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
-  <audio id="remove-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/1.mp3" preload="auto"></audio>
+  <audio id="click-sound" src="https://actions.google.com/sounds/v1/ui/tap_forward.ogg" preload="auto"></audio>
+  <audio id="remove-sound" src="https://actions.google.com/sounds/v1/ui/tap_back.ogg" preload="auto"></audio>
+  <audio id="duplicate-sound" src="https://actions.google.com/sounds/v1/cartoon/error.ogg" preload="auto"></audio>
 
-  <!-- JavaScript s odgodom za zvuk duplikata -->
+  <!-- JavaScript s pozivom novog zvuka za duplikat -->
   <script>
     let ukupno = 0;
     let povijest = [];
@@ -320,13 +321,13 @@
         removeButton.classList.remove('red-btn');
         removeButton.classList.add('yellow-btn');
         removeConfirm = true;
-        playSound('click-sound'); // Stari zvuk klika
+        playSound('click-sound'); // Google tap_forward
         handleAmountLabelVisibility();
       } else {
         if (povijest.length > 0) {
           const removed = povijest.pop();
           ukupno -= removed.amount;
-          playSound('remove-sound'); // Stari zvuk brisanja
+          playSound('remove-sound'); // Google tap_back
         }
         removeButton.innerText = removeBtnInitialText;
         removeButton.classList.remove('yellow-btn');
@@ -346,7 +347,7 @@
         }
     }, true);
 
-    // *** AŽURIRANA handleScan FUNKCIJA S ODGODOM ZVUKA DUPLIKATA ***
+    // *** AŽURIRANA handleScan FUNKCIJA S NOVIM ZVUKOM ZA DUPLIKAT ***
     function handleScan(decodedText) {
        if (removeConfirm) {
            removeButton.innerText = removeBtnInitialText;
@@ -380,9 +381,9 @@
                    duplicateWarning.offsetHeight; // Reflow
                    duplicateWarning.style.animation = 'pulse 0.5s ease-in-out 4 alternate';
 
-                   // <<< ODGODA ZVUKA ZA DUPLIKAT >>>
+                   // <<< ODGODA ZVUKA ZA DUPLIKAT (NOVI ZVUK) >>>
                    setTimeout(() => {
-                       playSound('remove-sound'); // Stari zvuk upozorenja, s odgodom
+                       playSound('duplicate-sound'); // Novi 'error.ogg' zvuk s odgodom
                    }, 300); // Odgoda od 300 milisekundi
 
                    setTimeout(() => {
