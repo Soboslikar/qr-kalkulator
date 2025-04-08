@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="hr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QR Kalkulator</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f3f3f3;
+      background: #f4f4f4;
       margin: 0;
       padding: 0;
       text-align: center;
@@ -16,52 +15,42 @@
     #reader {
       width: 100%;
       max-width: 400px;
-      margin: 0 auto;
+      margin: 10px auto;
+    }
+    #total, #current-amount, #amount-label {
+      font-size: 24px;
+      margin: 10px 0;
     }
     .bold-text {
       font-weight: bold;
     }
-    #total, #current-amount {
-      font-size: 2em;
-      margin: 10px 0;
+    .delete-mode {
+      color: red;
     }
-    #add-btn, #clear-current-btn, #remove-from-list-btn, #clear-history-btn {
-      font-size: 1.2em;
-      padding: 10px 20px;
+    #add-btn, #clear-current-btn, #remove-from-list-btn {
       margin: 5px;
+      padding: 10px 20px;
+      font-size: 18px;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
     }
     #add-btn {
-      background-color: #4CAF50;
+      background-color: green;
       color: white;
     }
     #clear-current-btn {
-      background-color: #f0ad4e;
-      color: white;
+      background-color: orange;
+      color: black;
     }
     #remove-from-list-btn {
       background-color: red;
       color: yellow;
-    }
-    #clear-history-btn {
-      background-color: #555;
-      color: white;
+      display: none;
     }
     #historyList {
-      list-style: none;
+      list-style-type: none;
       padding: 0;
-    }
-    #amount-label {
-      font-weight: bold;
-      margin-top: 10px;
-    }
-    #amount-label.delete-mode {
-      color: yellow;
-      background-color: red;
-      padding: 5px;
-      border-radius: 5px;
     }
     #duplicate-warning {
       color: red;
@@ -72,25 +61,24 @@
 </head>
 <body>
 
-  <h1>QR Kalkulator</h1>
   <div id="reader"></div>
 
-  <div id="amount-label"></div>
-  <div id="current-amount"></div>
-  <div id="duplicate-warning">Ovaj kod je već skeniran!</div>
+  <div id="amount-label" class="bold-text" style="display: none;"></div>
+  <div id="current-amount" class="bold-text" style="display: none;"></div>
+  <div id="duplicate-warning">Unos već postoji!</div>
 
-  <button id="add-btn" style="display:none;" onclick="addCurrent()">DODAJ</button>
-  <button id="clear-current-btn" style="display:none;" onclick="clearCurrent()">OBRIŠI ZADNJI UNOS</button>
+  <button id="add-btn" onclick="addCurrent()" style="display: none;">DODAJ</button>
+  <button id="clear-current-btn" onclick="clearCurrent()" style="display: none;">OBRIŠI ZADNJI UNOS</button>
+  <div id="total">UKUPNO: 0.00 €</div>
+  <button id="remove-from-list-btn" onclick="startRemoveFromList()">Obriši iz liste</button>
 
-  <h2 id="total">UKUPNO: 0.00 €</h2>
   <ul id="historyList"></ul>
 
-  <button id="remove-from-list-btn" style="display:none;" onclick="startRemoveFromList()">Obriši iz liste</button>
+  <audio id="scan-sound" src="scan.mp3" preload="auto"></audio>
+  <audio id="click-sound" src="click.mp3" preload="auto"></audio>
+  <audio id="remove-sound" src="remove.mp3" preload="auto"></audio>
 
-  <audio id="click-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
-  <audio id="remove-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
-  <audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/slide_whistle_to_drum_hit.ogg" preload="auto"></audio>
-
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <script>
     let ukupno = 0;
     let povijest = [];
@@ -205,10 +193,11 @@
     function handleScan(decodedText) {
       const urlParams = new URLSearchParams(decodedText);
       const iznosCenti = parseFloat(urlParams.get('izn'));
-      const datumVrijeme = urlParams.get('dat') || '';
+
+      const datumVrijeme = urlParams.get('dat') || ''; // npr. 20240408T140732
       let hhmm = '';
       if (datumVrijeme.length >= 15) {
-        hhmm = datumVrijeme.slice(9, 11) + ':' + datumVrijeme.slice(11, 13);
+        hhmm = datumVrijeme.slice(9, 11) + ':' + datumVrijeme.slice(11, 13); // 14:07
       }
 
       if (!isNaN(iznosCenti)) {
