@@ -140,7 +140,8 @@
         top: 30%;
         left: 50%;
         transform: translate(-50%, -50%);
-        animation: zoomFade 1.5s ease-out;
+        /* IZMJENA: Koristi trajanje od 2s */
+        animation: zoomFade 2s ease-out;
         z-index: 10;
         background-color: rgba(255, 255, 255, 0.85);
         padding: 0.8em 1.8em;
@@ -152,9 +153,11 @@
       50% { transform: translate(-50%, -50%) scale(1.1); }
       100% { transform: translate(-50%, -50%) scale(1); }
     }
+    /* IZMJENA: Animacija traje 2s */
     @keyframes zoomFade {
       0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
-      50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+      /* Prilagođeno za 2s trajanje - vrhunac na 40% */
+      40% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
       100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
     }
     #clear-current-btn {
@@ -220,11 +223,19 @@
      #history li:last-child {
         border-bottom: none;
      }
-    #delete-warning { /* Ovo je druga poruka, za brisanje iz liste */
+    #delete-warning { /* Poruka za brisanje iz liste */
       color: red;
       font-weight: bold;
       display: none;
       text-align: center;
+      position: fixed; /* Dodano da bude iznad ostalog */
+      top: 28em; /* Ista pozicija kao amount-section */
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(255, 255, 0, 0.8); /* Žuta pozadina */
+      padding: 0.3em 0.6em;
+      border-radius: 3px;
+      z-index: 5; /* Iznad amount-section */
     }
   </style>
 </head>
@@ -245,16 +256,15 @@
     <ul id="historyList"></ul>
   </div>
 
-  <!-- Sekcija za info o brisanju -->
+  <!-- Sekcija za info o brisanju (amount-label i current-amount se ne koriste više ovdje) -->
   <div id="amount-section">
-    <div id="amount-label">DODAJ IZNOS:</div>
-    <div id="current-amount">0.00 €</div>
+     <!-- Prazno ili za buduće elemente -->
   </div>
+  <!-- Poruka za potvrdu brisanja -->
+  <div id="delete-warning">OBRIŠI IZNOS</div>
 
   <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()" style="display:none;">Obriši</button>
   <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
-
-  <div id="delete-warning">OBRIŠI IZNOS</div> <!-- Poruka za brisanje iz liste -->
 
   <!-- Zvukovi -->
   <audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
@@ -269,7 +279,6 @@
 
     const totalDiv = document.getElementById('total');
     const invoiceCountDiv = document.getElementById('invoice-count');
-    const amountLabel = document.getElementById('amount-label');
     const historyList = document.getElementById('historyList');
     const removeButton = document.getElementById('remove-from-list-btn');
     const duplicateWarning = document.getElementById('duplicate-warning');
@@ -284,13 +293,14 @@
       invoiceCountDiv.innerText = `${count} ${count === 1 ? 'RAČUN' : 'RAČUNA'}`;
       if (count === 0) invoiceCountDiv.innerText = '0 RAČUNA';
 
+      // Sakrij elemente koji se više ne koriste ili dinamički prikazuju
       document.getElementById('current-amount').style.display = 'none';
       document.getElementById('amount-label').style.display = 'none';
       document.getElementById('clear-current-btn').style.display = 'none';
 
       updateHistory();
       checkRemoveButtonVisibility();
-      handleAmountLabelVisibility();
+      handleAmountLabelVisibility(); // Ažurira vidljivost poruke za brisanje
     }
 
     function updateHistory() {
@@ -316,18 +326,16 @@
     }
 
     function handleAmountLabelVisibility() {
-        const currentAmountDiv = document.getElementById('current-amount');
-        amountLabel.style.display = 'none'; // Amount label se koristi samo za delete mode
-        currentAmountDiv.style.display = 'none';
-        deleteWarningDiv.style.display = 'none'; // Sakrij i poruku za brisanje
+        // Sakrij poruku za brisanje po defaultu
+        deleteWarningDiv.style.display = 'none';
 
         if (removeConfirm && povijest.length > 0) {
             const lastItem = povijest[povijest.length - 1];
-            // Koristi namjenski div za poruku brisanja
+            // Pokaži namjenski div za poruku brisanja
             deleteWarningDiv.innerText = `OBRIŠI ${lastItem.amount.toFixed(2)} €?`;
             deleteWarningDiv.style.display = 'block';
         } else {
-             deleteWarningDiv.innerText = 'OBRIŠI IZNOS'; // Vrati originalni tekst ako treba
+             deleteWarningDiv.innerText = 'OBRIŠI IZNOS'; // Vrati originalni tekst
         }
     }
 
@@ -377,7 +385,7 @@
     }
 
     document.body.addEventListener('click', (event) => {
-        if (removeConfirm && !removeButton.contains(event.target) && !deleteWarningDiv.contains(event.target)) { // Ne resetiraj ako se klikne na poruku upozorenja
+        if (removeConfirm && !removeButton.contains(event.target) && !deleteWarningDiv.contains(event.target)) {
             removeButton.innerText = removeBtnInitialText;
             removeButton.classList.remove('yellow-btn');
             removeButton.classList.add('red-btn');
@@ -386,7 +394,7 @@
         }
     }, true);
 
-    // --- Funkcija s odgodom za duplikat ---
+    // --- Funkcija s odgodom za duplikat i provjerom zadnjeg unosa ---
     function handleScan(decodedText) {
        if (removeConfirm) {
            removeButton.innerText = removeBtnInitialText;
@@ -419,14 +427,16 @@
                }
 
                const existingItem = povijest.find(item => item.qrCode === decodedText);
+               const lastItem = povijest.length > 0 ? povijest[povijest.length - 1] : null; // Dohvati zadnji item
 
                // 1. Uvijek sakrij obje poruke na početku obrade skena
                loadedMsg.style.display = 'none';
                duplicateWarning.style.display = 'none';
 
-               if (existingItem) {
-                   // 2a. Pronađen duplikat -> Odgodi prikaz upozorenja
-                   console.log("Duplikat pronađen. Čekanje 1s prije prikaza upozorenja.");
+               // IZMJENA: Provjeri je li postojeći item ujedno i ZADNJI item u listi
+               if (existingItem && lastItem && existingItem.qrCode === lastItem.qrCode) {
+                   // 2a. Duplikat je POSLJEDNJI skenirani -> Odgodi prikaz upozorenja
+                   console.log("Duplikat zadnjeg unosa pronađen. Čekanje 1s prije prikaza upozorenja.");
                    setTimeout(() => {
                        console.log("Prikaz upozorenja o duplikatu.");
                        duplicateWarning.style.display = 'block';
@@ -440,11 +450,15 @@
                                duplicateWarning.style.display = 'none';
                                console.log("Upozorenje o duplikatu sakriveno.");
                            }
-                       }, 2200); // 2000ms + 200ms buffer
-                   }, 1000); // Odgoda od 1 sekunde
+                       }, 2200); // Trajanje upozorenja ostaje isto
+                   }, 1000); // Odgoda od 1 sekunde prije prikaza
+
+               } else if (existingItem) {
+                   // 2b. Duplikat je pronađen, ali NIJE zadnji unos -> Ne radi ništa vizualno
+                   console.log("Skeniran stari duplikat (nije zadnji unos). Ne prikazuje se upozorenje.");
 
                } else {
-                   // 2b. Novi račun -> Pokaži "UČITANO" odmah
+                   // 2c. Novi račun -> Pokaži "UČITANO"
                    if (instructionDiv.style.display !== 'none') {
                        instructionDiv.style.display = 'none';
                    }
@@ -461,13 +475,15 @@
                    loadedMsg.style.display = 'block';
                    loadedMsg.style.animation = 'none';
                    loadedMsg.offsetHeight; // Reflow
-                   loadedMsg.style.animation = 'zoomFade 1s ease-out';
+                   // IZMJENA: Koristi trajanje animacije od 2 sekunde (definirano u CSS)
+                   loadedMsg.style.animation = 'zoomFade 2s ease-out';
 
+                   // IZMJENA: Sakrij poruku nakon 2 sekunde
                    setTimeout(() => {
                         if (loadedMsg.style.display === 'block') {
                            loadedMsg.style.display = 'none';
                         }
-                    }, 1000);
+                    }, 2000); // Sakrij nakon 2 sekunde
                }
            } else {
               console.warn("QR kod ne sadrži validan 'izn' parametar ili 'izn' nije broj:", decodedText);
@@ -483,7 +499,7 @@
        }
     }
 
-    // Inicijalizacija skenera
+    // Inicijalizacija skenera (ostaje ista)
     const html5QrCode = new Html5Qrcode("reader");
     const qrConfig = { fps: 5, qrbox: { width: 250, height: 250 } };
 
@@ -517,7 +533,7 @@
     });
   </script>
 
-  <!-- Statcounter kod -->
+  <!-- Statcounter kod (ostaje isti) -->
   <script type="text/javascript">
   var sc_project=12702047;
   var sc_invisible=1;
