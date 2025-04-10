@@ -6,7 +6,7 @@
   <title>QR Kalkulator</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    /* CSS - Vaša verzija + izmjene za #delete-warning i nova klasa */
+    /* CSS - Tvoja verzija + sitne izmjene za #delete-warning */
     body {
       font-family: sans-serif;
       margin: 0;
@@ -72,8 +72,8 @@
       color: black;
       padding: 0.1em 0.4em;
       position: fixed;
-      bottom: 140px;
-      right: 50px;
+      bottom: 140px; /* Tvoja vrijednost */
+      right: 50px;   /* Tvoja vrijednost */
       z-index: 2;
       text-align: right;
       font-weight: bold;
@@ -84,17 +84,31 @@
       align-items: center;
       gap: 1em;
       position: fixed;
-      top: 28em; /* Referentna pozicija za #delete-warning */
+      top: 28em; /* Referentna pozicija */
       width: 100%;
       z-index: 4;
       min-height: 2.5em;
-      pointer-events: none; /* Da ne ometa klikove ispod */
     }
-     /* Sakrivamo ove elemente jer ih više ne koristimo direktno */
-    #amount-label, #current-amount {
-       display: none;
+    #amount-label { /* Ovaj element se više neće koristiti za prikaz potvrde brisanja */
+      font-weight: bold;
+      color: yellow;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 0.2em 0.4em;
+      border-radius: 3px;
+      display: none;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
-    #duplicate-warning {
+    #current-amount { /* Ovaj element se ne koristi */
+      font-size: 1.5em;
+      font-weight: bold;
+      color: yellow;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 0.2em 0.4em;
+      border-radius: 3px;
+      display: none;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    #duplicate-warning { /* Upozorenje iznad #total */
       font-weight: bold;
       color: red;
       background-color: rgba(255, 255, 255, 0.8);
@@ -102,7 +116,7 @@
       border-radius: 5px;
       border: 1px solid red;
       text-align: center;
-      animation: pulse 0.5s ease-in-out 3 alternate;
+      animation: pulse 0.5s ease-in-out 3 alternate; /* Tvoj broj ponavljanja */
       position: fixed;
       top: 12.8em;
       left: 50%;
@@ -121,7 +135,7 @@
         top: 30%;
         left: 50%;
         transform: translate(-50%, -50%);
-        animation: zoomFade 1s ease-out;
+        animation: zoomFade 1s ease-out; /* Tvoje trajanje */
         z-index: 10;
         background-color: rgba(255, 255, 255, 0.85);
         padding: 0.8em 1.8em;
@@ -140,23 +154,23 @@
     }
     #clear-current-btn {
       position: fixed;
-      bottom: 80px;
-      right: 80px;
+      bottom: 80px; /* Tvoja vrijednost */
+      right: 80px;  /* Tvoja vrijednost */
       z-index: 2;
     }
     #remove-from-list-btn {
       position: fixed;
-      bottom: 100px;
-      right: 50px;
+      bottom: 100px; /* Tvoja vrijednost */
+      right: 50px;   /* Tvoja vrijednost */
       z-index: 3;
     }
     #share-button {
       position: fixed;
-      bottom: 30px;
-      right: 30px;
+      bottom: 30px; /* Tvoja pozicija */
+      right: 30px;  /* Tvoja pozicija */
       z-index: 3;
       background-color: green;
-      color: white;
+      color: white; /* Tvoja boja slova */
       padding: 0.5em 1em;
       font-size: 1em;
       border: none;
@@ -219,13 +233,9 @@
      #history li:last-child {
         border-bottom: none;
      }
-     /* --- IZMJENA: Stil za #delete-warning koji sada prikazuje obje poruke --- */
+     /* --- IZMJENA: Stil za #delete-warning koji prikazuje obje poruke --- */
     #delete-warning {
-      /* Osnovni stilovi (za potvrdu brisanja) */
-      color: red;
-      background-color: rgba(255, 255, 0, 0.8); /* Žuta pozadina */
-
-      /* Zajednički stilovi */
+      color: red; /* Crvena slova */
       font-weight: bold;
       display: none; /* Inicijalno sakriven */
       text-align: center;
@@ -233,26 +243,17 @@
       top: 28em; /* Pozicija gdje je bio amount-section */
       left: 50%;
       transform: translateX(-50%);
+      background-color: rgba(255, 255, 0, 0.8); /* Žuta pozadina */
       padding: 0.3em 0.6em;
       border-radius: 3px;
-      z-index: 5;
+      z-index: 5; /* Iznad ostalih elemenata na toj visini */
       box-shadow: 0 1px 2px rgba(0,0,0,0.2);
       white-space: nowrap; /* Osigurava jedan red */
-      overflow: hidden;      /* Sakrij višak teksta */
-      text-overflow: ellipsis; /* Dodaj '...' ako je tekst predugačak */
-      max-width: 90%;       /* Ograniči širinu da ne ide preko cijelog ekrana */
-    }
-    /* --- DODATAK: Klasa za stil prikaza zadnjeg itema --- */
-    #delete-warning.last-item-info-style {
-      color: white; /* Bijela slova */
-      background-color: rgba(0, 0, 0, 0.4); /* Tamnija pozadina za kontrast */
-      text-shadow: 1px 1px 2px black; /* Crna sjena */
-      border: none; /* Makni žuti border ako postoji */
     }
   </style>
 </head>
 <body>
-  <!-- HTML -->
+  <!-- HTML (Originalna struktura) -->
   <div id="header">QR Kalkulator by Banović</div>
   <div id="scan-instruction">Pozicioniraj qr kod unutar kvadrata kamere</div>
   <div id="reader"></div>
@@ -267,13 +268,13 @@
     <ul id="historyList"></ul>
   </div>
 
-  <!-- amount-section ostaje, ali prazan ili za drugu namjenu -->
+  <!-- Div koji prikazuje ili info o zadnjem ili potvrdu brisanja -->
+  <!-- Originalni #amount-section i #delete-warning ostaju za pozicioniranje -->
   <div id="amount-section">
-     <!-- Prazan -->
+    <!-- Prazan ili za buduće elemente -->
   </div>
+  <div id="delete-warning"></div> <!-- Ovaj div će se puniti dinamički -->
 
-  <!-- Div koji će prikazivati ili info o zadnjem ili potvrdu brisanja -->
-  <div id="delete-warning"></div>
 
   <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()" style="display:none;">Obriši</button>
   <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
@@ -285,7 +286,7 @@
   <audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
   <audio id="remove-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
 
-  <!-- JavaScript (Vaša verzija + izmjene) -->
+  <!-- JavaScript (Tvoja verzija + izmjene) -->
   <script>
     let ukupno = 0;
     let povijest = [];
@@ -293,23 +294,23 @@
 
     const totalDiv = document.getElementById('total');
     const invoiceCountDiv = document.getElementById('invoice-count');
-    // const amountLabel = document.getElementById('amount-label'); // Nije više potrebno
+    // const amountLabel = document.getElementById('amount-label'); // Ne treba više
     const historyList = document.getElementById('historyList');
     const removeButton = document.getElementById('remove-from-list-btn');
-    const duplicateWarning = document.getElementById('duplicate-warning');
+    const duplicateWarning = document.getElementById('duplicate-warning'); // Za gornje upozorenje
     const loadedMsg = document.getElementById('loaded-message');
     const instructionDiv = document.getElementById('scan-instruction');
     const removeBtnInitialText = 'Obriši iz liste';
-    const deleteWarningDiv = document.getElementById('delete-warning'); // Glavni div za poruke
+    const deleteWarningDiv = document.getElementById('delete-warning'); // Div za poruke dolje
 
-    // IZMJENA: updateDisplay kontrolira #delete-warning
+    // IZMJENA: updateDisplay kontrolira deleteWarningDiv
     function updateDisplay() {
       totalDiv.innerText = `UKUPNO: ${ukupno.toFixed(2)} €`;
       const count = povijest.length;
       invoiceCountDiv.innerText = `${count} ${count === 1 ? 'RAČUN' : 'RAČUNA'}`;
       if (count === 0) invoiceCountDiv.innerText = '0 RAČUNA';
 
-      // Sakrij neiskorištene
+      // Sakrij neiskorištene elemente
       document.getElementById('current-amount').style.display = 'none';
       document.getElementById('amount-label').style.display = 'none';
       document.getElementById('clear-current-btn').style.display = 'none';
@@ -322,13 +323,11 @@
           // Prikaz potvrde brisanja
           const lastItem = povijest[povijest.length - 1];
           deleteWarningDiv.innerText = `OBRIŠI ${lastItem.amount.toFixed(2)} €?`;
-          deleteWarningDiv.classList.remove('last-item-info-style'); // Ukloni stil za info
           deleteWarningDiv.style.display = 'block';
       } else if (!removeConfirm && povijest.length > 0) {
           // Prikaz informacije o zadnjem računu
           const lastItem = povijest[povijest.length - 1];
           deleteWarningDiv.innerText = `ZADNJE U LISTI: ${lastItem.time} - ${lastItem.amount.toFixed(2)} €`;
-          deleteWarningDiv.classList.add('last-item-info-style'); // Dodaj stil za info
           deleteWarningDiv.style.display = 'block';
       } else {
           // Sakrij div ako je lista prazna
@@ -349,12 +348,13 @@
 
      function checkRemoveButtonVisibility() {
         removeButton.style.display = povijest.length > 0 ? 'block' : 'none';
+        // Ažuriraj stanje gumba ako je lista prazna a bio je u confirm modu
         if (povijest.length === 0 && removeConfirm) {
             removeButton.innerText = removeBtnInitialText;
             removeButton.classList.remove('yellow-btn');
             removeButton.classList.add('red-btn');
             removeConfirm = false;
-            updateDisplay(); // Pozovi da sakrije deleteWarningDiv
+            // Poziv updateDisplay će sakriti deleteWarningDiv
         }
     }
 
@@ -382,7 +382,7 @@
       console.log("clearCurrent pozvan, ali nema efekta.");
     }
 
-    // IZMJENA: startRemoveFromList samo mijenja stanje i zove updateDisplay
+    // IZMJENA: startRemoveFromList mijenja stanje i zove updateDisplay
     function startRemoveFromList() {
       if (!removeConfirm) {
         removeButton.innerText = 'Potvrdi';
@@ -390,7 +390,7 @@
         removeButton.classList.add('yellow-btn');
         removeConfirm = true;
         playSound('click-sound');
-        updateDisplay(); // Prikaži poruku potvrde
+        updateDisplay(); // Pokaži poruku za brisanje
       } else {
         if (povijest.length > 0) {
           const removed = povijest.pop();
@@ -401,19 +401,19 @@
         removeButton.classList.remove('yellow-btn');
         removeButton.classList.add('red-btn');
         removeConfirm = false;
-        updateDisplay(); // Ažuriraj prikaz (info o zadnjem ili sakrij)
+        updateDisplay(); // Ažuriraj prikaz (pokazat će zadnji item ili ništa)
       }
     }
 
     // IZMJENA: Listener zove updateDisplay kod otkazivanja
     document.body.addEventListener('click', (event) => {
-        // Provjeri je li mod potvrde aktivan i da li klik NIJE bio na gumb ILI na samu poruku upozorenja
+        // Ne otkazuj ako se klikne na sam gumb ili na poruku upozorenja
         if (removeConfirm && !removeButton.contains(event.target) && !deleteWarningDiv.contains(event.target)) {
             removeButton.innerText = removeBtnInitialText;
             removeButton.classList.remove('yellow-btn');
             removeButton.classList.add('red-btn');
             removeConfirm = false;
-            updateDisplay(); // Vrati prikaz zadnjeg itema (ili sakrij ako je lista prazna)
+            updateDisplay(); // Vrati prikaz zadnjeg itema
         }
     }, true);
 
@@ -452,12 +452,11 @@
 
                const existingItem = povijest.find(item => item.qrCode === decodedText);
 
-               loadedMsg.style.display = 'none';
-               duplicateWarning.style.display = 'none';
+               loadedMsg.style.display = 'none'; // Uvijek sakrij
+               duplicateWarning.style.display = 'none'; // Uvijek sakrij (gornje upozorenje)
 
                if (existingItem) {
-                   // Pokaži upozorenje o duplikatu (iznad Total)
-                   duplicateWarning.style.display = 'block';
+                   duplicateWarning.style.display = 'block'; // Pokaži gornje upozorenje
                    duplicateWarning.style.animation = 'none';
                    duplicateWarning.offsetHeight;
                    duplicateWarning.style.animation = 'pulse 0.5s ease-in-out 3 alternate';
@@ -479,11 +478,10 @@
                        time: time
                    });
                    ukupno += iznosEura;
-                   updateDisplay(); // Ažurira sve, UKLJUČUJUĆI info o zadnjem računu
+                   updateDisplay(); // Ažurira SVE, uključujući donju poruku
                    playSound('scan-sound');
 
-                   // Pokaži "UČITANO" poruku
-                   loadedMsg.style.display = 'block';
+                   loadedMsg.style.display = 'block'; // Pokaži "UČITANO"
                    loadedMsg.style.animation = 'none';
                    loadedMsg.offsetHeight;
                    loadedMsg.style.animation = 'zoomFade 1s ease-out';
@@ -504,7 +502,7 @@
            }
            loadedMsg.style.display = 'none';
            duplicateWarning.style.display = 'none';
-           deleteWarningDiv.style.display = 'none'; // Sakrij i ovo
+           deleteWarningDiv.style.display = 'none'; // Sakrij i ovo u slučaju greške
        }
     }
 
