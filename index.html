@@ -89,7 +89,7 @@
       z-index: 4;
       min-height: 2.5em;
     }
-    #amount-label { /* Ostaje nepromijenjen */
+    #amount-label { /* Ostaje, ali se ne koristi za poruke */
       font-weight: bold;
       color: yellow;
       background-color: rgba(0, 0, 0, 0.5);
@@ -98,7 +98,7 @@
       display: none;
       text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
-    #current-amount { /* Ostaje nepromijenjen */
+    #current-amount { /* Ostaje, ali se ne koristi */
       font-size: 1.5em;
       font-weight: bold;
       color: yellow;
@@ -269,7 +269,7 @@
   </div>
 
   <div id="amount-section">
-    <!-- Prazno -->
+     <!-- Prazno -->
   </div>
   <!-- Poruka koja će se dinamički puniti -->
   <div id="delete-warning"></div>
@@ -286,13 +286,14 @@
 
   <!-- JavaScript (Tvoja verzija + minimalne izmjene za prikaz poruke) -->
   <script>
+    // === POČETAK TVOJE ORIGINALNE SKRIPTE (do modifikacije funkcije) ===
     let ukupno = 0;
     let povijest = [];
     let removeConfirm = false;
 
     const totalDiv = document.getElementById('total');
     const invoiceCountDiv = document.getElementById('invoice-count');
-    // const amountLabel = document.getElementById('amount-label'); // Ne treba
+    // const amountLabel = document.getElementById('amount-label'); // Ne treba za ovo
     const historyList = document.getElementById('historyList');
     const removeButton = document.getElementById('remove-from-list-btn');
     const duplicateWarning = document.getElementById('duplicate-warning'); // Gornje
@@ -301,16 +302,16 @@
     const removeBtnInitialText = 'Obriši iz liste';
     const deleteWarningDiv = document.getElementById('delete-warning'); // Donje
 
-    // IZMJENA: updateDisplay zove handleAmountLabelVisibility
     function updateDisplay() {
       totalDiv.innerText = `UKUPNO: ${ukupno.toFixed(2)} €`;
       const count = povijest.length;
       invoiceCountDiv.innerText = `${count} ${count === 1 ? 'RAČUN' : 'RAČUNA'}`;
       if (count === 0) invoiceCountDiv.innerText = '0 RAČUNA';
 
-      // Sakrij neiskorištene elemente
       document.getElementById('current-amount').style.display = 'none';
-      document.getElementById('amount-label').style.display = 'none'; // Sakrij stari label
+      // amount-label se ne koristi za prikaz poruke, pa ga sakrijemo
+      const amountLabel = document.getElementById('amount-label');
+      if (amountLabel) amountLabel.style.display = 'none';
       document.getElementById('clear-current-btn').style.display = 'none';
 
       updateHistory();
@@ -340,11 +341,11 @@
         }
     }
 
-    // IZMJENA: handleAmountLabelVisibility sada radi s #delete-warning divom
+    // === IZMJENA FUNKCIJE handleAmountLabelVisibility ===
     function handleAmountLabelVisibility() {
-        // Uvijek sakrij stari label ako postoji
-        const amountLabel = document.getElementById('amount-label');
-        if(amountLabel) amountLabel.style.display = 'none';
+        // const amountLabel = document.getElementById('amount-label'); // Ne treba više
+        // amountLabel.style.display = 'none'; // Stari label sakrij
+        // deleteWarningDiv.style.display = 'none'; // Resetiraj prikaz
 
         if (removeConfirm && povijest.length > 0) {
             // Prikaz potvrde brisanja u #delete-warning
@@ -357,12 +358,21 @@
             deleteWarningDiv.innerText = `ZADNJE U LISTI: ${lastItem.time} - ${lastItem.amount.toFixed(2)} €`;
             deleteWarningDiv.style.display = 'block';
         } else {
-            // Sakrij #delete-warning ako je lista prazna ili nije ni jedno ni drugo stanje
+            // Sakrij #delete-warning ako je lista prazna
             deleteWarningDiv.style.display = 'none';
         }
-    }
 
-    function playSound(id) {
+        // Osiguraj da stari amountLabel ostane sakriven
+        const amountLabel = document.getElementById('amount-label');
+        if(amountLabel) {
+            amountLabel.style.display = 'none';
+            amountLabel.classList.remove('delete-mode'); // Ukloni delete-mode klasu
+        }
+    }
+    // === KRAJ IZMJENE FUNKCIJE handleAmountLabelVisibility ===
+
+
+     function playSound(id) {
       const sound = document.getElementById(id);
       if (sound) {
         sound.pause();
@@ -419,7 +429,7 @@
     }, true);
 
 
-    // handleScan OSTAJE KAO U TVOM KODU (osim poziva handleAmountLabelVisibility)
+    // handleScan OSTAJE KAO U TVOM KODU
     function handleScan(decodedText) {
        if (removeConfirm) {
            removeButton.innerText = removeBtnInitialText;
