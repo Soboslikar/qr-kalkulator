@@ -360,18 +360,30 @@
     }
 
     function handleAmountLabelVisibility() {
-        amountLabel.style.display = 'none';
-        deleteWarningDiv.style.display = 'none';
+       // === POČETAK KODA ZA ZALIJEPITI UNUTAR handleAmountLabelVisibility ===
+// Sakrij stari amount-label ako postoji (za svaki slučaj)
+const amountLabel = document.getElementById('amount-label');
+if (amountLabel) {
+    amountLabel.style.display = 'none';
+    amountLabel.classList.remove('delete-mode');
+}
 
-        if (removeConfirm && povijest.length > 0) {
-            const lastItem = povijest[povijest.length - 1];
-            deleteWarningDiv.innerText = `OBRIŠI ${lastItem.amount.toFixed(2)} €?`;
-            deleteWarningDiv.style.display = 'block';
-        } else {
-            deleteWarningDiv.innerText = 'OBRIŠI IZNOS';
-            amountLabel.classList.remove('delete-mode');
-            amountLabel.innerText = 'DODAJ IZNOS:';
-        }
+// Sada radi s #delete-warning divom
+if (removeConfirm && povijest.length > 0) {
+    // Prikaz potvrde brisanja
+    const lastItem = povijest[povijest.length - 1];
+    deleteWarningDiv.innerText = `OBRIŠI ${lastItem.amount.toFixed(2)} €?`;
+    deleteWarningDiv.style.display = 'block';
+} else if (!removeConfirm && povijest.length > 0) {
+    // Prikaz informacije o zadnjem računu
+    const lastItem = povijest[povijest.length - 1];
+    deleteWarningDiv.innerText = `ZADNJE U LISTI: ${lastItem.time} - ${lastItem.amount.toFixed(2)} €`;
+    deleteWarningDiv.style.display = 'block';
+} else {
+    // Sakrij div ako je lista prazna ili nije ni jedno ni drugo stanje
+    deleteWarningDiv.style.display = 'none';
+}
+// === KRAJ KODA ZA ZALIJEPITI UNUTAR handleAmountLabelVisibility ===
     }
 
 
