@@ -6,7 +6,7 @@
   <title>QR Kalkulator</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    /* CSS - Tvoja verzija + dodatak za nowrap */
+    /* CSS - Tvoja zadnja verzija + nowrap za #delete-warning */
     body {
       font-family: sans-serif;
       margin: 0;
@@ -84,12 +84,12 @@
       align-items: center;
       gap: 1em;
       position: fixed;
-      top: 28em;
+      top: 28em; /* Pozicija */
       width: 100%;
       z-index: 4;
       min-height: 2.5em;
     }
-    #amount-label { /* Ne koristi se više za potvrdu */
+    #amount-label { /* Neće se koristiti za prikaz potvrde */
       font-weight: bold;
       color: yellow;
       background-color: rgba(0, 0, 0, 0.5);
@@ -234,7 +234,7 @@
         border-bottom: none;
      }
      /* IZMJENA: Stil za #delete-warning + nowrap */
-    #delete-warning {
+    #delete-warning { /* Poruka za brisanje iz liste / info o zadnjem */
       color: red; /* Crvena slova */
       font-weight: bold;
       display: none; /* Inicijalno sakriven */
@@ -269,7 +269,7 @@
   </div>
 
   <div id="amount-section">
-    <!-- Prazno ili za druge elemente -->
+     <!-- Prazno -->
   </div>
   <!-- Poruka koja će se dinamički puniti -->
   <div id="delete-warning"></div>
@@ -284,7 +284,7 @@
   <audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
   <audio id="remove-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
 
-  <!-- JavaScript (Tvoja verzija + izmjene) -->
+  <!-- JavaScript (Tvoja verzija + izmjene za prikaz poruke) -->
   <script>
     let ukupno = 0;
     let povijest = [];
@@ -292,14 +292,14 @@
 
     const totalDiv = document.getElementById('total');
     const invoiceCountDiv = document.getElementById('invoice-count');
-    // const amountLabel = document.getElementById('amount-label'); // Uklonjeno jer se ne koristi
+    // const amountLabel = document.getElementById('amount-label'); // Ne treba
     const historyList = document.getElementById('historyList');
     const removeButton = document.getElementById('remove-from-list-btn');
-    const duplicateWarning = document.getElementById('duplicate-warning'); // Gornje upozorenje
+    const duplicateWarning = document.getElementById('duplicate-warning'); // Gornje
     const loadedMsg = document.getElementById('loaded-message');
     const instructionDiv = document.getElementById('scan-instruction');
     const removeBtnInitialText = 'Obriši iz liste';
-    const deleteWarningDiv = document.getElementById('delete-warning'); // Div za donje poruke
+    const deleteWarningDiv = document.getElementById('delete-warning'); // Donje
 
     // IZMJENA: updateDisplay kontrolira deleteWarningDiv
     function updateDisplay() {
@@ -346,13 +346,12 @@
 
      function checkRemoveButtonVisibility() {
         removeButton.style.display = povijest.length > 0 ? 'block' : 'none';
-        // Ažuriraj stanje gumba ako je lista prazna a bio je u confirm modu
         if (povijest.length === 0 && removeConfirm) {
             removeButton.innerText = removeBtnInitialText;
             removeButton.classList.remove('yellow-btn');
             removeButton.classList.add('red-btn');
             removeConfirm = false;
-            // Poziv updateDisplay će sakriti deleteWarningDiv
+            // updateDisplay će sakriti deleteWarningDiv
         }
     }
 
@@ -405,7 +404,6 @@
 
     // IZMJENA: Listener zove updateDisplay kod otkazivanja
     document.body.addEventListener('click', (event) => {
-        // Ne otkazuj ako se klikne na sam gumb ili na poruku upozorenja
         if (removeConfirm && !removeButton.contains(event.target) && !deleteWarningDiv.contains(event.target)) {
             removeButton.innerText = removeBtnInitialText;
             removeButton.classList.remove('yellow-btn');
@@ -504,7 +502,7 @@
        }
     }
 
-    // Inicijalizacija skenera OSTAJE ISTA
+    // Inicijalizacija skenera - OSTAJE KAKO JE BILA U TVOM KODU
     const html5QrCode = new Html5Qrcode("reader");
     const qrConfig = { fps: 5, qrbox: { width: 250, height: 250 } };
 
@@ -537,7 +535,7 @@
       instructionDiv.style.display = 'none';
     });
 
-    // Dodatak za Web Share API OSTAJE ISTI
+    // Dodatak za Web Share API - OSTAJE KAKO JE BIO U TVOM KODU
     const shareButton = document.getElementById('share-button');
 
     if (navigator.share) {
@@ -568,7 +566,7 @@
 
   </script>
 
-  <!-- Statcounter kod OSTAJE ISTI -->
+  <!-- Statcounter kod - OSTAJE KAKO JE BIO U TVOM KODU -->
   <script type="text/javascript">
   var sc_project=12702047;
   var sc_invisible=1;
