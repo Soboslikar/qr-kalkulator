@@ -6,7 +6,7 @@
   <title>QR Kalkulator</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    /* CSS */
+    /* CSS - Vaša priložena verzija + stil za instrukciju ISPRAVLJENO */
     body {
       font-family: sans-serif;
       margin: 0;
@@ -19,17 +19,17 @@
       color: yellow;
       font-size: 1.2em;
       font-weight: bold;
-      margin-bottom: 0.5em;
+      margin-bottom: 0.5em; /* Originalni margin */
       position: absolute;
       width: 100%;
       left: 0;
       top: 0.5em;
-      z-index: 3;
+      z-index: 3; /* Postavljeno na 3 da bude iznad instrukcije */
       text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
     }
     #scan-instruction {
       position: absolute;
-      top: 2.8em;
+      top: 2.8em; /* Prilagodite ovu vrijednost po potrebi */
       left: 50%;
       transform: translateX(-50%);
       width: 90%;
@@ -37,7 +37,7 @@
       color: white;
       font-size: 1em;
       font-weight: bold;
-      z-index: 2;
+      z-index: 2; /* Ispod headera (z-index: 3), iznad readera (z-index: 1 ili default 0) */
       text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
       pointer-events: none;
       display: block;
@@ -63,7 +63,7 @@
       top: 15em;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 4;
+      z-index: 4; /* Povećan z-index da bude iznad svega */
       text-align: center;
       text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
@@ -86,7 +86,7 @@
       position: fixed;
       top: 28em;
       width: 100%;
-      z-index: 4;
+      z-index: 4; /* Povećan z-index */
       min-height: 2.5em;
     }
     #amount-label {
@@ -113,22 +113,23 @@
       display: none;
       text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
-    #duplicate-warning {
-      position: fixed;
-      top: 30%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 10;
+    #duplicate-warning { /* Ovo je upozorenje koje se premješta */
       font-weight: bold;
       color: red;
       background-color: rgba(255, 255, 255, 0.8);
       padding: 0.3em 0.8em;
       border-radius: 5px;
       border: 1px solid red;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
       display: none;
       text-align: center;
       animation: pulse 0.5s ease-in-out 4 alternate;
+      /* Dodajemo pozicioniranje kao kod loaded-message */
+      position: fixed;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
     #loaded-message {
         font-weight: bold;
@@ -140,7 +141,7 @@
         top: 30%;
         left: 50%;
         transform: translate(-50%, -50%);
-        /* IZMJENA: Koristi trajanje od 2s */
+        /* IZMJENA: Trajanje animacije 2s */
         animation: zoomFade 2s ease-out;
         z-index: 10;
         background-color: rgba(255, 255, 255, 0.85);
@@ -149,6 +150,7 @@
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
     @keyframes pulse {
+      /* Dodan translate da radi s fixed pozicioniranjem */
       0% { transform: translate(-50%, -50%) scale(1); }
       50% { transform: translate(-50%, -50%) scale(1.1); }
       100% { transform: translate(-50%, -50%) scale(1); }
@@ -228,14 +230,16 @@
       font-weight: bold;
       display: none;
       text-align: center;
-      position: fixed; /* Dodano da bude iznad ostalog */
-      top: 28em; /* Ista pozicija kao amount-section */
+      /* Styling da se poklapa s amount-label.delete-mode */
+      position: fixed;
+      top: 28em;
       left: 50%;
       transform: translateX(-50%);
       background-color: rgba(255, 255, 0, 0.8); /* Žuta pozadina */
       padding: 0.3em 0.6em;
       border-radius: 3px;
       z-index: 5; /* Iznad amount-section */
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }
   </style>
 </head>
@@ -247,7 +251,7 @@
 
   <!-- Poruke koje se prikazuju na istom mjestu -->
   <div id="loaded-message">UČITANO</div>
-  <div id="duplicate-warning">TAJ RAČUN JE URAČUNAT</div>
+  <div id="duplicate-warning">TAJ RAČUN JE URAČUNAT</div> <!-- Upozorenje premješteno ovdje logički -->
 
   <div id="total">UKUPNO: 0.00 €</div>
   <div id="invoice-count">0 RAČUNA</div>
@@ -256,7 +260,7 @@
     <ul id="historyList"></ul>
   </div>
 
-  <!-- Sekcija za info o brisanju (amount-label i current-amount se ne koriste više ovdje) -->
+  <!-- Sekcija za prikaz iznosa (amount-label i current-amount se ne koriste više ovdje) -->
   <div id="amount-section">
      <!-- Prazno ili za buduće elemente -->
   </div>
@@ -265,6 +269,7 @@
 
   <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()" style="display:none;">Obriši</button>
   <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
+
 
   <!-- Zvukovi -->
   <audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
@@ -279,13 +284,18 @@
 
     const totalDiv = document.getElementById('total');
     const invoiceCountDiv = document.getElementById('invoice-count');
+    // amountLabel i currentAmount se više ne koriste za prikaz skeniranog iznosa
     const historyList = document.getElementById('historyList');
     const removeButton = document.getElementById('remove-from-list-btn');
-    const duplicateWarning = document.getElementById('duplicate-warning');
-    const loadedMsg = document.getElementById('loaded-message');
+    const duplicateWarning = document.getElementById('duplicate-warning'); // Referenca za upozorenje duplikata
+    const loadedMsg = document.getElementById('loaded-message'); // Referenca za "UČITANO"
     const instructionDiv = document.getElementById('scan-instruction');
     const removeBtnInitialText = 'Obriši iz liste';
     const deleteWarningDiv = document.getElementById('delete-warning'); // Referenca za poruku brisanja
+
+    // Funkcije updateDisplay, updateHistory, checkRemoveButtonVisibility,
+    // playSound, clearCurrent, startRemoveFromList, event listener za body click
+    // - ostaju iste kao u tvom kodu osim handleAmountLabelVisibility
 
     function updateDisplay() {
       totalDiv.innerText = `UKUPNO: ${ukupno.toFixed(2)} €`;
@@ -294,8 +304,13 @@
       if (count === 0) invoiceCountDiv.innerText = '0 RAČUNA';
 
       // Sakrij elemente koji se više ne koriste ili dinamički prikazuju
+      // current-amount i amount-label (osim u delete modu) se više ne koriste za prikaz iznosa
       document.getElementById('current-amount').style.display = 'none';
-      document.getElementById('amount-label').style.display = 'none';
+      const amountLabel = document.getElementById('amount-label');
+      if (!amountLabel.classList.contains('delete-mode')) { // Ne skrivaj ako je u delete modu
+        amountLabel.style.display = 'none';
+      }
+      // duplicateWarning se kontrolira u handleScan
       document.getElementById('clear-current-btn').style.display = 'none';
 
       updateHistory();
@@ -325,9 +340,11 @@
         }
     }
 
+    // Ažurirana funkcija da koristi deleteWarningDiv
     function handleAmountLabelVisibility() {
-        // Sakrij poruku za brisanje po defaultu
-        deleteWarningDiv.style.display = 'none';
+        const amountLabel = document.getElementById('amount-label'); // Originalna labela
+        amountLabel.style.display = 'none'; // Originalnu uvijek sakrij osim ako je delete mode
+        deleteWarningDiv.style.display = 'none'; // Poruku za brisanje sakrij po defaultu
 
         if (removeConfirm && povijest.length > 0) {
             const lastItem = povijest[povijest.length - 1];
@@ -335,7 +352,11 @@
             deleteWarningDiv.innerText = `OBRIŠI ${lastItem.amount.toFixed(2)} €?`;
             deleteWarningDiv.style.display = 'block';
         } else {
-             deleteWarningDiv.innerText = 'OBRIŠI IZNOS'; // Vrati originalni tekst
+             // Vrati originalni tekst ako treba, ali ostaje sakriveno
+             deleteWarningDiv.innerText = 'OBRIŠI IZNOS';
+             // Vrati i originalni tekst amountLabel-a
+             amountLabel.classList.remove('delete-mode');
+             amountLabel.innerText = 'DODAJ IZNOS:';
         }
     }
 
@@ -385,6 +406,7 @@
     }
 
     document.body.addEventListener('click', (event) => {
+        // Provjeri je li klik bio izvan gumba "Obriši/Potvrdi" ILI poruke upozorenja za brisanje
         if (removeConfirm && !removeButton.contains(event.target) && !deleteWarningDiv.contains(event.target)) {
             removeButton.innerText = removeBtnInitialText;
             removeButton.classList.remove('yellow-btn');
@@ -394,7 +416,7 @@
         }
     }, true);
 
-    // --- Funkcija s odgodom za duplikat i provjerom zadnjeg unosa ---
+    // --- IZMIJENJENA handleScan funkcija ---
     function handleScan(decodedText) {
        if (removeConfirm) {
            removeButton.innerText = removeBtnInitialText;
@@ -450,12 +472,13 @@
                                duplicateWarning.style.display = 'none';
                                console.log("Upozorenje o duplikatu sakriveno.");
                            }
-                       }, 2200); // Trajanje upozorenja ostaje isto
+                       }, 2200); // Trajanje upozorenja ostaje isto (2s animacija + buffer)
                    }, 1000); // Odgoda od 1 sekunde prije prikaza
 
                } else if (existingItem) {
                    // 2b. Duplikat je pronađen, ali NIJE zadnji unos -> Ne radi ništa vizualno
                    console.log("Skeniran stari duplikat (nije zadnji unos). Ne prikazuje se upozorenje.");
+                   // Ovdje ne prikazujemo ni loadedMsg ni duplicateWarning
 
                } else {
                    // 2c. Novi račun -> Pokaži "UČITANO"
@@ -494,12 +517,13 @@
            } else {
                console.error("Neočekivana greška pri obradi QR koda:", error, decodedText);
            }
+           // Sakrij obje poruke i u slučaju greške
            loadedMsg.style.display = 'none';
            duplicateWarning.style.display = 'none';
        }
     }
 
-    // Inicijalizacija skenera (ostaje ista)
+    // Inicijalizacija skenera (ostaje ista kao u tvom kodu)
     const html5QrCode = new Html5Qrcode("reader");
     const qrConfig = { fps: 5, qrbox: { width: 250, height: 250 } };
 
