@@ -6,7 +6,7 @@
   <title>QR Kalkulator</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    /* CSS */
+    /* CSS - VRAĆENO NA ORIGINAL + IZMJENE ZA INSTRUKCIJU */
     body {
       font-family: sans-serif;
       margin: 0;
@@ -19,7 +19,7 @@
       color: yellow;
       font-size: 1.2em;
       font-weight: bold;
-      /* margin-bottom: 0.5em; */ /* Uklonjen margin-bottom da smanjimo razmak */
+      margin-bottom: 0.5em; /* Vraćen originalni margin */
       position: absolute;
       width: 100%;
       left: 0;
@@ -27,28 +27,30 @@
       z-index: 1;
       text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
     }
-    /* --- NOVO: Stil za instrukciju --- */
+    /* --- NOVO: Stil za instrukciju (preko kamere) --- */
     #scan-instruction {
+      position: absolute; /* Pozicioniranje preko drugih elemenata */
+      top: 4em; /* Odmak od vrha (ispod headera) */
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%; /* Širina teksta */
       text-align: center;
-      color: #333; /* Tamno siva boja */
-      font-size: 0.9em;
+      color: white; /* Bijela boja */
+      font-size: 1em;
       font-weight: bold;
-      margin-top: 2.5em; /* Pomereno ispod headera */
-      margin-bottom: 0.5em;
-      position: relative; /* Da bude u normalnom toku */
-      z-index: 1;
+      z-index: 2; /* Iznad readera, ispod totala */
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); /* Sjena za čitljivost */
+      pointer-events: none; /* Da ne ometa klikove/dodire na kameru ako je potrebno */
     }
     #reader {
       width: 100%;
       max-width: 400px;
       margin: auto;
-      /* Povećana visina da stane instrukcija */
-      height: calc(55vh - 2em); /* Smanjena visina da napravimo mjesta */
-      position: relative;
+      height: 55vh; /* Vraćena originalna visina */
+      position: relative; /* Ostaje relative da djeca mogu biti absolute */
       border: 1px solid #ccc;
       background: #e0e0e0;
-      /* Dodan margin-top da se odmakne od instrukcije */
-      margin-top: 0.5em;
+      margin-top: 3em; /* Dodan margin da se odmakne od headera */
     }
     #total {
       display: block;
@@ -225,7 +227,7 @@
 <body>
   <!-- HTML -->
   <div id="header">QR Kalkulator by Banović</div>
-  <!-- --- NOVI ELEMENT ZA INSTRUKCIJU --- -->
+  <!-- --- ELEMENT ZA INSTRUKCIJU (pozicioniran preko kamere) --- -->
   <div id="scan-instruction">Pozicioniraj qr kod unutar kvadrata kamere</div>
   <div id="reader"></div>
   <div id="loaded-message">UČITANO</div>
@@ -254,7 +256,6 @@
   <!-- JavaScript -->
   <script>
     let ukupno = 0;
-    // Uklonjen 'addedTimestamp' iz povijesti
     let povijest = []; // Primjer: { amount: 12.34, qrCode: "...", time: "10:30" }
     let currentAmount = 0;
     let currentQRCode = '';
@@ -270,7 +271,7 @@
     const duplicateWarning = document.getElementById('duplicate-warning');
     const loadedMsg = document.getElementById('loaded-message');
     const removeBtnInitialText = 'Obriši iz liste';
-    // --- NOVO: Referenca na instrukciju ---
+    // --- Referenca na instrukciju ---
     const instructionDiv = document.getElementById('scan-instruction');
 
     function updateDisplay() {
@@ -366,7 +367,7 @@
         }
     }, true);
 
-    // *** AŽURIRANA handleScan FUNKCIJA - UKLONJEN GRACE PERIOD I ZVUK DUPLIKATA ***
+    // *** AŽURIRANA handleScan FUNKCIJA ***
     function handleScan(decodedText) {
        if (removeConfirm) {
            removeButton.innerText = removeBtnInitialText;
@@ -393,18 +394,13 @@
                    }
                }
 
-               // --- JEDNOSTAVNA DUPLIKAT PROVJERA (BEZ VREMENA) ---
                const existingItem = povijest.find(item => item.qrCode === decodedText);
 
                if (existingItem) {
-                   // --- DUPLIKAT PRONAĐEN ---
-                   // Pokaži upozorenje ODMAH, BEZ ZVUKA
                    duplicateWarning.style.display = 'block';
                    duplicateWarning.style.animation = 'none';
                    duplicateWarning.offsetHeight; // Reflow
                    duplicateWarning.style.animation = 'pulse 0.5s ease-in-out 4 alternate';
-
-                   // Sakrij upozorenje nakon 2 sekunde
                    setTimeout(() => {
                        if (duplicateWarning.style.display === 'block') {
                            duplicateWarning.style.display = 'none';
@@ -412,27 +408,21 @@
                    }, 2000);
 
                } else {
-                   // --- NOVI RAČUN ---
-                   // --- NOVO: Sakrij instrukciju ako je vidljiva ---
+                   // --- Sakrij instrukciju ako je vidljiva ---
                    if (instructionDiv.style.display !== 'none') {
                        instructionDiv.style.display = 'none';
-                       // Malo prilagodimo visinu readera da popuni prostor (opcionalno)
-                       // document.getElementById('reader').style.height = '55vh';
                    }
-                   // ----------------------------------------------
+                   // ------------------------------------------
 
-                   // Dodaj u povijest (bez timestampa)
                    povijest.push({
                        amount: iznosEura,
                        qrCode: decodedText,
                        time: time
-                       // addedTimestamp više nije potreban
                    });
                    ukupno += iznosEura;
                    updateDisplay();
-                   playSound('scan-sound'); // Zvuk uspjeha (Google pop.ogg)
+                   playSound('scan-sound');
 
-                   // Prikaz "UČITANO"
                    loadedMsg.style.display = 'block';
                    loadedMsg.style.animation = 'none';
                    loadedMsg.offsetHeight; // Reflow
@@ -449,7 +439,8 @@
 
     // Inicijalizacija skenera
     const html5QrCode = new Html5Qrcode("reader");
-    const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
+    // --- Smanjen FPS na 5 radi potencijalnog smanjenja opterećenja ---
+    const qrConfig = { fps: 5, qrbox: { width: 250, height: 250 } };
 
     Html5Qrcode.getCameras().then(devices => {
       if (devices && devices.length) {
@@ -457,21 +448,33 @@
           { facingMode: "environment" },
           qrConfig,
           handleScan,
-          (errorMessage) => { /* Ignoriraj greške */ }
+          (errorMessage) => { /* Ignoriraj greške detekcije */ }
         ).then(() => {
             console.log("QR skener pokrenut.");
             updateDisplay();
         }).catch(err => {
             console.error("Greška kod startanja QR skenera:", err);
-            document.getElementById('reader').innerText = 'Greška pri pokretanju kamere.';
+            // --- Ažuriranje poruke o grešci unutar reader elementa ---
+            const readerDiv = document.getElementById('reader');
+            readerDiv.innerHTML = `<div style="padding: 20px; text-align: center; color: red; font-weight: bold;">Greška pri pokretanju kamere. Provjerite dozvole i osvježite stranicu.</div>`;
+            // Sakrij instrukciju ako postoji greška s kamerom
+            instructionDiv.style.display = 'none';
         });
       } else {
           console.error("Nema dostupnih kamera.");
-          document.getElementById('reader').innerText = 'Nema dostupnih kamera.';
+           // --- Ažuriranje poruke o grešci unutar reader elementa ---
+          const readerDiv = document.getElementById('reader');
+          readerDiv.innerHTML = `<div style="padding: 20px; text-align: center; color: red; font-weight: bold;">Nema dostupnih kamera.</div>`;
+          // Sakrij instrukciju ako nema kamere
+          instructionDiv.style.display = 'none';
       }
     }).catch(err => {
       console.error("Greška kod dohvaćanja kamera:", err);
-      document.getElementById('reader').innerText = 'Greška pri pristupu kamerama.';
+       // --- Ažuriranje poruke o grešci unutar reader elementa ---
+      const readerDiv = document.getElementById('reader');
+      readerDiv.innerHTML = `<div style="padding: 20px; text-align: center; color: red; font-weight: bold;">Greška pri pristupu kamerama. Provjerite dozvole preglednika.</div>`;
+      // Sakrij instrukciju ako postoji greška s kamerom
+      instructionDiv.style.display = 'none';
     });
 
   </script>
