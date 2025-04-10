@@ -177,13 +177,13 @@
     #share-button {
       /* Pozicioniranje ispod 'Obriši iz liste' */
       position: fixed;
-      bottom: 65px; /* Malo ispod #remove-from-list-btn (na 100px) */
+      bottom: 30px; /* Malo ispod #remove-from-list-btn (na 100px) */
       right: 50px;  /* Ista desna margina za poravnanje */
       z-index: 3;   /* Ista razina */
 
       /* Izgled gumba */
       background-color: green; /* Zelena pozadina */
-      color: black;         /* Crna slova */
+      color: white;         /* Crna slova */
 
       /* Osnovni stilovi gumba (preuzmi iz .red-btn ili definiraj) */
       padding: 0.5em 1em;
@@ -291,7 +291,7 @@
   <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
 
   <!-- DODATAK: Gumb za dijeljenje -->
-  <button id="share-button" style="display: none;">PODIJELI KALKULATOR</button>
+  <button id="share-button" style="display: none;">PODIJELI NEKOME</button>
 
   <!-- Poruka za potvrdu brisanja -->
   <div id="delete-warning">OBRIŠI IZNOS</div>
