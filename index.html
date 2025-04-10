@@ -19,7 +19,7 @@
       color: yellow;
       font-size: 1.2em;
       font-weight: bold;
-      margin-bottom: 0.5em;
+      /* margin-bottom: 0.5em; */ /* Uklonjen margin-bottom da smanjimo razmak */
       position: absolute;
       width: 100%;
       left: 0;
@@ -27,14 +27,28 @@
       z-index: 1;
       text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
     }
+    /* --- NOVO: Stil za instrukciju --- */
+    #scan-instruction {
+      text-align: center;
+      color: #333; /* Tamno siva boja */
+      font-size: 0.9em;
+      font-weight: bold;
+      margin-top: 2.5em; /* Pomereno ispod headera */
+      margin-bottom: 0.5em;
+      position: relative; /* Da bude u normalnom toku */
+      z-index: 1;
+    }
     #reader {
       width: 100%;
       max-width: 400px;
       margin: auto;
-      height: 55vh;
+      /* Povećana visina da stane instrukcija */
+      height: calc(55vh - 2em); /* Smanjena visina da napravimo mjesta */
       position: relative;
       border: 1px solid #ccc;
       background: #e0e0e0;
+      /* Dodan margin-top da se odmakne od instrukcije */
+      margin-top: 0.5em;
     }
     #total {
       display: block;
@@ -211,6 +225,8 @@
 <body>
   <!-- HTML -->
   <div id="header">QR Kalkulator by Banović</div>
+  <!-- --- NOVI ELEMENT ZA INSTRUKCIJU --- -->
+  <div id="scan-instruction">Pozicioniraj qr kod unutar kvadrata kamere</div>
   <div id="reader"></div>
   <div id="loaded-message">UČITANO</div>
   <div id="total">UKUPNO: 0.00 €</div>
@@ -254,6 +270,8 @@
     const duplicateWarning = document.getElementById('duplicate-warning');
     const loadedMsg = document.getElementById('loaded-message');
     const removeBtnInitialText = 'Obriši iz liste';
+    // --- NOVO: Referenca na instrukciju ---
+    const instructionDiv = document.getElementById('scan-instruction');
 
     function updateDisplay() {
       totalDiv.innerText = `UKUPNO: ${ukupno.toFixed(2)} €`;
@@ -395,6 +413,14 @@
 
                } else {
                    // --- NOVI RAČUN ---
+                   // --- NOVO: Sakrij instrukciju ako je vidljiva ---
+                   if (instructionDiv.style.display !== 'none') {
+                       instructionDiv.style.display = 'none';
+                       // Malo prilagodimo visinu readera da popuni prostor (opcionalno)
+                       // document.getElementById('reader').style.height = '55vh';
+                   }
+                   // ----------------------------------------------
+
                    // Dodaj u povijest (bez timestampa)
                    povijest.push({
                        amount: iznosEura,
