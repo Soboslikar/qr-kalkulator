@@ -1,105 +1,153 @@
 <!DOCTYPE html>
 <html lang="hr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stranica s Animiranim Gumbom</title>
-  
-  <!-- Pretpostavljam da ovdje učitavate svoj glavni CSS -->
-  <!-- <link rel="stylesheet" href="vas-style.css"> -->
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QR Kalkulator</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    /* --- CSS za animaciju gumba --- */
-
-    /* Definicija animacije 'pulsiranje' */
-    @keyframes pulse {
-      0% {
-        transform: scale(1); /* Početna veličina */
-        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.5); /* Primjer sjene - prilagodite boju */
-      }
-      70% {
-        transform: scale(1.05); /* Malo uvećano */
-        box-shadow: 0 0 10px 15px rgba(0, 123, 255, 0); /* Sjena se širi i blijedi */
-      }
-      100% {
-        transform: scale(1); /* Povratak na početnu veličinu */
-        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); /* Sjena nestaje */
-      }
-    }
-
-    /* Primjena animacije na SPECIFIČNI gumb "PODIJELI NEKOME" */
-    /* Koristimo href="#share" kao specifični identifikator */
-    a.x-anchor-button[href="#share"] {
-      display: inline-block; /* Važno za transformaciju i potencijalnu sjenu */
-      /* Osnovna animacija skaliranja */
-      animation-name: pulse;
-      animation-duration: 1.8s; /* Trajanje jednog ciklusa animacije (prilagodite) */
-      animation-iteration-count: infinite; /* Ponavljaj beskonačno */
-      animation-timing-function: ease-out; /* Način kako animacija teče */
-      
-      /* Dodatno: Osigurava da gumb ostane na mjestu */
-      transform-origin: center center; 
-      
-      /* Dodatno: Za bolji vizualni efekt, dodajte zaobljene rubove ako ih već nema */
-      /* border-radius: 5px; */ /* Otkomentirajte i prilagodite ako želite */
-    }
-
-    /* Osnovni stilovi samo za prikaz (vjerojatno ih već imate definirane) */
+    /* CSS - Vaša priložena verzija + stil za gumb dijeljenja */
     body {
       font-family: sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0.5em;
+      background: #f4f4f4;
+      overflow-x: hidden;
     }
 
-    .x-anchor-button {
-        background-color: #007bff; /* Primjer boje pozadine */
-        color: white; /* Primjer boje teksta */
-        padding: 12px 25px; /* Primjer paddinga */
-        text-decoration: none; /* Ukloni podcrtavanje linka */
-        border-radius: 5px; /* Zaobljeni rubovi */
-        /* Moguće je da vaša .x-anchor-button klasa već ima ove stilove */
-        position: relative; /* Potrebno ako koristite x-particle koji se apsolutno pozicionira */
-        overflow: hidden; /* Može pomoći ako x-particle izlazi van */
-    }
-    .x-anchor-text-primary {
-        font-weight: bold;
-    }
-
-    /* Stilovi za x-particle - ovo su samo nagađanja kako bi mogli izgledati */
-    .x-particle {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none; /* Da ne ometa klikanje gumba */
-        /* Daljnji stilovi vjerojatno dolaze iz JS ili CSS-a vaše teme */
-        z-index: 1; /* Ispod teksta */
-    }
-     .x-anchor-content {
-        position: relative; /* Da tekst bude iznad particle efekta */
-        z-index: 2;
+    /* Dodavanje animacije za gumb "PODIJELI NEKOME" */
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.5);
+      }
+      70% {
+        transform: scale(1.1);
+        box-shadow: 0 0 15px 15px rgba(0, 255, 0, 0);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(0, 255, 0, 0);
+      }
     }
 
+    #share-button {
+      /* Pozicioniranje ispod 'Obriši iz liste' */
+      position: fixed;
+      bottom: 30px; /* Malo ispod #remove-from-list-btn (na 100px) */
+      right: 30px;  /* Ista desna margina za poravnanje */
+      z-index: 3;   /* Ista razina */
 
-    /* --- Kraj CSS-a za animaciju --- */
+      /* Izgled gumba */
+      background-color: green; /* Zelena pozadina */
+      color: white;         /* Boja slova */
+
+      /* Osnovni stilovi gumba */
+      padding: 0.5em 1em;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      font-weight: bold;
+
+      /* Animacija */
+      animation: pulse 1.8s infinite ease-out;
+    }
+
+    #share-button:active {
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+    }
+
+    /* Preostali CSS iz vašeg HTML-a */
+    #header {
+      text-align: center;
+      color: yellow;
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 0.5em;
+      position: absolute;
+      width: 100%;
+      left: 0;
+      top: 0.5em;
+      z-index: 3;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+    }
+    #scan-instruction {
+      position: absolute;
+      top: 2.8em;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      text-align: center;
+      color: white;
+      font-size: 1em;
+      font-weight: bold;
+      z-index: 2;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+      pointer-events: none;
+      display: block;
+    }
+    /* Ostali stilovi ostaju nepromijenjeni */
   </style>
 </head>
 <body>
+  <!-- HTML -->
+  <div id="header">QR Kalkulator by Banović</div>
+  <div id="scan-instruction">Pozicioniraj qr kod unutar kvadrata kamere</div>
+  <div id="reader"></div>
+  <div id="loaded-message">UČITANO</div>
 
-  <!-- Vaš HTML isječak -->
-  <div class="x-particle m1g-e" aria-hidden="true" data-x-particle=" MTE3LDAsMCwzMjQsMC4zNCwwLjI1LDEsMSwwLjEsMywwLjUzLDAuMDksMC4xNywzLjcsMC45OSw0LjksMCwxLDEsMCw1MCw1MCw1MCwxMA"></div>
-  <a class="x-anchor x-anchor-button x-anchor-is-button x-anchor-has-text x-anchor-has-graphic has-particle particle-primary" tabindex="0" href="#share">
-      <span class="x-anchor-content">
-          <span class="x-anchor-text">
-              <span class="x-anchor-text-primary">PODIJELI NEKOME</span>
-          </span>
-      </span>
-  </a>
-  <!-- Kraj vašeg HTML isječka -->
+  <div id="duplicate-warning">TAJ RAČUN JE URAČUNAT</div>
 
+  <div id="total">UKUPNO: 0.00 €</div>
+  <div id="invoice-count">0 RAČUNA</div>
+
+  <div id="history">
+    <ul id="historyList"></ul>
+  </div>
+
+  <div id="amount-section">
+    <div id="amount-label">DODAJ IZNOS:</div>
+    <div id="current-amount">0.00 €</div>
+  </div>
+
+  <button class="red-btn" id="clear-current-btn" onclick="clearCurrent()" style="display:none;">Obriši</button>
+  <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
+
+  <!-- Gumb za dijeljenje s animacijom -->
+  <button id="share-button" style="display: none;">PODIJELI NEKOME</button>
+
+  <div id="delete-warning">OBRIŠI IZNOS</div>
+
+  <!-- Zvukovi -->
+  <audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
+  <audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
+  <audio id="remove-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
+
+  <script>
+    // Postojeći JavaScript kod za gumb dijeljenja ostaje nepromijenjen
+    const shareButton = document.getElementById('share-button');
+
+    if (navigator.share) {
+      shareButton.style.display = 'block'; // Pokaži gumb ako je API podržan
+
+      shareButton.addEventListener('click', async () => {
+        try {
+          const shareData = {
+            title: 'QR Kalkulator', // Naslov
+            text: 'Isprobaj praktičan skener-kalkulator za goste ili konobare', // Poruka
+            url: 'https://soboslikar.github.io/qr-kalkulator/' // Link za dijeljenje
+          };
+          await navigator.share(shareData);
+          console.log('Link uspješno podijeljen!');
+        } catch (err) {
+          console.error('Greška pri dijeljenju:', err);
+        }
+      });
+    } else {
+      console.warn('Web Share API nije podržan na ovom pregledniku.');
+    }
+  </script>
 </body>
 </html>
