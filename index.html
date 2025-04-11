@@ -563,7 +563,7 @@
     const html5QrCode = new Html5Qrcode("reader");
     const qrConfig = { fps: 5, qrbox: { width: 250, height: 250 } };
 
-    Html5Qrcode.getCameras().then(devices => {
+       Html5Qrcode.getCameras().then(devices => {
       if (devices && devices.length) {
         html5QrCode.start(
           { facingMode: "environment" },
@@ -578,23 +578,22 @@
             const readerDiv = document.getElementById('reader');
             readerDiv.innerHTML = `<div style="padding: 20px; text-align: center; color: red; font-weight: bold;">Greška pri pokretanju kamere. Provjerite dozvole i osvježite stranicu.</div>`;
             instructionDiv.style.display = 'none';
-            deleteWarningDiv.style.display = 'none'; // Sakrij i ovo ako kamera ne radi
+            // deleteWarningDiv.style.display = 'none'; // Maknuto za test
         });
       } else {
           console.error("Nema dostupnih kamera.");
           const readerDiv = document.getElementById('reader');
           readerDiv.innerHTML = `<div style="padding: 20px; text-align: center; color: red; font-weight: bold;">Nema dostupnih kamera.</div>`;
           instructionDiv.style.display = 'none';
-          deleteWarningDiv.style.display = 'none'; // Sakrij i ovo ako kamera ne radi
+          // deleteWarningDiv.style.display = 'none'; // Maknuto za test
       }
     }).catch(err => {
       console.error("Greška kod dohvaćanja kamera:", err);
       const readerDiv = document.getElementById('reader');
       readerDiv.innerHTML = `<div style="padding: 20px; text-align: center; color: red; font-weight: bold;">Greška pri pristupu kamerama. Provjerite dozvole preglednika.</div>`;
       instructionDiv.style.display = 'none';
-      deleteWarningDiv.style.display = 'none'; // Sakrij i ovo ako kamera ne radi
+      // deleteWarningDiv.style.display = 'none'; // Maknuto za test
     });
-
     // --- Web Share API za gumb dijeljenja ---
     const shareButton = document.getElementById('share-button');
 
