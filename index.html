@@ -1,12 +1,14 @@
  <!DOCTYPE html>
+
 <html lang="hr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  
+
   <title>QR SKENER-KALKULATOR</title>
 
   <!-- Open Graph meta tagovi za bolje dijeljenje -->
+
   <meta property="og:title" content="QR SKENER-KALKULATOR" />
   <meta property="og:description" content="Skenira i automatski zbraja račune za goste ili ugostitelje , u web pregledniku bez instalacije" />
   <meta property="og:type" content="website" />
@@ -15,6 +17,7 @@
   <!-- <meta property="og:image" content="[URL_DO_SLIKE_ZA_PREGLED]"> --> <!-- Opcionalno: Dodajte URL do slike za preview -->
 
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
   <style>
     /* CSS - Očišćena verzija */
     body {
@@ -82,7 +85,7 @@
       color: black;
       padding: 0.1em 0.4em;
       position: fixed;
-      bottom: 140px;
+      bottom: 170px;
       right: 50px;
       z-index: 2;
       text-align: right;
@@ -139,7 +142,7 @@
     }
     #remove-from-list-btn {
       position: fixed;
-      bottom: 100px;
+      bottom: 130px;
       right: 50px;
       z-index: 3;
     }
@@ -239,6 +242,7 @@
       box-shadow: 0 1px 2px rgba(0,0,0,0.4);
     }
   </style>
+
 </head>
 <body>
   <!-- HTML -->
@@ -256,16 +260,20 @@
     <ul id="historyList"></ul>
   </div>
 
-  <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
-  <button id="share-button" style="display: none;">DIJELI KALKULATOR</button>
+
+<button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
+<button id="share-button" style="display: none;">DIJELI KALKULATOR</button>
 
   <!-- Poruka za potvrdu brisanja / zadnji skenirani -->
+
   <div id="delete-warning"></div>
 
   <!-- Zvukovi -->
-  <audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
-  <audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
-  <audio id="remove-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
+
+
+<audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
+<audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
+<audio id="remove-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
 
   <script>
     let ukupno = 0;
@@ -568,6 +576,7 @@
   </script>
 
   <!-- Statcounter kod -->
+
   <script type="text/javascript">
   var sc_project=12702047;
   var sc_invisible=1;
@@ -579,12 +588,15 @@
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(sc, s);
   })();
   </script>
-  <noscript><div class="statcounter"><a title="Web Analytics"
-  href="https://statcounter.com/" target="_blank"><img
-  class="statcounter"
-  src="https://c.statcounter.com/12702047/0/e75d2592/1/"
-  alt="Web Analytics"
-  referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
+
+
+<noscript><div class="statcounter"><a title="Web Analytics"
+href="https://statcounter.com/" target="_blank"><img
+class="statcounter"
+src="https://c.statcounter.com/12702047/0/e75d2592/1/"
+alt="Web Analytics"
+referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
+
   <!-- End of Statcounter Code -->
 
 </body>
