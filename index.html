@@ -6,7 +6,7 @@
 
   <title>QR SKENER-KALKULATOR</title>
 
-  <!-- Open Graph meta tagovi za bolje dijeljenje -->
+  <!-- Open Graph meta tagovi -->
   <meta property="og:title" content="QR SKENER-KALKULATOR" />
   <meta property="og:description" content="Skenira i automatski zbraja račune za goste ili ugostitelje , u web pregledniku bez instalacije" />
   <meta property="og:type" content="website" />
@@ -16,13 +16,10 @@
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
   <style>
-    /* CSS - Iz vaše zadnje verzije */
+    /* CSS - Vraćamo originalne pozicije */
     body {
-      font-family: sans-serif;
-      margin: 0;
-      padding: 0.5em;
-      background: #f4f4f4;
-      overflow-x: hidden;
+      font-family: sans-serif; margin: 0; padding: 0.5em;
+      background: #f4f4f4; overflow-x: hidden;
     }
     #header {
       text-align: center; color: yellow; font-size: 1.2em; font-weight: bold;
@@ -36,16 +33,13 @@
       pointer-events: none; display: block;
     }
     #reader {
-      width: 100%;
-      max-width: 400px;
-      /* VRAĆAMO ORIGINALNI MARGIN-TOP */
+      width: 100%; max-width: 400px;
+      /* VRAĆAMO ORIGINALNI MARGIN */
       margin: auto; 
-      height: 55vh;
-      position: relative; /* Važno za pozicioniranje poruke */
-      border: 1px solid #ccc;
+      height: 55vh; position: relative; border: 1px solid #ccc;
       background: #e0e0e0;
-      /* Originalna margina da stane header/instrukcija */
-      margin-top: 3.5em; 
+      /* NE treba više dodatna margina gore */
+      margin-top: 3.5em; /* Ostavljamo originalnu marginu da stane header */
     }
     #total {
       display: block; font-size: 1.6em !important; font-weight: bold; color: yellow;
@@ -89,9 +83,9 @@
     #delete-warning.delete-mode { color: black; background-color: rgba(255, 255, 0, 0.8); }
     #delete-warning.info-mode { color: white; background-color: rgba(0, 0, 0, 0.6); border: none; box-shadow: 0 1px 2px rgba(0,0,0,0.4); }
     
-    /* *** NOVI STIL ZA PORUKU O NADOGRADNJI *** */
+    /* *** STIL ZA PORUKU O NADOGRADNJI - PREKO KAMERE *** */
     #upgrade-notice {
-        position: absolute; /* Pozicija relativna na #reader */
+        position: absolute; 
         top: 50%; 
         left: 50%;
         transform: translate(-50%, -50%); 
@@ -99,11 +93,12 @@
         color: red;
         font-weight: bold;
         font-size: 1.2em; 
-        z-index: 11; 
+        /* POVEĆAN Z-INDEX */
+        z-index: 12; 
         text-align: center;
         pointer-events: none; 
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.5); 
-        /* Nema pozadine, okvira, paddinga */
+        /* POJAČANA SJENKA */
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.7), -1px -1px 3px rgba(0,0,0,0.7); 
     }
 
     @keyframes pulse { 0% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.1); } 100% { transform: translateX(-50%) scale(1); } }
@@ -112,7 +107,6 @@
     
     #remove-from-list-btn { position: fixed; bottom: 130px; right: 50px; z-index: 3; }
     
-    /* *** STIL ZA NEAKTIVNI GUMB POVIJEST *** */
     #history-toggle-btn {
       position: fixed; bottom: 80px; right: 50px; z-index: 3;
       background-color: white; color: blue; font-weight: bold; 
@@ -161,7 +155,7 @@
   <audio id="remove-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
 
   <script>
-    // JavaScript iz vaše zadnje ispravne verzije ostaje nepromijenjen
+    // JavaScript - Samo jedna izmjena u handleScan
     let ukupno = 0;
     let povijest = [];
     let removeConfirm = false;
@@ -187,7 +181,59 @@
     function playSound(id) { const sound = document.getElementById(id); if (sound) { sound.pause(); sound.currentTime = 0; sound.play().catch(error => { if (error.name !== 'NotAllowedError' && error.name !== 'AbortError') { console.warn(`Zvuk "${id}" greška:`, error); } }); } else { console.warn(`Audio element "${id}" nije pronađen.`); } }
     function startRemoveFromList() { if (!removeButton) return; if (!removeConfirm) { removeButton.innerText = 'Potvrdi'; removeButton.classList.remove('red-btn'); removeButton.classList.add('yellow-btn'); removeConfirm = true; playSound('click-sound'); if(deleteWarningDiv) deleteWarningDiv.dataset.beforeConfirmText = deleteWarningDiv.dataset.lastScanText; if(deleteWarningDiv) delete deleteWarningDiv.dataset.lastScanText; handleInfoDeleteMessageVisibility(); } else { if (povijest.length > 0) { const removed = povijest.pop(); ukupno -= removed.amount; playSound('remove-sound'); } if (povijest.length > 0) { const lastItem = povijest[povijest.length - 1]; if (deleteWarningDiv) deleteWarningDiv.dataset.lastScanText = `ZADNJI RAČUN: ${lastItem.time} = ${lastItem.amount.toFixed(2)} €`; } else { if (deleteWarningDiv) delete deleteWarningDiv.dataset.lastScanText; } resetRemoveMode(); updateDisplay(); } }
     document.body.addEventListener('click', (event) => { const isClickOnRemoveButton = removeButton && removeButton.contains(event.target); const isClickOnDeleteWarning = deleteWarningDiv && deleteWarningDiv.contains(event.target); if (removeConfirm && !isClickOnRemoveButton && !isClickOnDeleteWarning) { resetRemoveMode(); } }, true);
-    function handleScan(decodedText) { if (removeConfirm) resetRemoveMode(); try { const qrParts = decodedText.split('?'); if (qrParts.length < 2) throw new Error("Invalid QR format"); const params = new URLSearchParams(qrParts[1]); const iznosCentStr = params.get('izn'); const datv = params.get('datv'); if (!iznosCentStr || isNaN(parseFloat(iznosCentStr))) throw new Error("Invalid 'izn'"); const iznosCenti = parseFloat(iznosCentStr); const iznosEura = iznosCenti / 100; let time = '??:??'; if (datv && datv.length >= 12) { const hourIndex = datv.toUpperCase().indexOf('T') === 8 ? 9 : (datv.length >= 10 ? datv.length - 4 : -1); const minuteIndex = hourIndex + 2; if (hourIndex !== -1 && datv.length >= minuteIndex + 2) { const hour = datv.substring(hourIndex, hourIndex + 2); const minute = datv.substring(minuteIndex, minuteIndex + 2); if (!isNaN(parseInt(hour)) && !isNaN(parseInt(minute))) { time = `${hour}:${minute}`; } } } const existingItem = povijest.find(item => item.qrCode === decodedText); if (loadedMsg) loadedMsg.style.display = 'none'; if (duplicateWarning) duplicateWarning.style.display = 'none'; if (existingItem) { if (duplicateWarning) { duplicateWarning.style.display = 'block'; duplicateWarning.style.animation = 'none'; duplicateWarning.offsetHeight; duplicateWarning.style.animation = 'pulse 0.5s ease-in-out 3 alternate'; setTimeout(() => { if (duplicateWarning) duplicateWarning.style.display = 'none'; }, 1500); } } else { if (instructionDiv && instructionDiv.style.display === 'block') instructionDiv.style.display = 'none'; const newItem = { amount: iznosEura, qrCode: decodedText, time: time }; povijest.push(newItem); ukupno += iznosEura; playSound('scan-sound'); updateDisplay(); if (loadedMsg) { loadedMsg.style.display = 'block'; loadedMsg.style.animation = 'none'; loadedMsg.offsetHeight; loadedMsg.style.animation = 'zoomFade 1s ease-out'; setTimeout(() => { if (loadedMsg) loadedMsg.style.display = 'none'; }, 1000); } if (deleteWarningDiv) { deleteWarningDiv.dataset.lastScanText = `ZADNJI RAČUN: ${newItem.time} = ${newItem.amount.toFixed(2)} €`; handleInfoDeleteMessageVisibility(); } } } catch (error) { console.error("Greška obrade QR:", error, decodedText); if (loadedMsg) loadedMsg.style.display = 'none'; if (duplicateWarning) duplicateWarning.style.display = 'none'; } }
+    
+    function handleScan(decodedText) { 
+        if (removeConfirm) resetRemoveMode(); 
+        try { 
+            const qrParts = decodedText.split('?'); 
+            if (qrParts.length < 2) throw new Error("Invalid QR format"); 
+            const params = new URLSearchParams(qrParts[1]); 
+            const iznosCentStr = params.get('izn'); 
+            const datv = params.get('datv'); 
+            if (!iznosCentStr || isNaN(parseFloat(iznosCentStr))) throw new Error("Invalid 'izn'"); 
+            const iznosCenti = parseFloat(iznosCentStr); const iznosEura = iznosCenti / 100; 
+            let time = '??:??'; 
+            if (datv && datv.length >= 12) { 
+                const hourIndex = datv.toUpperCase().indexOf('T') === 8 ? 9 : (datv.length >= 10 ? datv.length - 4 : -1); 
+                const minuteIndex = hourIndex + 2; 
+                if (hourIndex !== -1 && datv.length >= minuteIndex + 2) { 
+                    const hour = datv.substring(hourIndex, hourIndex + 2); 
+                    const minute = datv.substring(minuteIndex, minuteIndex + 2); 
+                    if (!isNaN(parseInt(hour)) && !isNaN(parseInt(minute))) { time = `${hour}:${minute}`; } 
+                } 
+            } 
+            const existingItem = povijest.find(item => item.qrCode === decodedText); 
+            if (loadedMsg) loadedMsg.style.display = 'none'; 
+            if (duplicateWarning) duplicateWarning.style.display = 'none'; 
+            if (existingItem) { 
+                if (duplicateWarning) { 
+                    duplicateWarning.style.display = 'block'; duplicateWarning.style.animation = 'none'; 
+                    duplicateWarning.offsetHeight; duplicateWarning.style.animation = 'pulse 0.5s ease-in-out 3 alternate'; 
+                    setTimeout(() => { if (duplicateWarning) duplicateWarning.style.display = 'none'; }, 1500); 
+                } 
+            } else { 
+                // *** ISPRAVAK: Sigurnije sakrivanje instrukcije ***
+                if (instructionDiv) { 
+                    instructionDiv.style.display = 'none'; 
+                } 
+                const newItem = { amount: iznosEura, qrCode: decodedText, time: time }; 
+                povijest.push(newItem); ukupno += iznosEura; 
+                playSound('scan-sound'); updateDisplay(); 
+                if (loadedMsg) { 
+                    loadedMsg.style.display = 'block'; loadedMsg.style.animation = 'none'; 
+                    loadedMsg.offsetHeight; loadedMsg.style.animation = 'zoomFade 1s ease-out'; 
+                    setTimeout(() => { if (loadedMsg) loadedMsg.style.display = 'none'; }, 1000); 
+                } 
+                if (deleteWarningDiv) { 
+                    deleteWarningDiv.dataset.lastScanText = `ZADNJI RAČUN: ${newItem.time} = ${newItem.amount.toFixed(2)} €`; 
+                    handleInfoDeleteMessageVisibility(); 
+                } 
+            } 
+        } catch (error) { 
+            console.error("Greška obrade QR:", error, decodedText); 
+            if (loadedMsg) loadedMsg.style.display = 'none'; if (duplicateWarning) duplicateWarning.style.display = 'none'; 
+        } 
+    }
 
     // Inicijalizacija kamere (originalna)
     const html5QrCode = new Html5Qrcode("reader");
