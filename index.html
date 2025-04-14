@@ -10,11 +10,15 @@
   <meta property="og:url" content="https://soboslikar.github.io/qr-kalkulator/" /> 
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    /* CSS ostaje isti kao u prethodnoj verziji */
+    /* CSS */
     body { font-family: sans-serif; margin: 0; padding: 0.5em; background: #f4f4f4; overflow-x: hidden; min-height: 100vh; }
+    
+    /* --- Stilovi za prebacivanje pogleda --- */
     body.scanner-view #history-page { display: none; }
-     body.history-view #history-page { display: block; background-color: white; padding: 1em; min-height: calc(100vh - 1em); }
-    body.history-view #header, body.history-view #scan-instruction, body.history-view #reader, /* body.history-view #upgrade-notice, */ body.history-view #loaded-message, body.history-view #duplicate-warning, body.history-view #total, body.history-view #invoice-count, body.history-view #history, body.history-view #remove-from-list-btn, body.history-view #history-toggle-btn, body.history-view #share-button, body.history-view #delete-warning { display: none !important; } 
+    body.history-view #history-page { display: flex; flex-direction: column; background-color: white; padding: 1em; min-height: calc(100vh - 2em); /* Prilagođena visina zbog paddinga */ }
+    body.history-view #header, body.history-view #scan-instruction, body.history-view #reader, body.history-view #loaded-message, body.history-view #duplicate-warning, body.history-view #total, body.history-view #invoice-count, body.history-view #history, body.history-view #remove-from-list-btn, body.history-view #history-toggle-btn, body.history-view #share-button, body.history-view #delete-warning { display: none !important; } 
+    
+    /* Osnovni stilovi elemenata */
     #header { text-align: center; color: yellow; font-size: 1.2em; font-weight: bold; margin-bottom: 0.5em; position: absolute; width: 100%; left: 0; top: 0.5em; z-index: 3; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); }
     #scan-instruction { position: absolute; top: 2.8em; left: 50%; transform: translateX(-50%); width: 90%; text-align: center; color: white; font-size: 1em; font-weight: bold; z-index: 2; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); pointer-events: none; display: block; }
     #reader { width: 100%; max-width: 400px; margin: auto; height: 55vh; position: relative; border: 1px solid #ccc; background: #e0e0e0; }
@@ -25,35 +29,67 @@
      #delete-warning { font-weight: bold; display: none; text-align: center; position: fixed; top: 21.5em; left: 50%; transform: translateX(-50%); padding: 0.3em 0.6em; border-radius: 3px; z-index: 5; box-shadow: 0 1px 2px rgba(0,0,0,0.2); white-space: nowrap; }
     #delete-warning.delete-mode { color: black; background-color: rgba(255, 255, 0, 0.8); }
     #delete-warning.info-mode { color: white; background-color: rgba(0, 0, 0, 0.6); border: none; box-shadow: 0 1px 2px rgba(0,0,0,0.4); }
-    /* #upgrade-notice { position: fixed; top: 30vh; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 380px; z-index: 15; pointer-events: none; text-align: center; font-size: 1.2em; font-weight: bold; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); color: red !important; } */
+    
+    /* --- Uklonjen stil za #upgrade-notice --- */
+
     @keyframes pulse { 0% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.1); } 100% { transform: translateX(-50%) scale(1); } }
     @keyframes zoomFade { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
     @keyframes pulse-share { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+    
     #remove-from-list-btn { position: fixed; bottom: 130px; right: 50px; z-index: 3; }
     #history-toggle-btn { position: fixed; bottom: 80px; right: 50px; z-index: 3; background-color: white; color: blue; font-weight: bold; }
     #share-button { position: fixed; bottom: 30px; right: 15px; z-index: 3; background-color: green; color: white; padding: 0.5em 1em; font-size: 1em; border: none; border-radius: 5px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); font-weight: bold; animation: pulse-share 1.5s ease-in-out infinite; }
     #share-button:active { box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); animation: none; }
+    
     button { padding: 0.5em 1em; font-size: 1em; border: none; border-radius: 5px; color: black; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
     button:active { box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); }
     .red-btn { background: #ff0000; color: yellow; }
     .yellow-btn { background-color: yellow; color: black; }
-    #history { max-height: 180px; overflow-y: auto; margin: 0; padding: 1em; background: white; border-radius: 5px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); width: 150px; position: fixed; bottom: 10px; left: 10px; z-index: 1; display: block; }
+    
+    #history { /* Mala lista */ max-height: 180px; overflow-y: auto; margin: 0; padding: 1em; background: white; border-radius: 5px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); width: 150px; position: fixed; bottom: 10px; left: 10px; z-index: 1; display: block; }
     #history ul { list-style: none; padding: 0; margin: 0; }
     #history li { padding: 0.5em 0; border-bottom: 1px solid #eee; white-space: pre; font-weight: bold; overflow: hidden; text-overflow: ellipsis; font-size: 1em; }
     #history li:last-child { border-bottom: none; }
-    #history-page { display: none; }
-    #history-page h1 { text-align: center; margin-top: 0; }
-    #back-to-scanner-btn { display: inline-block; margin-bottom: 1em; background-color: lightgray; }
-    #history-content { border-top: 1px solid #ccc; padding-top: 1em; }
+
+    /* History Page stilovi */
+    #history-page { display: none; } /* Sakriven po defaultu */
+    
+    /* *** Novi Header za History Page *** */
+    #history-header {
+        display: flex; /* Koristi Flexbox */
+        align-items: center; /* Centrira elemente vertikalno */
+        justify-content: space-between; /* Gura elemente na krajeve */
+        margin-bottom: 1.5em; /* Razmak ispod headera */
+        border-bottom: 2px solid black; /* Linija ispod headera */
+        padding-bottom: 0.5em;
+    }
+    #history-header h1 { 
+        margin: 0; /* Ukloni default margine naslova */
+        text-align: center; /* Centrira tekst naslova */
+        flex-grow: 1; /* Dopusti naslovu da zauzme preostali prostor */
+    }
+    #back-to-scanner-btn { 
+        /* Nema više position: absolute */
+        background-color: lightgray; 
+        margin: 0; /* Ukloni margine */
+        padding: 0.4em 0.8em; /* Malo manji padding */
+        font-size: 0.9em; /* Malo manji font */
+    }
+     #history-content { 
+        /* Ostatak visine stranice */
+        flex-grow: 1; 
+        overflow-y: auto; /* Omogući skrolanje ako sadržaj pređe visinu */
+    }
+
   </style>
 </head>
 <body class="scanner-view"> 
   
-  <!-- HTML -->
+  <!-- === Scanner View elementi === -->
   <div id="header">QR SKENER-KALKULATOR</div> 
   <div id="scan-instruction">Pozicioniraj qr kod unutar kvadrata kamere</div>
   <div id="reader"></div>
-  <!-- <div id="upgrade-notice">U TIJEKU JE NADOGRADNJA</div> --> <!-- Privremeno uklonjeno -->
+  <!-- Uklonjena poruka o nadogradnji -->
   <div id="loaded-message" style="display: none;">UČITANO</div>
   <div id="duplicate-warning" style="display: none;">TAJ RAČUN JE URAČUNAT</div>
   <div id="total">UKUPNO: 0.00 €</div>
@@ -63,26 +99,33 @@
   <button id="history-toggle-btn">POVIJEST</button> 
   <button id="share-button" style="display: none;">DIJELI KALKULATOR</button>
   <div id="delete-warning" style="display: none;"></div>
+  <!-- === Kraj Scanner View elemenata === -->
+
+  <!-- === History View elementi === -->
   <div id="history-page">
-      <button id="back-to-scanner-btn">< Natrag na Skener</button>
-      <h1>POVIJEST</h1>
-      <div id="history-content"> <p>Uskoro...</p> </div>
+      <!-- *** Novi Header za History Page *** -->
+      <div id="history-header">
+          <button id="back-to-scanner-btn">< NA SKENER</button> <!-- Promijenjen tekst -->
+          <h1>POVIJEST</h1>
+      </div>
+      <div id="history-content">
+          <p>Uskoro...</p> 
+      </div>
   </div>
-  
+  <!-- === Kraj History View elemenata === -->
+
   <!-- Zvukovi -->
   <audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
   <audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
   <audio id="remove-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
 
   <script>
+    // JavaScript ostaje isti kao u prethodnoj verziji
     const MAX_HISTORY_ITEMS = 500; 
     const HISTORY_STORAGE_KEY = 'qrCalculatorHistory';
-
     let ukupno = 0;
     let povijest = []; 
     let removeConfirm = false;
-
-    // Dohvat elemenata (isti)
     const totalDiv = document.getElementById('total');
     const invoiceCountDiv = document.getElementById('invoice-count');
     const historyList = document.getElementById('historyList'); 
@@ -100,11 +143,8 @@
     const historyContentDiv = document.getElementById('history-content'); 
     const removeBtnInitialText = 'Obriši iz liste';
 
-    // Local Storage Funkcije (iste)
     function saveHistoryToLocalStorage() { try { while (povijest.length > MAX_HISTORY_ITEMS) { povijest.shift(); } localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(povijest)); } catch (error) { console.error("Greška spremanja:", error); } }
     function loadHistoryFromLocalStorage() { try { const historyJson = localStorage.getItem(HISTORY_STORAGE_KEY); if (historyJson) { povijest = JSON.parse(historyJson).map(item => ({ ...item, scanTimestamp: item.scanTimestamp || 0 })); ukupno = povijest.reduce((sum, item) => sum + item.amount, 0); console.log(`Povijest učitana (${povijest.length}).`); } else { povijest = []; ukupno = 0; console.log("Nema povijesti."); } } catch (error) { console.error("Greška učitavanja:", error); povijest = []; ukupno = 0; } }
-
-    // Funkcije Prikaza (iste)
     function updateDisplay() { if (totalDiv) totalDiv.innerText = `UKUPNO: ${ukupno.toFixed(2)} €`; const count = povijest.length; if (invoiceCountDiv) invoiceCountDiv.innerText = `${count} ${count === 1 ? 'RAČUN' : 'RAČUNA'}`; updateSmallHistoryList(); checkRemoveButtonVisibility(); handleInfoDeleteMessageVisibility(); if (document.body.classList.contains('history-view')) renderHistoryView(); }
     function updateSmallHistoryList() { if (!historyList || !historyDiv) return; if (povijest.length > 0) { historyDiv.style.display = 'block'; historyList.innerHTML = ''; const recentHistory = povijest.slice(-10); recentHistory.forEach((item, index) => { const listItem = document.createElement('li'); listItem.innerText = `${povijest.length - recentHistory.length + index + 1}. ${item.time} - ${item.amount.toFixed(2)} €`; historyList.appendChild(listItem); }); historyDiv.scrollTop = historyDiv.scrollHeight; } else { historyDiv.style.display = 'none'; } }
     function checkRemoveButtonVisibility() { if (!removeButton) return; removeButton.style.display = (povijest.length > 0) ? 'block' : 'none'; if (povijest.length === 0 && removeConfirm) resetRemoveMode(); }
@@ -114,183 +154,22 @@
     function startRemoveFromList() { if (!removeButton || !document.body.classList.contains('scanner-view')) return; if (!removeConfirm) { removeButton.innerText = 'Potvrdi'; removeButton.classList.remove('red-btn'); removeButton.classList.add('yellow-btn'); removeConfirm = true; playSound('click-sound'); if(deleteWarningDiv) deleteWarningDiv.dataset.beforeConfirmText = deleteWarningDiv.dataset.lastScanText; if(deleteWarningDiv) delete deleteWarningDiv.dataset.lastScanText; handleInfoDeleteMessageVisibility(); } else { if (povijest.length > 0) { const removed = povijest.pop(); ukupno -= removed.amount; playSound('remove-sound'); saveHistoryToLocalStorage(); } if (povijest.length > 0) { const lastItem = povijest[povijest.length - 1]; if (deleteWarningDiv) deleteWarningDiv.dataset.lastScanText = `ZADNJI RAČUN: ${lastItem.time} = ${lastItem.amount.toFixed(2)} €`; } else { if (deleteWarningDiv) delete deleteWarningDiv.dataset.lastScanText; } resetRemoveMode(); updateDisplay(); } }
     function handleScan(decodedText) { if (removeConfirm) resetRemoveMode(); if (loadedMsg) loadedMsg.style.display = 'none'; if (duplicateWarning) duplicateWarning.style.display = 'none'; try { const qrParts = decodedText.split('?'); if (qrParts.length < 2) throw new Error("Invalid QR format"); const params = new URLSearchParams(qrParts[1]); const iznosCentStr = params.get('izn'); const datv = params.get('datv'); if (!iznosCentStr || isNaN(parseFloat(iznosCentStr))) throw new Error("Invalid 'izn'"); const iznosCenti = parseFloat(iznosCentStr); const iznosEura = iznosCenti / 100; let time = '??:??'; if (datv && datv.length >= 12) { const hourIndex = datv.toUpperCase().indexOf('T') === 8 ? 9 : (datv.length >= 10 ? datv.length - 4 : -1); const minuteIndex = hourIndex + 2; if (hourIndex !== -1 && datv.length >= minuteIndex + 2) { const hour = datv.substring(hourIndex, hourIndex + 2); const minute = datv.substring(minuteIndex, minuteIndex + 2); if (!isNaN(parseInt(hour)) && !isNaN(parseInt(minute))) { time = `${hour}:${minute}`; } } } const existingItem = povijest.find(item => item.qrCode === decodedText); if (existingItem) { if (duplicateWarning) { duplicateWarning.style.display = 'block'; duplicateWarning.style.animation = 'none'; duplicateWarning.offsetHeight; duplicateWarning.style.animation = 'pulse 0.5s ease-in-out 3 alternate'; setTimeout(() => { if (duplicateWarning) duplicateWarning.style.display = 'none'; }, 1500); } } else { if (instructionDiv) instructionDiv.style.display = 'none'; const newItem = { amount: iznosEura, qrCode: decodedText, time: time, datv: datv || '', scanTimestamp: Date.now() }; povijest.push(newItem); ukupno += iznosEura; saveHistoryToLocalStorage(); playSound('scan-sound'); updateDisplay(); if (loadedMsg) { loadedMsg.style.display = 'block'; loadedMsg.style.animation = 'none'; loadedMsg.offsetHeight; loadedMsg.style.animation = 'zoomFade 1s ease-out'; setTimeout(() => { if (loadedMsg) loadedMsg.style.display = 'none'; }, 1000); } if (deleteWarningDiv) { deleteWarningDiv.dataset.lastScanText = `ZADNJI RAČUN: ${newItem.time} = ${newItem.amount.toFixed(2)} €`; handleInfoDeleteMessageVisibility(); } } } catch (error) { console.error("Greška obrade QR:", error, decodedText); if (loadedMsg) loadedMsg.style.display = 'none'; if (duplicateWarning) duplicateWarning.style.display = 'none'; } }
 
-    // --- Upravljanje Skenerom (stop/start pristup) ---
-    let html5QrCodeInstance = null; 
-    let isScannerActive = false; 
-    let currentCameraId = null; 
-    let visibilityListenerAttached = false; // Zastavica za listener
-
-    // Funkcija za provjeru vidljivosti roditelja
-    function isElementOrParentHidden(element) {
-        if (!element) return true; // Ako element ne postoji, smatraj ga skrivenim
-        while (element && element !== document.body) {
-            if (window.getComputedStyle(element).display === 'none') {
-                return true; // Pronađen skriveni roditelj
-            }
-            element = element.parentElement;
-        }
-        return false; // Nije pronađen skriveni roditelj
-    }
-
-    function initializeScanner() {
-        if (document.body.classList.contains('history-view') || isScannerActive) {
-             console.log(`[InitializeScanner] Preskočeno. History: ${document.body.classList.contains('history-view')}, Active: ${isScannerActive}`);
-             return;
-        }
-        
-        console.log("[InitializeScanner] Pokrećem...");
-        // *** Eksplicitno čišćenje readera ***
-        if (readerDiv) readerDiv.innerHTML = ''; 
-        if (instructionDiv) instructionDiv.style.display = 'none'; 
-
-        console.log("[InitializeScanner] Kreiram NOVU Html5Qrcode instancu.");
-        html5QrCodeInstance = new Html5Qrcode("reader"); 
-        
-        const qrConfig = { fps: 5, qrbox: { width: 250, height: 250 } };
-
-        console.log("[InitializeScanner] Dohvaćam kamere...");
-        Html5Qrcode.getCameras().then(devices => {
-          if (!devices || devices.length === 0) throw new Error("Nema dostupnih kamera.");
-          const rearCamera = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('zadnja') || d.label.toLowerCase().includes('environment'));
-          currentCameraId = rearCamera ? rearCamera.id : devices[0].id; 
-          console.log(`[InitializeScanner] Odabrana kamera ID: ${currentCameraId}`);
-          
-          console.log("[InitializeScanner] Tražim animation frame prije start()...");
-          requestAnimationFrame(() => {
-                if (!html5QrCodeInstance || isScannerActive || document.body.classList.contains('history-view')) { 
-                    console.log("[InitializeScanner][rAF] Odustajem od start() - stanje promijenjeno."); return;
-                }
-                
-                // *** Provjera skrivenih roditelja ***
-                if (isElementOrParentHidden(readerDiv)) {
-                     console.error("[InitializeScanner][rAF] Reader ili roditelj je skriven (display: none), odustajem.");
-                     if (readerDiv) readerDiv.innerHTML = '<div style="padding:20px; color: red;">Greška: Reader je skriven.</div>';
-                     return;
-                }
-                
-                const readerIsVisible = readerDiv && readerDiv.offsetParent !== null;
-                console.log(`[InitializeScanner][rAF] Reader vidljiv (offsetParent)? ${readerIsVisible}`);
-                if (!readerIsVisible) { console.error("[InitializeScanner][rAF] Reader nema offsetParent."); if (readerDiv) readerDiv.innerHTML = '<div style="padding:20px; color: red;">Greška: Reader nema offsetParent.</div>'; return; }
-
-                console.log(`[InitializeScanner][rAF] Pozivam start() za kameru: ${currentCameraId}`);
-                html5QrCodeInstance.start( currentCameraId, qrConfig, handleScan, (errorMessage) => { /* ignore */ } )
-                .then(() => {
-                    console.log(">>> [InitializeScanner][rAF] start() OK"); 
-                    // *** Odgodi postavljanje active i UI update ***
-                    setTimeout(() => {
-                        console.log("[InitializeScanner][rAF][then-delay] Postavljam active=true, prikazujem instrukciju.");
-                         isScannerActive = true; 
-                         // Reader bi trebao već biti čist jer start() dodaje video
-                         if (instructionDiv && document.body.classList.contains('scanner-view')) instructionDiv.style.display = 'block'; 
-                         if (!visibilityListenerAttached) { // Dodaj listener samo jednom
-                              console.log("[InitializeScanner] Dodajem visibility listener.");
-                              attachVisibilityListener();
-                         }
-                    }, 100); // 100ms delay
-                }).catch(err => {
-                    console.error(">>> [InitializeScanner][rAF] start() FAILED:", err); isScannerActive = false; 
-                    if (readerDiv) readerDiv.innerHTML = `<div style="padding: 20px; color: red;">Greška startanja (${err.name}). Provjerite dozvole.</div>`; 
-                    if (instructionDiv) instructionDiv.style.display = 'none'; html5QrCodeInstance = null; 
-                });
-          }); 
-        }).catch(err => {
-          console.error("[InitializeScanner] Greška getCameras():", err); isScannerActive = false; 
-          if (readerDiv) readerDiv.innerHTML = `<div style="padding: 20px; color: red;">Greška pristupa kamerama (${err.name}).</div>`; 
-          if (instructionDiv) instructionDiv.style.display = 'none'; html5QrCodeInstance = null; 
-        });
-    }
-    function stopScanner() {
-        const instanceToStop = html5QrCodeInstance; 
-        if (instanceToStop && isScannerActive) {
-            console.log("[StopScanner] Zaustavljam...");
-            isScannerActive = false; currentCameraId = null; if (instructionDiv) instructionDiv.style.display = 'none'; 
-            return instanceToStop.stop() 
-                .then(() => { console.log("[StopScanner] OK."); if (readerDiv) readerDiv.innerHTML = ''; })
-                .catch(err => { console.warn("[StopScanner] Greška (možda već zaustavljen):", err.name); if (readerDiv) readerDiv.innerHTML = ''; });
-        } else { console.log(`[StopScanner] Nije aktivan.`); isScannerActive = false; return Promise.resolve(); }
-    }
-
-    // --- Prebacivanje Pogleda ---
-    function switchToScannerView() {
-        if (document.body.classList.contains('scanner-view')) { if (!isScannerActive) initializeScanner(); return; } 
-        console.log("Switching to Scanner View...");
-        document.body.classList.remove('history-view'); document.body.classList.add('scanner-view');
-        updateDisplay(); 
-        // Delay inicijalizacije da se DOM stigne promijeniti
-        requestAnimationFrame(initializeScanner); 
-    }
-    function switchToHistoryView() {
-        if (document.body.classList.contains('history-view')) return; 
-        console.log("Switching to History View...");
-        stopScanner().finally(() => { 
-            console.log("Scanner stopped, changing view class.");
-            document.body.classList.remove('scanner-view'); document.body.classList.add('history-view');
-            if (removeConfirm) resetRemoveMode(); updateDisplay(); 
-        });
-    }
+    let html5QrCodeInstance = null; let isScannerActive = false; let currentCameraId = null; let visibilityListenerAttached = false;
+    function isElementOrParentHidden(element) { if (!element) return true; while (element && element !== document.body) { if (window.getComputedStyle(element).display === 'none') return true; element = element.parentElement; } return false; }
+    function initializeScanner() { if (document.body.classList.contains('history-view') || isScannerActive) return; console.log("[InitializeScanner] Pokrećem..."); if (readerDiv) readerDiv.innerHTML = ''; if (instructionDiv) instructionDiv.style.display = 'none'; console.log("[InitializeScanner] Kreiram NOVU Html5Qrcode instancu."); html5QrCodeInstance = new Html5Qrcode("reader"); const qrConfig = { fps: 5, qrbox: { width: 250, height: 250 } }; console.log("[InitializeScanner] Dohvaćam kamere..."); Html5Qrcode.getCameras().then(devices => { if (!devices || devices.length === 0) throw new Error("Nema dostupnih kamera."); const rearCamera = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('zadnja') || d.label.toLowerCase().includes('environment')); currentCameraId = rearCamera ? rearCamera.id : devices[0].id; console.log(`[InitializeScanner] Odabrana kamera ID: ${currentCameraId}`); console.log("[InitializeScanner] Tražim animation frame prije start()..."); requestAnimationFrame(() => { if (!html5QrCodeInstance || isScannerActive || document.body.classList.contains('history-view')) { console.log("[InitializeScanner][rAF] Odustajem od start()."); return; } if (isElementOrParentHidden(readerDiv)) { console.error("[InitializeScanner][rAF] Reader skriven."); if (readerDiv) readerDiv.innerHTML = '<div style="padding:20px; color: red;">Greška: Reader skriven.</div>'; return; } const readerIsVisible = readerDiv && readerDiv.offsetParent !== null; console.log(`[InitializeScanner][rAF] Reader vidljiv? ${readerIsVisible}`); if (!readerIsVisible) { console.error("[InitializeScanner][rAF] Reader nema offsetParent."); if (readerDiv) readerDiv.innerHTML = '<div style="padding:20px; color: red;">Greška: Reader nema offsetParent.</div>'; return; } console.log(`[InitializeScanner][rAF] Pozivam start()`); html5QrCodeInstance.start( currentCameraId, qrConfig, handleScan, (errorMessage) => { /* ignore */ } ).then(() => { console.log(">>> [InitializeScanner][rAF] start() OK"); setTimeout(() => { console.log("[InitializeScanner][rAF][then-delay] Postavljam active=true"); isScannerActive = true; if (instructionDiv && document.body.classList.contains('scanner-view')) instructionDiv.style.display = 'block'; if (!visibilityListenerAttached) attachVisibilityListener(); }, 100); }).catch(err => { console.error(">>> [InitializeScanner][rAF] start() FAILED:", err); isScannerActive = false; if (readerDiv) readerDiv.innerHTML = `<div style="padding: 20px; color: red;">Greška startanja (${err.name}).</div>`; if (instructionDiv) instructionDiv.style.display = 'none'; html5QrCodeInstance = null; }); }); }).catch(err => { console.error("[InitializeScanner] Greška getCameras():", err); isScannerActive = false; if (readerDiv) readerDiv.innerHTML = `<div style="padding: 20px; color: red;">Greška pristupa kamerama (${err.name}).</div>`; if (instructionDiv) instructionDiv.style.display = 'none'; html5QrCodeInstance = null; }); }
+    function stopScanner() { const instanceToStop = html5QrCodeInstance; if (instanceToStop && isScannerActive) { console.log("[StopScanner] Zaustavljam..."); isScannerActive = false; currentCameraId = null; if (instructionDiv) instructionDiv.style.display = 'none'; return instanceToStop.stop().then(() => { console.log("[StopScanner] OK."); if (readerDiv) readerDiv.innerHTML = ''; }).catch(err => { console.warn("[StopScanner] Greška (možda već zaustavljen):", err.name); if (readerDiv) readerDiv.innerHTML = ''; }); } else { console.log(`[StopScanner] Nije aktivan.`); isScannerActive = false; return Promise.resolve(); } }
+    function switchToScannerView() { if (document.body.classList.contains('scanner-view')) { if (!isScannerActive) initializeScanner(); return; } console.log("Switching to Scanner View..."); document.body.classList.remove('history-view'); document.body.classList.add('scanner-view'); updateDisplay(); requestAnimationFrame(initializeScanner); }
+    function switchToHistoryView() { if (document.body.classList.contains('history-view')) return; console.log("Switching to History View..."); stopScanner().finally(() => { console.log("Scanner stopped, changing view class."); document.body.classList.remove('scanner-view'); document.body.classList.add('history-view'); if (removeConfirm) resetRemoveMode(); updateDisplay(); }); }
+    function renderHistoryView() { if (!historyContentDiv) return; historyContentDiv.innerHTML = ` <p>Ukupno spremljenih računa: ${povijest.length}</p> <button id="clear-history-btn" class="red-btn" style="margin-top: 20px;">OBRIŠI SVU POVIJEST</button> `; const clearBtn = document.getElementById('clear-history-btn'); if (clearBtn && !clearBtn.dataset.listenerAttached) { clearBtn.addEventListener('click', () => { if (confirm("Obrisati SVE račune?")) { povijest = []; ukupno = 0; localStorage.removeItem(HISTORY_STORAGE_KEY); updateDisplay(); alert("Povijest obrisana."); if (document.body.classList.contains('history-view')) renderHistoryView(); } }); clearBtn.dataset.listenerAttached = 'true'; } }
     
-    // --- Generiranje History View Sadržaja (Placeholder) ---
-    function renderHistoryView() {
-         if (!historyContentDiv) return;
-         historyContentDiv.innerHTML = ` 
-             <h2>Ovdje će biti prikaz povijesti</h2>
-             <p>Ukupno spremljenih računa: ${povijest.length}</p>
-             <button id="clear-history-btn" class="red-btn" style="margin-top: 20px;">OBRIŠI SVU POVIJEST</button>
-         `;
-         const clearBtn = document.getElementById('clear-history-btn');
-         if (clearBtn && !clearBtn.dataset.listenerAttached) { 
-             clearBtn.addEventListener('click', () => {
-                 if (confirm("Obrisati SVE račune?")) {
-                     povijest = []; ukupno = 0; localStorage.removeItem(HISTORY_STORAGE_KEY); 
-                     updateDisplay(); alert("Povijest obrisana."); 
-                     if (document.body.classList.contains('history-view')) renderHistoryView(); 
-                 }
-             });
-             clearBtn.dataset.listenerAttached = 'true';
-         }
-    }
-
-    // --- Event Listeneri ---
     document.body.addEventListener('click', (event) => { if (!document.body.classList.contains('scanner-view')) return; const isClickOnRemoveButton = removeButton && removeButton.contains(event.target); const isClickOnDeleteWarning = deleteWarningDiv && deleteWarningDiv.contains(event.target); if (removeConfirm && !isClickOnRemoveButton && !isClickOnDeleteWarning) { if (deleteWarningDiv && deleteWarningDiv.dataset.beforeConfirmText) { deleteWarningDiv.dataset.lastScanText = deleteWarningDiv.dataset.beforeConfirmText; delete deleteWarningDiv.dataset.beforeConfirmText; } resetRemoveMode(); } }, true); 
-    if (historyToggleButton) { historyToggleButton.addEventListener('click', () => { playSound('click-sound'); switchToHistoryView(); }); } 
-    else { console.warn("#history-toggle-btn nije pronađen."); }
-    if (backToScannerButton) { backToScannerButton.addEventListener('click', () => { playSound('click-sound'); switchToScannerView(); }); } 
-    else { console.warn("#back-to-scanner-btn nije pronađen."); }
+    if (historyToggleButton) { historyToggleButton.addEventListener('click', () => { playSound('click-sound'); switchToHistoryView(); }); } else { console.warn("#history-toggle-btn nije pronađen."); }
+    if (backToScannerButton) { backToScannerButton.addEventListener('click', () => { playSound('click-sound'); switchToScannerView(); }); } else { console.warn("#back-to-scanner-btn nije pronađen."); }
     if (navigator.share) { if (shareButton) { shareButton.style.display = 'block'; shareButton.addEventListener('click', async () => { if (removeConfirm) resetRemoveMode(); try { await navigator.share({ title: 'QR SKENER-KALKULATOR', text: 'Skenira i zbraja račune...', url: window.location.href }); } catch (err) { if (err.name !== 'AbortError') console.error('Greška dijeljenja:', err); } }); } } else { if(shareButton) shareButton.style.display = 'none'; }
-    
-    function handleVisibilityChange() {
-         if (document.visibilityState === 'visible' && document.body.classList.contains('scanner-view')) {
-             console.log("Vis: Stranica vidljiva, provjeravam skener...");
-             if (!isScannerActive) initializeScanner(); 
-         } else if (document.visibilityState === 'hidden') {
-              console.log("Vis: Stranica skrivena, zaustavljam skener...");
-              stopScanner(); 
-         }
-    }
-    function attachVisibilityListener() {
-         if (visibilityListenerAttached) return; // Već dodan
-         console.log("Attaching visibility listener.");
-         document.addEventListener("visibilitychange", handleVisibilityChange);
-         visibilityListenerAttached = true;
-    }
+    function handleVisibilityChange() { if (document.visibilityState === 'visible' && document.body.classList.contains('scanner-view')) { console.log("Vis: Stranica vidljiva..."); if (!isScannerActive) initializeScanner(); } else if (document.visibilityState === 'hidden') { console.log("Vis: Stranica skrivena..."); stopScanner(); } }
+    function attachVisibilityListener() { if (visibilityListenerAttached) return; console.log("Attaching visibility listener."); document.addEventListener("visibilitychange", handleVisibilityChange); visibilityListenerAttached = true; }
 
-    // --- Inicijalizacija Aplikacije ---
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log("DOM spreman, učitavam povijest...");
-        loadHistoryFromLocalStorage(); 
-        console.log("Provjeravam inicijalni view...");
-        if (document.body.classList.contains('scanner-view')) {
-             console.log("Inicijalni view: Scanner. Pokrećem skener...");
-             initializeScanner(); 
-        } else {
-             console.log("Inicijalni view: History. Renderiram povijest...");
-             renderHistoryView(); 
-             attachVisibilityListener(); // Odmah dodaj ako počinjemo u history
-        }
-        console.log("Inicijalni update displaya...");
-        updateDisplay(); 
-    });
-
+    document.addEventListener('DOMContentLoaded', () => { console.log("DOM spreman..."); loadHistoryFromLocalStorage(); console.log("Provjeravam inicijalni view..."); if (document.body.classList.contains('scanner-view')) { console.log("Init: Scanner view, pokrećem skener..."); initializeScanner(); } else { console.log("Init: History view, renderiram povijest..."); renderHistoryView(); attachVisibilityListener(); } console.log("Init: update displaya..."); updateDisplay(); });
   </script>
 
   <!-- Statcounter kod -->
