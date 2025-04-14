@@ -15,7 +15,7 @@
     
     /* View Switching Styles */
     body.scanner-view #history-page { display: none; }
-    body.history-view #history-page { display: flex; flex-direction: column; background-color: white; padding: 1em; min-height: calc(100vh - 2em); }
+    body.history-view #history-page { display: flex; flex-direction: column; background-color: white; padding: 1em; min-height: calc(100vh - 2em); max-height: calc(100vh - 2em); /* Ograniči visinu */ }
     body.history-view #header, body.history-view #scan-instruction, body.history-view #reader, body.history-view #loaded-message, body.history-view #duplicate-warning, body.history-view #total, body.history-view #invoice-count, body.history-view #history, body.history-view #remove-from-list-btn, body.history-view #history-toggle-btn, body.history-view #share-button, body.history-view #delete-warning { display: none !important; } 
     
     /* Scanner View Elements */
@@ -54,47 +54,51 @@
 
     /* History Page Styles */
     #history-page { display: none; } 
-    #history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5em; /* Smanjen razmak */ border-bottom: 2px solid black; padding-bottom: 0.5em; }
+    #history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5em; border-bottom: 2px solid black; padding-bottom: 0.5em; }
     #history-header h1 { margin: 0; text-align: center; flex-grow: 1; }
     
-    /* *** STIL ZA GUMB NATRAG *** */
+    /* *** AŽURIRAN STIL GUMBA NATRAG *** */
     #back-to-scanner-btn { 
-        background-color: transparent; /* Bez pozadine */
-        color: green; /* Zelena slova */
-        border: 2px solid green; /* Zeleni okvir */
+        background-color: green; /* Zelena pozadina */
+        color: white; /* Bijela slova */
+        border: none; /* Bez okvira */
         font-weight: bold;
         margin: 0; 
         padding: 0.4em 0.8em; 
         font-size: 0.9em; 
-        cursor: pointer; /* Dodajemo cursor pointer */
+        cursor: pointer; 
     }
     #back-to-scanner-btn:active {
-        background-color: rgba(0, 128, 0, 0.1); /* Blaga zelena pozadina na klik */
+        background-color: darkgreen; /* Tamnija zelena na klik */
     }
 
-    /* *** NOVI STILOVI ZA SUB-HEADER *** */
-    #history-sub-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.8em 0.2em; /* Dodaj malo paddinga */
-        font-size: 1.1em;
-    }
-    #history-info-left {
-        font-weight: bold;
-    }
+    #history-sub-header { display: flex; justify-content: space-between; align-items: center; padding: 0.8em 0.2em; font-size: 1.1em; }
+    #history-info-left { font-weight: bold; }
+    
+    /* *** AŽURIRAN STIL GUMBA ZA PROMJENU POGLEDA *** */
     #history-view-toggle-btn {
-        background-color: #e0e0e0; /* Sivkasta pozadina */
-        color: #333; /* Tamnija siva slova */
+        background-color: yellow; /* Žuta pozadina */
+        color: black; /* Crna slova */
         padding: 0.4em 0.8em;
         font-size: 0.9em;
+        font-weight: bold; /* Malo podebljano */
     }
-    #history-view-toggle-btn:disabled { /* Stil za neaktivni gumb */
-        opacity: 0.7;
-        cursor: not-allowed;
-    }
+    #history-view-toggle-btn:disabled { opacity: 0.7; cursor: not-allowed; }
     
-     #history-content { flex-grow: 1; overflow-y: auto; padding-top: 0.5em; /* Smanjen padding */}
+    /* *** DODANO ZA SKROLANJE SADRŽAJA *** */
+    #history-content { 
+        flex-grow: 1; /* Zauzmi ostatak visine */
+        overflow-y: auto; /* Omogući vertikalno skrolanje */
+        padding-top: 0.5em; 
+    }
+    /* *** STIL ZA PRIKAZ DATUMA *** */
+     #history-current-date-display {
+         font-size: 1.2em;
+         font-weight: bold;
+         text-align: center;
+         margin: 0.5em 0 1em 0; /* Razmak iznad i ispod */
+         color: #333;
+     }
 
   </style>
 </head>
@@ -121,13 +125,12 @@
           <button id="back-to-scanner-btn">< NA SKENER</button> 
           <h1>POVIJEST</h1>
       </div>
-      <!-- *** Novi Sub-Header *** -->
       <div id="history-sub-header">
           <div id="history-info-left">RAČUNA: <span id="history-total-count">0</span></div>
           <button id="history-view-toggle-btn" disabled>OSTALI DANI ></button>
       </div>
       <div id="history-content">
-          <p>Uskoro...</p> 
+          <!-- Sadržaj (datum i lista) će se generirati ovdje -->
       </div>
   </div>
   <!-- === Kraj History View elemenata === -->
@@ -161,7 +164,6 @@
     const backToScannerButton = document.getElementById('back-to-scanner-btn');
     const historyContentDiv = document.getElementById('history-content'); 
     const removeBtnInitialText = 'Obriši iz liste';
-    // ** Novi elementi **
     const historyTotalCountSpan = document.getElementById('history-total-count');
     const historyViewToggleButton = document.getElementById('history-view-toggle-btn');
 
@@ -170,17 +172,7 @@
     function loadHistoryFromLocalStorage() { try { const historyJson = localStorage.getItem(HISTORY_STORAGE_KEY); if (historyJson) { povijest = JSON.parse(historyJson).map(item => ({ ...item, scanTimestamp: item.scanTimestamp || 0 })); ukupno = povijest.reduce((sum, item) => sum + item.amount, 0); console.log(`Povijest učitana (${povijest.length}).`); } else { povijest = []; ukupno = 0; console.log("Nema povijesti."); } } catch (error) { console.error("Greška učitavanja:", error); povijest = []; ukupno = 0; } }
 
     // Funkcije Prikaza
-    function updateDisplay() { 
-        if (totalDiv) totalDiv.innerText = `UKUPNO: ${ukupno.toFixed(2)} €`; 
-        const count = povijest.length; 
-        if (invoiceCountDiv) invoiceCountDiv.innerText = `${count} ${count === 1 ? 'RAČUN' : 'RAČUNA'}`; 
-        updateSmallHistoryList(); 
-        checkRemoveButtonVisibility(); 
-        handleInfoDeleteMessageVisibility(); 
-        if (document.body.classList.contains('history-view')) {
-            renderHistoryView(); // Poziva renderiranje prikaza povijesti
-        }
-    }
+    function updateDisplay() { if (totalDiv) totalDiv.innerText = `UKUPNO: ${ukupno.toFixed(2)} €`; const count = povijest.length; if (invoiceCountDiv) invoiceCountDiv.innerText = `${count} ${count === 1 ? 'RAČUN' : 'RAČUNA'}`; updateSmallHistoryList(); checkRemoveButtonVisibility(); handleInfoDeleteMessageVisibility(); if (document.body.classList.contains('history-view')) renderHistoryView(); }
     function updateSmallHistoryList() { if (!historyList || !historyDiv) return; if (povijest.length > 0) { historyDiv.style.display = 'block'; historyList.innerHTML = ''; const recentHistory = povijest.slice(-10); recentHistory.forEach((item, index) => { const listItem = document.createElement('li'); listItem.innerText = `${povijest.length - recentHistory.length + index + 1}. ${item.time} - ${item.amount.toFixed(2)} €`; historyList.appendChild(listItem); }); historyDiv.scrollTop = historyDiv.scrollHeight; } else { historyDiv.style.display = 'none'; } }
     function checkRemoveButtonVisibility() { if (!removeButton) return; removeButton.style.display = (povijest.length > 0) ? 'block' : 'none'; if (povijest.length === 0 && removeConfirm) resetRemoveMode(); }
     function handleInfoDeleteMessageVisibility() { const isScannerView = document.body.classList.contains('scanner-view'); if (!deleteWarningDiv || !isScannerView) { if(deleteWarningDiv) deleteWarningDiv.style.display = 'none'; return; } let shouldDisplay = false; let textToShow = ''; let modeClass = ''; if (removeConfirm && povijest.length > 0) { const lastItem = povijest[povijest.length - 1]; textToShow = `OBRIŠI ${lastItem.time} = ${lastItem.amount.toFixed(2)} €?`; modeClass = 'delete-mode'; shouldDisplay = true; } else if (!removeConfirm && povijest.length > 0 && deleteWarningDiv.dataset.lastScanText) { textToShow = deleteWarningDiv.dataset.lastScanText; modeClass = 'info-mode'; shouldDisplay = true; } if (shouldDisplay) { deleteWarningDiv.innerText = textToShow; deleteWarningDiv.className = `delete-warning ${modeClass}`; deleteWarningDiv.style.display = 'block'; } else { deleteWarningDiv.style.display = 'none'; } }
@@ -203,15 +195,31 @@
              historyTotalCountSpan.innerText = povijest.length;
          }
          
-         // Ovdje dolazi logika za prikaz sadržaja (grupe, dani...)
-         // Za sada samo placeholder i gumb za brisanje
          if (!historyContentDiv) return;
-         historyContentDiv.innerHTML = ` 
-             <p>Ovdje će doći detaljan prikaz povijesti...</p>
-             <button id="clear-history-btn" class="red-btn" style="margin-top: 20px;">OBRIŠI SVU POVIJEST</button>
-         `;
+
+         // Dohvati i formatiraj današnji datum
+         const danas = new Date();
+         const opcijeDana = { weekday: 'long' };
+         const opcijeDatuma = { day: '2-digit', month: '2-digit', year: 'numeric' };
+         let imeDana = danas.toLocaleDateString('hr-HR', opcijeDana);
+         imeDana = imeDana.charAt(0).toUpperCase() + imeDana.slice(1); // Veliko početno slovo
+         const formatiraniDatum = danas.toLocaleDateString('hr-HR', opcijeDatuma);
+         
+         // Kreiraj HTML za prikaz datuma
+         const datumHtml = `<h3 id="history-current-date-display">${imeDana}, ${formatiraniDatum}</h3>`;
+
+         // Ovdje će doći logika za prikaz grupa računa za danas...
+         const sadrzajListeHtml = `<p>(Ovdje će doći lista računa za danas...)</p>`;
+         
+         // Gumb za brisanje povijesti
+         const obrisiBtnHtml = `<button id="clear-history-btn" class="red-btn" style="margin-top: 20px;">OBRIŠI SVU POVIJEST</button>`;
+
+         // Spoji sve u konačni HTML za #history-content
+         historyContentDiv.innerHTML = datumHtml + sadrzajListeHtml + obrisiBtnHtml;
+         
+         // Ponovno dodaj listener za gumb brisanja
          const clearBtn = document.getElementById('clear-history-btn');
-         if (clearBtn && !clearBtn.dataset.listenerAttached) { 
+         if (clearBtn) { // Ne treba provjera dataset-a jer se innerHTML mijenja
              clearBtn.addEventListener('click', () => {
                  if (confirm("Obrisati SVE račune?")) {
                      povijest = []; ukupno = 0; localStorage.removeItem(HISTORY_STORAGE_KEY); 
@@ -219,7 +227,7 @@
                      if (document.body.classList.contains('history-view')) renderHistoryView(); 
                  }
              });
-             clearBtn.dataset.listenerAttached = 'true';
+             // Nema potrebe za dataset.listenerAttached jer se gumb iznova kreira
          }
     }
     
