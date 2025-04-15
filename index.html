@@ -16,8 +16,6 @@
     body.history-view { background-color: white; } /* History view pozadina */
     body.history-view #history-page { display: flex; flex-direction: column; padding: 0.5em 1em; min-height: calc(100vh - 1em); max-height: calc(100vh - 1em); box-sizing: border-box; }
     body.history-view #header, body.history-view #scan-instruction, body.history-view #reader, body.history-view #loaded-message, body.history-view #duplicate-warning, body.history-view #total-container, body.history-view #invoice-count, body.history-view #history, body.history-view #remove-from-list-btn, body.history-view #history-toggle-btn, body.history-view #share-button, body.history-view #delete-warning { display: none !important; }
-
-    /* Scanner View Elements */
     #header { text-align: center; color: yellow; font-size: 1.2em; font-weight: bold; margin-bottom: 0.5em; position: absolute; width: 100%; left: 0; top: 0.5em; z-index: 3; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); }
     #scan-instruction { position: absolute; top: 2.8em; left: 50%; transform: translateX(-50%); width: 90%; text-align: center; color: white; font-size: 1em; font-weight: bold; z-index: 2; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); pointer-events: none; display: block; }
     #reader { width: 100%; max-width: 400px; margin: auto; height: 55vh; position: relative; border: 1px solid #ccc; background: #e0e0e0; }
@@ -29,15 +27,13 @@
     #invoice-count { font-size: 1.4em; color: black; padding: 0.1em 0.4em; position: fixed; bottom: 170px; right: 50px; z-index: 2; text-align: right; font-weight: bold; }
     #duplicate-warning { font-weight: bold; color: red; background-color: rgba(255, 255, 255, 0.8); padding: 0.3em 0.8em; border-radius: 5px; border: 1px solid red; text-align: center; animation: pulse 0.5s ease-in-out 3 alternate; position: fixed; top: 12.8em; left: 50%; transform: translateX(-50%); z-index: 5; display: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
     #loaded-message { font-weight: bold; color: green; display: none; text-align: center; font-size: 2em; position: fixed; top: 30%; left: 50%; transform: translate(-50%, -50%); animation: zoomFade 1s ease-out; z-index: 10; background-color: rgba(255, 255, 255, 0.85); padding: 0.8em 2em; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-     #delete-warning { font-weight: bold; display: none; text-align: center; position: fixed; top: 21.5em; left: 50%; transform: translateX(-50%); padding: 0.3em 0.6em; border-radius: 3px; z-index: 5; box-shadow: 0 1px 2px rgba(0,0,0,0.2); white-space: nowrap; }
+    #delete-warning { font-weight: bold; display: none; text-align: center; position: fixed; top: 21.5em; left: 50%; transform: translateX(-50%); padding: 0.3em 0.6em; border-radius: 3px; z-index: 5; box-shadow: 0 1px 2px rgba(0,0,0,0.2); white-space: nowrap; }
     #delete-warning.delete-mode { color: black; background-color: rgba(255, 255, 0, 0.8); }
     #delete-warning.info-mode { color: white; background-color: rgba(0, 0, 0, 0.6); border: none; box-shadow: 0 1px 2px rgba(0,0,0,0.4); }
     #history { max-height: 180px; overflow-y: auto; margin: 0; padding: 1em; background: white; border-radius: 5px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); width: 150px; position: fixed; bottom: 10px; left: 10px; z-index: 1; display: block; }
     #history ul { list-style: none; padding: 0; margin: 0; }
     #history li { padding: 0.5em 0; border-bottom: 1px solid #eee; white-space: pre; font-weight: bold; overflow: hidden; text-overflow: ellipsis; font-size: 1em; }
     #history li:last-child { border-bottom: none; }
-
-    /* Buttons */
     button { padding: 0.5em 1em; font-size: 1em; border: none; border-radius: 5px; color: black; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
     button:active { box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); }
     .red-btn { background: #ff0000; color: yellow; }
@@ -46,8 +42,6 @@
     #history-toggle-btn { position: fixed; bottom: 80px; right: 50px; z-index: 3; background-color: white; color: blue; font-weight: bold; }
     #share-button { position: fixed; bottom: 30px; right: 15px; z-index: 3; background-color: green; color: white; padding: 0.5em 1em; font-size: 1em; border: none; border-radius: 5px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); font-weight: bold; animation: pulse-share 1.5s ease-in-out infinite; }
     #share-button:active { box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); animation: none; }
-
-    /* History View Elements */
     #history-page { display: none; }
     #history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1em; border-bottom: 2px solid black; padding-bottom: 0.5em; }
     #history-header h1 { margin: 0; text-align: center; flex-grow: 1; font-size: 1.3em; }
@@ -62,8 +56,6 @@
      #detail-scan-list { list-style: none; padding: 0; margin: 0; }
      #detail-scan-list li {display: flex; justify-content: space-between; align-items: center; padding: 0.6em 0.2em; border-bottom: 1px solid #eee; font-size: 1.05em;}
      #detail-scan-list li:last-child { border-bottom: none; }
-
-    /* Animations */
     @keyframes pulse { 0% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.1); } 100% { transform: translateX(-50%) scale(1); } }
     @keyframes zoomFade { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
     @keyframes pulse-share { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
@@ -95,7 +87,7 @@
           <button id="back-to-scanner-btn">< NA SKENER</button>
           <h1>POVIJEST</h1>
       </div>
-      <!-- IZBRISAN #history-sub-header iz originalne verzije -->
+      <!-- IZBRISAN #history-sub-header -->
       <div id="history-content">
           <!-- Sadržaj generira JS -->
       </div>
@@ -140,15 +132,38 @@
     function startRemoveFromList() { if (!removeButton || !document.body.classList.contains('scanner-view')) return; if (!removeConfirm) { removeButton.innerText = 'Potvrdi'; removeButton.classList.remove('red-btn'); removeButton.classList.add('yellow-btn'); removeConfirm = true; playSound('click-sound'); if (deleteWarningDiv && deleteWarningDiv.style.display !== 'none') deleteWarningDiv.dataset.beforeConfirmText = deleteWarningDiv.dataset.lastScanText; if(deleteWarningDiv) delete deleteWarningDiv.dataset.lastScanText; handleInfoDeleteMessageVisibility(); } else { if (povijest.length > 0) { const removed = povijest.pop(); ukupno -= removed.amount; playSound('remove-sound'); } if (povijest.length > 0) { const lastItem = povijest[povijest.length - 1]; if (deleteWarningDiv) deleteWarningDiv.dataset.lastScanText = `ZADNJI RAČUN: ${lastItem.time} = ${lastItem.amount.toFixed(2)} €`; } else { if (deleteWarningDiv) delete deleteWarningDiv.dataset.lastScanText; } resetRemoveMode(); updateDisplay(); } }
     function startOcistiConfirm() { if (!ocistiButton || !document.body.classList.contains('scanner-view')) return; if (!ocistiConfirm) { ocistiButton.innerText = 'Potvrdi'; ocistiButton.classList.add('confirm-mode'); ocistiConfirm = true; playSound('click-sound'); } else { ocistiTrenutnoSkeniranje(); resetOcistiMode(); } }
 
-    // *** IZMJENA: ocistiTrenutnoSkeniranje - dodano sortiranje prije spremanja ***
+    // *** IZMJENA: ocistiTrenutnoSkeniranje - sortira prije spremanja i pamti zadnje VALIDNO vrijeme iz sortirane liste ***
     function ocistiTrenutnoSkeniranje() {
         if (povijest.length === 0) return;
         const vrijemeCiscenja = Date.now();
-        let zadnjeSkeniranoQrVrijeme = povijest.length > 0 ? (povijest[povijest.length - 1].time || '??:??') : '??:??'; // Vrijeme zadnjeg skeniranog
-        // Sortiraj kopiju povijesti prije spremanja
-        const sortiraniRacuniZaSpremanje = [...povijest].sort((a, b) => { const timeA = parseTime(a.time); const timeB = parseTime(b.time); if (timeA === -1 && timeB !== -1) return -1; if (timeA !== -1 && timeB === -1) return 1; if (timeA === -1 && timeB === -1) return (a.scanTimestamp || 0) - (b.scanTimestamp || 0); return timeA - timeB; });
-        const novaGrupa = { timestamp: vrijemeCiscenja, lastQrTime: zadnjeSkeniranoQrVrijeme, racuni: sortiraniRacuniZaSpremanje };
-        console.log("Spremam sesiju (sortirano):", novaGrupa);
+
+        // 1. Sortiraj kopiju trenutne povijesti po vremenu iz QR koda
+        const sortiraniRacuniZaSpremanje = [...povijest].sort((a, b) => {
+            const timeA = parseTime(a.time);
+            const timeB = parseTime(b.time);
+            if (timeA === -1 && timeB !== -1) return -1;
+            if (timeA !== -1 && timeB === -1) return 1;
+            if (timeA === -1 && timeB === -1) return (a.scanTimestamp || 0) - (b.scanTimestamp || 0);
+            return timeA - timeB;
+        });
+
+        // 2. Pronađi vrijeme zadnjeg računa s VALIDNIM vremenom u SORTIRANOJ listi
+        let zadnjeValidnoVrijemeIzSortiraneListe = '??:??';
+        for (let i = sortiraniRacuniZaSpremanje.length - 1; i >= 0; i--) {
+             if (sortiraniRacuniZaSpremanje[i].time && sortiraniRacuniZaSpremanje[i].time !== '??:??') {
+                 zadnjeValidnoVrijemeIzSortiraneListe = sortiraniRacuniZaSpremanje[i].time;
+                 break;
+             }
+        }
+
+        // 3. Kreiraj grupu s ispravnim lastQrTime i sortiranim računima
+        const novaGrupa = {
+            timestamp: vrijemeCiscenja,
+            lastQrTime: zadnjeValidnoVrijemeIzSortiraneListe, // Ovo će se prikazati u listi sesija
+            racuni: sortiraniRacuniZaSpremanje
+        };
+
+        console.log("Spremam sesiju (sortirano, lastQrTime ispravan):", novaGrupa);
         let punaPovijest = loadFullHistoryFromLocalStorage(); punaPovijest.push(novaGrupa); saveFullHistoryToLocalStorage(punaPovijest);
         povijest = []; ukupno = 0;
         if (deleteWarningDiv) { delete deleteWarningDiv.dataset.lastScanText; delete deleteWarningDiv.dataset.beforeConfirmText; }
@@ -156,7 +171,8 @@
         console.log("Trenutna sesija spremljena (sortirano)."); alert("Skeniranje spremljeno u povijest!");
     }
 
-    // *** IZMJENA: handleScan - Ispravljeno parsiranje vremena da podrži YYYYMMDD_HHMM ***
+
+    // *** IZMJENA: handleScan - Ispravljeno parsiranje vremena da podrži YYYYMMDD_HHMM i ostale formate ***
     function handleScan(decodedText) {
         if (removeConfirm) resetRemoveMode(); if (ocistiConfirm) resetOcistiMode();
         if (loadedMsg) loadedMsg.style.display = 'none'; if (duplicateWarning) duplicateWarning.style.display = 'none';
@@ -170,48 +186,39 @@
             if (isDuplicateInCurrent || isDuplicateInSaved) { console.warn("Duplikat pronađen:", decodedText); if (duplicateWarning) { duplicateWarning.style.display = 'block'; duplicateWarning.style.animation = 'none'; duplicateWarning.offsetHeight; duplicateWarning.style.animation = 'pulse 0.5s ease-in-out 3 alternate'; setTimeout(() => { if (duplicateWarning) duplicateWarning.style.display = 'none'; }, 1500); } return; }
             const iznosCenti = parseFloat(iznosCentStr); const iznosEura = iznosCenti / 100;
 
-            // *** ISPRAVLJENO PARSIRANJE VREMENA da podrži YYYYMMDD_HHMM ***
+            // *** ISPRAVLJENO PARSIRANJE VREMENA - Verzija 3 ***
             let time = '??:??'; // Default
             if (datv && typeof datv === 'string') {
                 let hourStr = null;
                 let minuteStr = null;
-                const separatorIndex = datv.indexOf('_'); // Traži underscore
+                const underscoreIndex = datv.indexOf('_');
+                const tIndex = datv.toUpperCase().indexOf('T');
 
-                if (separatorIndex === 8 && datv.length >= separatorIndex + 5) {
-                    // Format YYYYMMDD_HHMM
-                    hourStr = datv.substring(separatorIndex + 1, separatorIndex + 3);
-                    minuteStr = datv.substring(separatorIndex + 3, separatorIndex + 5);
-                    console.log(`Pronađen format YYYYMMDD_HHMM: H=${hourStr}, M=${minuteStr}`);
-                } else {
-                    // Pokušaj parsirati druge formate kao fallback
-                    const tIndex = datv.toUpperCase().indexOf('T');
-                    if (tIndex === 8 && datv.length >= tIndex + 5) {
-                        // Format YYYYMMDDTHHMM...
-                        hourStr = datv.substring(tIndex + 1, tIndex + 3);
-                        minuteStr = datv.substring(tIndex + 3, tIndex + 5);
-                        console.log(`Pronađen format YYYYMMDDTHHMM: H=${hourStr}, M=${minuteStr}`);
-                    } else if (tIndex === -1 && datv.length === 12) {
-                         // Format YYYYMMDDHHMM
-                         hourStr = datv.substring(8, 10);
-                         minuteStr = datv.substring(10, 12);
-                         console.log(`Pronađen format YYYYMMDDHHMM: H=${hourStr}, M=${minuteStr}`);
-                    }
-                }
+                if (underscoreIndex === 8 && datv.length >= 13) { // YYYYMMDD_HHMM
+                    hourStr = datv.substring(9, 11);
+                    minuteStr = datv.substring(11, 13);
+                } else if (tIndex === 8 && datv.length >= 13) { // YYYYMMDDTHHMM
+                    hourStr = datv.substring(9, 11);
+                    minuteStr = datv.substring(11, 13);
+                } else if (datv.length === 12) { // YYYYMMDDHHMM
+                     hourStr = datv.substring(8, 10);
+                     minuteStr = datv.substring(10, 12);
+                 }
+                 // Dodaj ovdje provjere za druge moguće formate ako postoje
 
-                // Provjeri i formatiraj ako su dohvaćeni sati/minute
+                // Provjeri i formatiraj
                 if (hourStr && minuteStr) {
                     const hour = parseInt(hourStr, 10);
                     const minute = parseInt(minuteStr, 10);
                     if (!isNaN(hour) && !isNaN(minute) && hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
                         time = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-                        console.log("Uspješno parsirano vrijeme:", time);
                     } else {
-                        console.warn("Nevažeći sati/minute izvađeni iz datv:", datv, "->", hourStr, minuteStr);
+                        console.warn(`Nevažeći sati/minute '${hourStr}:${minuteStr}' iz datv: ${datv}`);
                         time = '??:??'; // Vrati na default ako su brojevi neispravni
                     }
                 } else {
-                     console.log("Nije pronađen podržani format vremena u datv:", datv);
-                     time = '??:??'; // Osiguraj default ako ništa nije pronađeno
+                     console.log(`Neprepoznat format vremena u datv: ${datv}`);
+                     time = '??:??'; // Osiguraj default ako format nije prepoznat
                 }
             } else {
                 console.log("datv nije string ili ne postoji.");
@@ -246,7 +253,7 @@
     function attachVisibilityListener() { if (visibilityListenerAttached) return; console.log("Attaching visibility listener."); document.addEventListener("visibilitychange", handleVisibilityChange); visibilityListenerAttached = true; }
     function globalClickListener(event) { const isClickOnRemoveButton = removeButton && removeButton.contains(event.target); const isClickOnDeleteWarning = deleteWarningDiv && deleteWarningDiv.style.display !== 'none' && deleteWarningDiv.contains(event.target); if (removeConfirm && !isClickOnRemoveButton && !isClickOnDeleteWarning) { console.log("Klik izvan 'Obriši', resetiram."); resetRemoveMode(); } const isClickOnOcistiButton = ocistiButton && ocistiButton.contains(event.target); if (ocistiConfirm && !isClickOnOcistiButton) { console.log("Klik izvan 'Očisti', resetiram."); resetOcistiMode(); } }
 
-    // *** INICIJALIZACIJA APLIKACIJE (originalna, ali bez referenci na stari sub-header) ***
+    // *** INICIJALIZACIJA APLIKACIJE (originalna, bez referenci na stari sub-header) ***
     document.addEventListener('DOMContentLoaded', () => {
         console.log("DOM spreman...");
         totalDiv = document.getElementById('total'); totalContainer = document.getElementById('total-container'); ocistiButton = document.getElementById('ocisti-button'); invoiceCountDiv = document.getElementById('invoice-count'); historyList = document.getElementById('historyList'); removeButton = document.getElementById('remove-from-list-btn'); duplicateWarning = document.getElementById('duplicate-warning'); loadedMsg = document.getElementById('loaded-message'); instructionDiv = document.getElementById('scan-instruction'); deleteWarningDiv = document.getElementById('delete-warning'); shareButton = document.getElementById('share-button'); readerDiv = document.getElementById('reader'); historyToggleButton = document.getElementById('history-toggle-btn'); historyDiv = document.getElementById('history'); historyPageDiv = document.getElementById('history-page'); backToScannerButton = document.getElementById('back-to-scanner-btn'); historyContentDiv = document.getElementById('history-content');
