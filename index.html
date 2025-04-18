@@ -18,7 +18,7 @@
     body.history-view #history-page { display: flex; flex-direction: column; padding: 0.5em 1em; min-height: calc(100vh - 1em); max-height: calc(100vh - 1em); box-sizing: border-box; }
     body.history-view #header,
     body.history-view #scan-instruction,
-    body.history-view #running-text-container, /* DODANO OVDJE */
+    body.history-view #running-text-container,
     body.history-view #reader,
     body.history-view #loaded-message,
     body.history-view #duplicate-warning,
@@ -33,91 +33,90 @@
     #header { text-align: center; color: yellow; font-size: 1.2em; font-weight: bold; margin-bottom: 0.5em; position: absolute; width: 100%; left: 0; top: 0.5em; z-index: 3; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); }
     #scan-instruction { position: absolute; top: 2.8em; left: 50%; transform: translateX(-50%); width: 90%; text-align: center; color: white; font-size: 1em; font-weight: bold; z-index: 2; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); pointer-events: none; display: block; }
 
-    /* --- STILOVI ZA NOVI TRČEĆI TEKST --- */
+    /* --- STILOVI ZA TRČEĆI TEKST --- */
     #running-text-container {
       position: absolute;
-      top: 4.8em; /* Malo ispod #scan-instruction (2.8em + ~2em razmaka) */
+      top: 4.8em;
       left: 0;
       width: 100%;
-      overflow: hidden; /* Sakrij tekst koji izađe izvan ekrana */
-      white-space: nowrap; /* Spriječi prelamanje teksta */
-      z-index: 2; /* Iznad kamere, ali ispod nekih upozorenja ako treba */
-      pointer-events: none; /* Da ne ometa klikove/dodire */
-      /* display: none; */ /* UKLONJENO - JS će kontrolirati */
-      background-color: transparent; /* Default */
-      display: block; /* Default */
+      overflow: hidden;
+      white-space: nowrap;
+      z-index: 2;
+      pointer-events: none;
+      background-color: transparent; /* Default pozadina */
+      display: block; /* JS će sakriti ako treba */
     }
 
     #running-text-container span {
-      display: inline-block; /* Potrebno za transformaciju i animaciju */
-      padding-left: 100%; /* Počni s tekstom van desnog ruba */
-      font-size: 1.4em; /* Malo veći od #scan-instruction (koji je 1em) */
+      display: inline-block;
+      padding-left: 100%;
+      font-size: 1.4em; /* TVOJA POSTAVKA */
       font-weight: bold;
-      color: yellow; /* Žuta za dobru vidljivost */
-      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); /* Sjena za čitljivost */
-      animation: marquee 12s linear infinite; /* Primijeni animaciju */
+      color: yellow; /* Default boja, JS će promijeniti ako treba */
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+      animation: marquee 12s linear infinite; /* TVOJA POSTAVKA */
     }
 
     @keyframes marquee {
-      0%   { transform: translateX(0); } /* Početna pozicija (van desnog ruba zbog paddinga) */
-      100% { transform: translateX(-100%); } /* Krajnja pozicija (pomaknut za svoju širinu ulijevo) */
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
     }
     /* --- KRAJ STILOVA ZA TRČEĆI TEKST --- */
 
     /* ... (Ostatak CSS-a je isti kao u tvojoj radnoj verziji) ... */
-    #reader { width: 100%; max-width: 400px; margin: auto; height: 55vh; position: relative; border: 1px solid #ccc; background: #e0e0e0; }
-    #total-container { position: fixed; top: 23.5em; left: 49%; transform: translateX(-50%); z-index: 4; display: flex; align-items: center; gap: 10px; background-color: rgba(0, 0, 0, 0.5); padding: 0.2em 0.5em; border-radius: 5px; }
-    #total { font-size: 1.6em !important; font-weight: bold; color: yellow; text-align: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
-    #ocisti-button { padding: 0; width: 120px; /* Povećana širina */ height: 60px; font-size: 0.9em; font-weight: bold; background: #ff0000; color: yellow; display: none; line-height: 1.3; text-align: center; border-radius: 5px; margin-left: 20px; }
-    #ocisti-button:active { box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); }
-    #ocisti-button.confirm-mode { background-color: yellow; color: black; }
-    #session-name-container { position: fixed; top: 27em; left: 50%; transform: translateX(-50%); z-index: 4; display: flex; justify-content: center; align-items: center; min-height: 35px; width: 250px; text-align: center; margin-top: 10px; }
-    #add-name-btn { padding: 0.4em 0.8em; font-size: 0.9em; background-color: #e0e0e0; color: black; display: block; }
-    #session-name-input { font-size: 1.5em; padding: 0.3em 0.5em; border: 1px solid #ccc; border-radius: 3px; width: 220px; display: none; }
-    #session-name-display { font-size: 1.1em; font-weight: bold; color: yellow; background-color: rgba(0, 0, 0, 0.5); padding: 0.3em 0.8em; border-radius: 5px; display: none; align-items: center; gap: 8px; }
-    #session-name-display .edit-icon { cursor: pointer; font-size: 0.8em; font-weight: normal; color: white; text-decoration: underline; }
-    #invoice-count { font-size: 1.4em; color: black; padding: 0.1em 0.4em; position: fixed; bottom: 170px; right: 50px; z-index: 2; text-align: right; font-weight: bold; }
-    #duplicate-warning { font-weight: bold; color: red; background-color: rgba(255, 255, 255, 0.8); padding: 0.3em 0.8em; border-radius: 5px; border: 1px solid red; text-align: center; animation: pulse 0.5s ease-in-out 3 alternate; position: fixed; top: 12.8em; left: 50%; transform: translateX(-50%); z-index: 5; display: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-    #loaded-message { font-weight: bold; color: green; display: none; text-align: center; font-size: 2em; position: fixed; top: 30%; left: 50%; transform: translate(-50%, -50%); animation: zoomFade 1s ease-out; z-index: 10; background-color: rgba(255, 255, 255, 0.85); padding: 0.8em 2em; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-     #delete-warning { font-weight: bold; display: none; text-align: center; position: fixed; top: 21.5em; left: 50%; transform: translateX(-50%); padding: 0.3em 0.6em; border-radius: 3px; z-index: 5; box-shadow: 0 1px 2px rgba(0,0,0,0.2); white-space: nowrap; }
-    #delete-warning.delete-mode { color: black; background-color: rgba(255, 255, 0, 0.8); }
-    #delete-warning.info-mode { color: white; background-color: rgba(0, 0, 0, 0.6); border: none; box-shadow: 0 1px 2px rgba(0,0,0,0.4); }
-    #history { max-height: 180px; overflow-y: auto; margin: 0; padding: 1em; background: white; border-radius: 5px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); width: 150px; position: fixed; bottom: 10px; left: 10px; z-index: 1; display: block; }
-    #history ul { list-style: none; padding: 0; margin: 0; }
-    #history li { padding: 0.5em 0; border-bottom: 1px solid #eee; white-space: pre; font-weight: bold; overflow: hidden; text-overflow: ellipsis; font-size: 1em; }
-    #history li:last-child { border-bottom: none; }
-    button { padding: 0.5em 1em; font-size: 1em; border: none; border-radius: 5px; color: black; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-    button:active { box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); }
-    .red-btn { background: #ff0000; color: yellow; }
-    .yellow-btn { background-color: yellow; color: black; }
-    #remove-from-list-btn { position: fixed; bottom: 130px; right: 50px; z-index: 3; }
-    #history-toggle-btn { position: fixed; bottom: 80px; right: 50px; z-index: 3; background-color: white; color: blue; font-weight: bold; }
-    #share-button { position: fixed; bottom: 30px; right: 15px; z-index: 3; background-color: green; color: white; padding: 0.5em 1em; font-size: 1em; border: none; border-radius: 5px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); font-weight: bold; animation: pulse-share 1.5s ease-in-out infinite; }
-    #share-button:active { box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); animation: none; }
-    #history-page { display: none; }
-    #history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1em; border-bottom: 2px solid black; padding-bottom: 0.5em; }
-    #history-header h1 { margin: 0; text-align: center; flex-grow: 1; font-size: 1.3em; }
-    #back-to-scanner-btn { background-color: green; color: white; border: none; font-weight: bold; margin: 0; padding: 0.4em 0.8em; font-size: 0.9em; cursor: pointer; }
-    #back-to-scanner-btn:active { background-color: darkgreen; }
-    #history-content { flex-grow: 1; overflow-y: auto; padding-top: 0; position: relative; }
-     #scan-group-list, #all-days-list-rendered, #search-results ul, #search-results-all-days ul { list-style: none; padding: 0; margin: 0; }
-     #scan-group-list li, #all-days-list-rendered li, #search-results li, #search-results-all-days li { background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background-color 0.2s ease; }
-     #scan-group-list li:hover, #all-days-list-rendered li:hover, #search-results li:hover, #search-results-all-days li:hover { background-color: #efefef; }
-     .scan-group-last-qr-time { font-size: 0.8em; color: #777; margin-left: 15px; flex-shrink: 0; }
-     .session-name-history { font-size: 1em; color: #00008B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; }
-     .scan-time-history { font-size: 1em; color: #333; white-space: nowrap; margin-left: 5px; }
-     #clear-history-btn.confirm-mode, #delete-session-btn.confirm-mode, #clear-day-btn.confirm-mode { background-color: yellow; color: black; }
-     #detail-scan-list { list-style: none; padding: 0; margin: 0; }
-     #detail-scan-list li {display: flex; justify-content: space-between; align-items: center; padding: 0.6em 0.2em; border-bottom: 1px solid #eee; font-size: 1.05em;}
-     #detail-scan-list li:last-child { border-bottom: none; }
-     #all-days-search-container { position: sticky; top: 0; background-color: white; padding: 0.5em 0.2em; border-bottom: 1px solid #eee; z-index: 10; margin-bottom: 0.2em; }
-     #all-days-search-container input { flex-grow: 1; padding: 0.5em; min-width: 50px; font-size: 0.9em; }
-     #all-days-search-container button { padding: 0.5em 0.6em; font-size: 0.9em; flex-shrink: 0; }
-     #all-days-list-rendered li { background-color: #f0f0f0; border: 1px solid #ccc; padding: 12px 15px; margin-bottom: 8px; }
-     #all-days-list-rendered li:hover { background-color: #e0e0e0; }
-    @keyframes pulse { 0% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.1); } 100% { transform: translateX(-50%) scale(1); } }
-    @keyframes zoomFade { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
-    @keyframes pulse-share { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+     #reader { width: 100%; max-width: 400px; margin: auto; height: 55vh; position: relative; border: 1px solid #ccc; background: #e0e0e0; }
+     #total-container { position: fixed; top: 23.5em; left: 49%; transform: translateX(-50%); z-index: 4; display: flex; align-items: center; gap: 10px; background-color: rgba(0, 0, 0, 0.5); padding: 0.2em 0.5em; border-radius: 5px; }
+     #total { font-size: 1.6em !important; font-weight: bold; color: yellow; text-align: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+     #ocisti-button { padding: 0; width: 120px; height: 60px; font-size: 0.9em; font-weight: bold; background: #ff0000; color: yellow; display: none; line-height: 1.3; text-align: center; border-radius: 5px; margin-left: 20px; }
+     #ocisti-button:active { box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); }
+     #ocisti-button.confirm-mode { background-color: yellow; color: black; }
+     #session-name-container { position: fixed; top: 27em; left: 50%; transform: translateX(-50%); z-index: 4; display: flex; justify-content: center; align-items: center; min-height: 35px; width: 250px; text-align: center; margin-top: 10px; }
+     #add-name-btn { padding: 0.4em 0.8em; font-size: 0.9em; background-color: #e0e0e0; color: black; display: block; }
+     #session-name-input { font-size: 1.5em; padding: 0.3em 0.5em; border: 1px solid #ccc; border-radius: 3px; width: 220px; display: none; }
+     #session-name-display { font-size: 1.1em; font-weight: bold; color: yellow; background-color: rgba(0, 0, 0, 0.5); padding: 0.3em 0.8em; border-radius: 5px; display: none; align-items: center; gap: 8px; }
+     #session-name-display .edit-icon { cursor: pointer; font-size: 0.8em; font-weight: normal; color: white; text-decoration: underline; }
+     #invoice-count { font-size: 1.4em; color: black; padding: 0.1em 0.4em; position: fixed; bottom: 170px; right: 50px; z-index: 2; text-align: right; font-weight: bold; }
+     #duplicate-warning { font-weight: bold; color: red; background-color: rgba(255, 255, 255, 0.8); padding: 0.3em 0.8em; border-radius: 5px; border: 1px solid red; text-align: center; animation: pulse 0.5s ease-in-out 3 alternate; position: fixed; top: 12.8em; left: 50%; transform: translateX(-50%); z-index: 5; display: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+     #loaded-message { font-weight: bold; color: green; display: none; text-align: center; font-size: 2em; position: fixed; top: 30%; left: 50%; transform: translate(-50%, -50%); animation: zoomFade 1s ease-out; z-index: 10; background-color: rgba(255, 255, 255, 0.85); padding: 0.8em 2em; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+      #delete-warning { font-weight: bold; display: none; text-align: center; position: fixed; top: 21.5em; left: 50%; transform: translateX(-50%); padding: 0.3em 0.6em; border-radius: 3px; z-index: 5; box-shadow: 0 1px 2px rgba(0,0,0,0.2); white-space: nowrap; }
+     #delete-warning.delete-mode { color: black; background-color: rgba(255, 255, 0, 0.8); }
+     #delete-warning.info-mode { color: white; background-color: rgba(0, 0, 0, 0.6); border: none; box-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+     #history { max-height: 180px; overflow-y: auto; margin: 0; padding: 1em; background: white; border-radius: 5px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); width: 150px; position: fixed; bottom: 10px; left: 10px; z-index: 1; display: block; }
+     #history ul { list-style: none; padding: 0; margin: 0; }
+     #history li { padding: 0.5em 0; border-bottom: 1px solid #eee; white-space: pre; font-weight: bold; overflow: hidden; text-overflow: ellipsis; font-size: 1em; }
+     #history li:last-child { border-bottom: none; }
+     button { padding: 0.5em 1em; font-size: 1em; border: none; border-radius: 5px; color: black; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+     button:active { box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); }
+     .red-btn { background: #ff0000; color: yellow; }
+     .yellow-btn { background-color: yellow; color: black; }
+     #remove-from-list-btn { position: fixed; bottom: 130px; right: 50px; z-index: 3; }
+     #history-toggle-btn { position: fixed; bottom: 80px; right: 50px; z-index: 3; background-color: white; color: blue; font-weight: bold; }
+     #share-button { position: fixed; bottom: 30px; right: 15px; z-index: 3; background-color: green; color: white; padding: 0.5em 1em; font-size: 1em; border: none; border-radius: 5px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); font-weight: bold; animation: pulse-share 1.5s ease-in-out infinite; }
+     #share-button:active { box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); animation: none; }
+     #history-page { display: none; }
+     #history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1em; border-bottom: 2px solid black; padding-bottom: 0.5em; }
+     #history-header h1 { margin: 0; text-align: center; flex-grow: 1; font-size: 1.3em; }
+     #back-to-scanner-btn { background-color: green; color: white; border: none; font-weight: bold; margin: 0; padding: 0.4em 0.8em; font-size: 0.9em; cursor: pointer; }
+     #back-to-scanner-btn:active { background-color: darkgreen; }
+     #history-content { flex-grow: 1; overflow-y: auto; padding-top: 0; position: relative; }
+      #scan-group-list, #all-days-list-rendered, #search-results ul, #search-results-all-days ul { list-style: none; padding: 0; margin: 0; }
+      #scan-group-list li, #all-days-list-rendered li, #search-results li, #search-results-all-days li { background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background-color 0.2s ease; }
+      #scan-group-list li:hover, #all-days-list-rendered li:hover, #search-results li:hover, #search-results-all-days li:hover { background-color: #efefef; }
+      .scan-group-last-qr-time { font-size: 0.8em; color: #777; margin-left: 15px; flex-shrink: 0; }
+      .session-name-history { font-size: 1em; color: #00008B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; }
+      .scan-time-history { font-size: 1em; color: #333; white-space: nowrap; margin-left: 5px; }
+      #clear-history-btn.confirm-mode, #delete-session-btn.confirm-mode, #clear-day-btn.confirm-mode { background-color: yellow; color: black; }
+      #detail-scan-list { list-style: none; padding: 0; margin: 0; }
+      #detail-scan-list li {display: flex; justify-content: space-between; align-items: center; padding: 0.6em 0.2em; border-bottom: 1px solid #eee; font-size: 1.05em;}
+      #detail-scan-list li:last-child { border-bottom: none; }
+      #all-days-search-container { position: sticky; top: 0; background-color: white; padding: 0.5em 0.2em; border-bottom: 1px solid #eee; z-index: 10; margin-bottom: 0.2em; }
+      #all-days-search-container input { flex-grow: 1; padding: 0.5em; min-width: 50px; font-size: 0.9em; }
+      #all-days-search-container button { padding: 0.5em 0.6em; font-size: 0.9em; flex-shrink: 0; }
+      #all-days-list-rendered li { background-color: #f0f0f0; border: 1px solid #ccc; padding: 12px 15px; margin-bottom: 8px; }
+      #all-days-list-rendered li:hover { background-color: #e0e0e0; }
+     @keyframes pulse { 0% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.1); } 100% { transform: translateX(-50%) scale(1); } }
+     @keyframes zoomFade { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
+     @keyframes pulse-share { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
   </style>
 </head>
 <body class="scanner-view">
@@ -133,18 +132,8 @@
   <div id="reader"></div>
   <div id="loaded-message" style="display: none;">UČITANO</div>
   <div id="duplicate-warning" style="display: none;">TAJ RAČUN JE URAČUNAT</div>
-  <div id="total-container">
-      <div id="total">UKUPNO: 0.00 €</div>
-      <button id="ocisti-button" onclick="startOcistiConfirm()" style="display: none;">SPREMI<br>I OČISTI</button>
-  </div>
-  <div id="session-name-container">
-      <button id="add-name-btn" onclick="startAddName()">DODAJ NAZIV</button>
-      <input type="text" id="session-name-input" placeholder="Unesi naziv sesije..." maxlength="30">
-      <span id="session-name-display">
-          <span id="session-name-text"></span>
-          <span class="edit-icon" onclick="startAddName()">Uredi</span>
-      </span>
-  </div>
+  <div id="total-container"> /* ... (isto) ... */ </div>
+  <div id="session-name-container"> /* ... (isto) ... */ </div>
   <div id="invoice-count">0 RAČUNA</div>
   <div id="history" style="display: none;"> <ul id="historyList"></ul> </div>
   <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
@@ -155,15 +144,15 @@
 
   <!-- History View elementi -->
   <div id="history-page">
-    <!-- ... (HTML za history page ostaje isti) ... -->
-      <div id="history-header">
-          <button id="back-to-scanner-btn">< NA SKENER</button>
-          <h1>POVIJEST</h1>
-      </div>
-      <div id="search-container" style="display: none; padding: 1em 0; border-bottom: 1px solid #eee; margin-bottom: 1em;">
-           <!-- ... (search container) ... -->
-      </div>
-      <div id="history-content"></div>
+     <!-- ... (HTML za history page ostaje isti) ... -->
+       <div id="history-header">
+           <button id="back-to-scanner-btn">< NA SKENER</button>
+           <h1>POVIJEST</h1>
+       </div>
+       <div id="search-container" style="display: none; padding: 1em 0; border-bottom: 1px solid #eee; margin-bottom: 1em;">
+            <!-- ... (search container) ... -->
+       </div>
+       <div id="history-content"></div>
   </div>
   <!-- Kraj History View elemenata -->
 
@@ -185,13 +174,9 @@
     let totalDiv, totalContainer, ocistiButton, invoiceCountDiv, historyList, removeButton, duplicateWarning, loadedMsg, instructionDiv, deleteWarningDiv, shareButton, readerDiv, historyToggleButton, historyDiv, historyPageDiv, backToScannerButton, historyContentDiv, sessionNameContainer, addNameBtn, sessionNameInput, sessionNameDisplay, sessionNameText, runningTextContent;
 
     // --- NOVE GLOBALNE VARIJABLE (Minimalne za test) ---
-    let appSettings = { showText: false, messageText: null, backgroundColor: null, textColor: null }; // Samo osnovne za prikaz
-    let userCommands = { textHidden: false, shareDisabled: false }; // Početno stanje
-    const STORAGE_KEYS = { // Definiramo ih da ne bude greške, iako ih ne koristimo još
-       TOTAL_SCAN_COUNT: 'qrTotalScanCount',
-       TEXT_HIDDEN_CMD: 'qrTextHiddenByUser',
-       SHARE_DISABLED_CMD: 'qrShareDisabledByUser'
-    };
+    let appSettings = { showText: false, messageText: null, backgroundColor: null, textColor: null, disableTextCommand: null, disableShareCommand: null, resetCommand: null, sharePromptEnabled: false, sharePromptThreshold: 100 };
+    let userCommands = { textHidden: false, shareDisabled: false };
+    const STORAGE_KEYS = { TOTAL_SCAN_COUNT: 'qrTotalScanCount', TEXT_HIDDEN_CMD: 'qrTextHiddenByUser', SHARE_DISABLED_CMD: 'qrShareDisabledByUser' };
     // --- KRAJ NOVIH GLOBALNIH VARIJABLI ---
 
     // *** POMOĆNE FUNKCIJE (Originalne) ***
@@ -230,13 +215,13 @@
 
     // *** FUNKCIJE ZA UPRAVLJANJE SKENEROM (Originalne) ***
     function isElementOrParentHidden(element) { /* ... */ }
-    function initializeScanner() { /* ... (Originalna funkcija) ... */
-      console.log(">>> Pokušavam inicijalizirati skener...");
-      if (document.body.classList.contains('history-view') || isScannerActive) {
-           console.log(">>> Skener već aktivan ili history view, prekidam inicijalizaciju.");
-           return;
-      }
-      console.log("[InitializeScanner] Pokrećem..."); if (readerDiv) readerDiv.innerHTML = ''; if (instructionDiv) instructionDiv.style.display = 'none'; html5QrCodeInstance = new Html5Qrcode("reader"); const qrConfig = { fps: 5, qrbox: { width: 250, height: 250 } }; Html5Qrcode.getCameras().then(devices => { if (!devices || devices.length === 0) throw new Error("Nema kamera."); const rearCamera = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('zadnja') || d.label.toLowerCase().includes('environment')); currentCameraId = rearCamera ? rearCamera.id : devices[0].id; requestAnimationFrame(() => { if (!html5QrCodeInstance || isScannerActive || document.body.classList.contains('history-view')) return; if (isElementOrParentHidden(readerDiv)) { if (readerDiv) readerDiv.innerHTML = '<div style="padding:20px; color: red;">Greška: Reader skriven.</div>'; return; } html5QrCodeInstance.start( currentCameraId, qrConfig, handleScan, (errorMessage) => {} ).then(() => { console.log(">>> [InitializeScanner][rAF] start() OK"); isScannerActive = true; setTimeout(() => { console.log("[InitializeScanner][rAF][then-delay] Prikazujem uputu i vežem listener."); if (instructionDiv && document.body.classList.contains('scanner-view')) instructionDiv.style.display = 'block'; if (!visibilityListenerAttached) attachVisibilityListener(); }, 100); }).catch(err => { console.error(">>> [InitializeScanner][rAF] start() FAILED:", err); isScannerActive = false; if (readerDiv) readerDiv.innerHTML = `<div style="padding: 20px; color: red;">Greška startanja kamere (${err.name}).</div>`; if (instructionDiv) instructionDiv.style.display = 'none'; html5QrCodeInstance = null; }); }); }).catch(err => { isScannerActive = false; if (readerDiv) readerDiv.innerHTML = `<div style="padding: 20px; color: red;">Greška pristupa kamerama (${err.name}).</div>`; if (instructionDiv) instructionDiv.style.display = 'none'; html5QrCodeInstance = null; });
+    function initializeScanner() { /* ... (Originalna funkcija s logovima) ... */
+        console.log(">>> Pokušavam inicijalizirati skener...");
+        if (document.body.classList.contains('history-view') || isScannerActive) {
+             console.log(">>> Skener već aktivan ili history view, prekidam inicijalizaciju.");
+             return;
+        }
+        console.log("[InitializeScanner] Pokrećem..."); if (readerDiv) readerDiv.innerHTML = ''; if (instructionDiv) instructionDiv.style.display = 'none'; html5QrCodeInstance = new Html5Qrcode("reader"); const qrConfig = { fps: 5, qrbox: { width: 250, height: 250 } }; Html5Qrcode.getCameras().then(devices => { if (!devices || devices.length === 0) throw new Error("Nema kamera."); const rearCamera = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('zadnja') || d.label.toLowerCase().includes('environment')); currentCameraId = rearCamera ? rearCamera.id : devices[0].id; requestAnimationFrame(() => { if (!html5QrCodeInstance || isScannerActive || document.body.classList.contains('history-view')) return; if (isElementOrParentHidden(readerDiv)) { if (readerDiv) readerDiv.innerHTML = '<div style="padding:20px; color: red;">Greška: Reader skriven.</div>'; return; } html5QrCodeInstance.start( currentCameraId, qrConfig, handleScan, (errorMessage) => {} ).then(() => { console.log(">>> [InitializeScanner][rAF] start() OK"); isScannerActive = true; setTimeout(() => { console.log("[InitializeScanner][rAF][then-delay] Prikazujem uputu i vežem listener."); if (instructionDiv && document.body.classList.contains('scanner-view')) instructionDiv.style.display = 'block'; if (!visibilityListenerAttached) attachVisibilityListener(); }, 100); }).catch(err => { console.error(">>> [InitializeScanner][rAF] start() FAILED:", err); isScannerActive = false; if (readerDiv) readerDiv.innerHTML = `<div style="padding: 20px; color: red;">Greška startanja kamere (${err.name}).</div>`; if (instructionDiv) instructionDiv.style.display = 'none'; html5QrCodeInstance = null; }); }); }).catch(err => { isScannerActive = false; if (readerDiv) readerDiv.innerHTML = `<div style="padding: 20px; color: red;">Greška pristupa kamerama (${err.name}).</div>`; if (instructionDiv) instructionDiv.style.display = 'none'; html5QrCodeInstance = null; });
     }
     function stopScanner() { /* ... (Originalna funkcija) ... */ }
 
@@ -257,36 +242,54 @@
     function executeSearch() { /* ... */ }
     function deleteScansForDay(dateToDelete) { /* ... */ }
 
-    // *** NOVA FUNKCIJA ZA DOHVAĆANJE TEKSTA I POSTAVKI ***
-    async function fetchAndUpdateRunningText() {
+    // *** NOVA VERZIJA FUNKCIJE fetchAndUpdateRunningText (koristi .then()) ***
+    function fetchAndUpdateRunningText() {
         const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbyOxj5sbaVdJVM1tM2Bke5HH9QSK4nAya0YMQ_Ly1iDQcFtJppkHPWjtsutJ528ZFDjNA/exec'; // TVOJ URL!
         const runningTextElement = document.getElementById('running-text-content');
         const runningTextContainer = document.getElementById('running-text-container');
-        if (!runningTextContainer || !runningTextElement) { console.error("Elementi za trčeći tekst nisu pronađeni."); return; }
-        try { console.log("(Fetch) Pokušavam dohvatiti podatke sa:", appsScriptUrl); const response = await fetch(appsScriptUrl);
-            if (!response.ok) { let errorText = `HTTP greška ${response.status}`; try { const errorData = await response.json(); if (errorData && errorData.error) { errorText += `: ${errorData.error}`; } else { errorText += " - Nije vraćena detaljna greška."; } } catch (jsonError) { errorText += " - Nije moguće parsirati odgovor greške."; } throw new Error(errorText); }
-            const data = await response.json(); console.log("(Fetch) Primljeni podaci:", data);
-            let settingsChanged = false;
-             // Samo osnovna provjera za prikaz
-             if (appSettings.showText !== data.showText) {
-                 appSettings.showText = data.showText ?? false;
-                 // Ažuriramo i ostale za buduću upotrebu, ali ne provjeravamo promjenu
-                 appSettings.disableTextCommand = data.disableTextCommand ?? null;
-                 appSettings.disableShareCommand = data.disableShareCommand ?? null;
-                 appSettings.resetCommand = data.resetCommand ?? null;
-                 appSettings.sharePromptEnabled = data.sharePromptEnabled ?? false;
-                 appSettings.sharePromptThreshold = data.sharePromptThreshold ?? 100;
-                 settingsChanged = true; console.log("(Fetch) Globalne postavke (bar showText) ažurirane.");
-             }
-            // Koristimo samo dohvaćene podatke za ovaj test, ne userCommands
-            const shouldShowText = data.showText ?? false;
-            let visualChanged = false; const newBgColor = shouldShowText ? (data.backgroundColor || 'transparent') : 'transparent'; const newTextColor = shouldShowText ? (data.textColor || '#FFFF00') : '#FFFF00'; const newMessage = shouldShowText ? (data.messageText || '') : '';
-            if (runningTextContainer.style.backgroundColor !== newBgColor) { runningTextContainer.style.backgroundColor = newBgColor; visualChanged = true; }
-             if (runningTextElement.style.color !== newTextColor) { runningTextElement.style.color = newTextColor; visualChanged = true; }
-            if (runningTextElement.textContent !== newMessage) { runningTextElement.textContent = newMessage; visualChanged = true; }
-            const currentDisplay = runningTextContainer.style.display; const newDisplay = shouldShowText ? 'block' : 'none'; if (currentDisplay !== newDisplay) { runningTextContainer.style.display = newDisplay; visualChanged = true; }
-            if (visualChanged && shouldShowText || (settingsChanged && shouldShowText && currentDisplay === 'none')) { console.log("(Fetch) Ažuriram vizualni prikaz teksta i resetiram animaciju."); runningTextElement.style.animation = 'none'; runningTextElement.offsetHeight; runningTextElement.style.animation = ''; } else if (settingsChanged) { console.log("(Fetch) Postavke su ažurirane, ali vizualni prikaz teksta nije promijenjen."); } else { console.log("(Fetch) Podaci nisu promijenjeni, preskačem ažuriranje."); }
-        } catch (error) { console.error('(Fetch) Greška pri dohvaćanju ili obradi podataka:', error); if (runningTextContainer) runningTextContainer.style.display = 'none'; appSettings.showText = false; }
+
+        if (!runningTextContainer || !runningTextElement) {
+            console.error("Elementi za trčeći tekst nisu pronađeni.");
+            return;
+        }
+
+        console.log("(Fetch using .then) Pokušavam dohvatiti podatke sa:", appsScriptUrl);
+
+        fetch(appsScriptUrl)
+            .then(response => {
+                console.log("(Fetch .then) Dobio odgovor, status:", response.status);
+                if (!response.ok) {
+                    return response.json().catch(() => {
+                         throw new Error(`HTTP greška ${response.status}`);
+                    }).then(errorData => {
+                         let errorMsg = `HTTP greška ${response.status}`;
+                         if (errorData && errorData.error) {
+                             errorMsg += `: ${errorData.error}`;
+                         }
+                         throw new Error(errorMsg);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("(Fetch .then) Primljeni podaci:", data);
+                let settingsChanged = false;
+                 if (appSettings.showText !== data.showText || appSettings.disableTextCommand !== data.disableTextCommand || appSettings.disableShareCommand !== data.disableShareCommand || appSettings.resetCommand !== data.resetCommand || appSettings.sharePromptEnabled !== data.sharePromptEnabled || appSettings.sharePromptThreshold !== data.sharePromptThreshold)
+                { appSettings.showText = data.showText ?? false; appSettings.disableTextCommand = data.disableTextCommand ?? null; appSettings.disableShareCommand = data.disableShareCommand ?? null; appSettings.resetCommand = data.resetCommand ?? null; appSettings.sharePromptEnabled = data.sharePromptEnabled ?? false; appSettings.sharePromptThreshold = data.sharePromptThreshold ?? 100; settingsChanged = true; console.log("(Fetch .then) Globalne postavke ažurirane."); }
+
+                const shouldShowText = appSettings.showText && !userCommands.textHidden;
+                let visualChanged = false; const newBgColor = shouldShowText ? (data.backgroundColor || 'transparent') : 'transparent'; const newTextColor = shouldShowText ? (data.textColor || '#FFFF00') : '#FFFF00'; const newMessage = shouldShowText ? (data.messageText || '') : '';
+                if (runningTextContainer.style.backgroundColor !== newBgColor) { runningTextContainer.style.backgroundColor = newBgColor; visualChanged = true; }
+                 if (runningTextElement.style.color !== newTextColor) { runningTextElement.style.color = newTextColor; visualChanged = true; }
+                if (runningTextElement.textContent !== newMessage) { runningTextElement.textContent = newMessage; visualChanged = true; }
+                const currentDisplay = runningTextContainer.style.display; const newDisplay = shouldShowText ? 'block' : 'none'; if (currentDisplay !== newDisplay) { runningTextContainer.style.display = newDisplay; visualChanged = true; }
+                if (visualChanged && shouldShowText || (settingsChanged && shouldShowText && currentDisplay === 'none')) { console.log("(Fetch .then) Ažuriram vizualni prikaz teksta i resetiram animaciju."); runningTextElement.style.animation = 'none'; runningTextElement.offsetHeight; runningTextElement.style.animation = ''; } else if (settingsChanged) { console.log("(Fetch .then) Postavke su ažurirane, ali vizualni prikaz teksta nije promijenjen."); } else { console.log("(Fetch .then) Podaci nisu promijenjeni, preskačem ažuriranje."); }
+            })
+            .catch(error => {
+                console.error('(Fetch .then) Greška pri dohvaćanju ili obradi podataka:', error);
+                if (runningTextContainer) runningTextContainer.style.display = 'none';
+                appSettings.showText = false;
+            });
     }
 
     // *** EVENT LISTENERI (Originalni) ***
@@ -328,7 +331,7 @@
             switchToHistoryView();
         }
 
-        // 4. AŽURIRANJE POČETNOG PRIKAZA (MOŽDA PREMJESTITI?)
+        // 4. AŽURIRANJE POČETNOG PRIKAZA
         console.log("Init: update displaya...");
         updateDisplay(); // Prikazuje početno stanje (0.00 €, 0 računa)
 
