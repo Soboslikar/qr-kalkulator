@@ -1,494 +1,141 @@
 <!DOCTYPE html>
 <html lang="hr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>QR SKENER-KALKULATOR</title>
-  <meta property="og:title" content="QR SKENER-KALKULATOR" />
-  <meta property="og:description" content="Web aplikacija za skeniranje QR kodova s hrvatskih fiskalnih računa i automatsko zbrajanje iznosa. Uključuje povijest i pretragu."/>
-  <meta name="description" content="Web aplikacija za skeniranje QR kodova s hrvatskih fiskalnih računa i automatsko zbrajanje iznosa. Uključuje povijest i pretragu.">
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://soboslikar.github.io/qr-kalkulator/" />
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <style>
-    /* CSS (Vraćeno na prikaz teksta) */
-    body { font-family: sans-serif; margin: 0; padding: 0.5em; background: #f4f4f4; overflow-x: hidden; min-height: 100vh; }
-    body.scanner-view #history-page { display: none; }
-    body.history-view { background-color: white; }
-    body.history-view #history-page { display: flex; flex-direction: column; padding: 0.5em 1em; min-height: calc(100vh - 1em); max-height: calc(100vh - 1em); box-sizing: border-box; }
-    body.history-view #header,
-    body.history-view #scan-instruction,
-    body.history-view #running-text-container,
-    body.history-view #reader,
-    body.history-view #loaded-message,
-    body.history-view #duplicate-warning,
-    body.history-view #total-container,
-    body.history-view #session-name-container,
-    body.history-view #invoice-count,
-    body.history-view #history,
-    body.history-view #remove-from-list-btn,
-    body.history-view #history-toggle-btn,
-    body.history-view #share-button,
-    body.history-view #delete-warning { display: none !important; }
-    #header { text-align: center; color: yellow; font-size: 1.2em; font-weight: bold; margin-bottom: 0.5em; position: absolute; width: 100%; left: 0; top: 0.5em; z-index: 3; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); }
-    #scan-instruction { position: absolute; top: 2.8em; left: 50%; transform: translateX(-50%); width: 90%; text-align: center; color: white; font-size: 1em; font-weight: bold; z-index: 2; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); pointer-events: none; display: block; }
-
-    /* --- STILOVI ZA TRČEĆI TEKST --- */
-    #running-text-container {
-      position: absolute;
-      top: 4.8em;
-      left: 0;
-      width: 100%;
-      overflow: hidden;
-      white-space: nowrap;
-      z-index: 2;
-      pointer-events: none;
-      background-color: transparent; /* Default pozadina */
-      display: block; /* JS će sakriti ako treba */
-    }
-
-    #running-text-container span {
-      display: inline-block;
-      padding-left: 100%;
-      font-size: 1.4em; /* TVOJA POSTAVKA */
-      font-weight: bold;
-      color: yellow; /* Default boja, JS će promijeniti ako treba */
-      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
-      animation: marquee 12s linear infinite; /* TVOJA POSTAVKA */
-    }
-
-    @keyframes marquee {
-      0%   { transform: translateX(0); }
-      100% { transform: translateX(-100%); }
-    }
-    /* --- KRAJ STILOVA ZA TRČEĆI TEKST --- */
-
-    #reader { width: 100%; max-width: 400px; margin: auto; height: 55vh; position: relative; border: 1px solid #ccc; background: #e0e0e0; }
-    #total-container { position: fixed; top: 23.5em; left: 49%; transform: translateX(-50%); z-index: 4; display: flex; align-items: center; gap: 10px; background-color: rgba(0, 0, 0, 0.5); padding: 0.2em 0.5em; border-radius: 5px; }
-    #total { font-size: 1.6em !important; font-weight: bold; color: yellow; text-align: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
-    #ocisti-button { padding: 0; width: 120px; height: 60px; font-size: 0.9em; font-weight: bold; background: #ff0000; color: yellow; display: none; line-height: 1.3; text-align: center; border-radius: 5px; margin-left: 20px; }
-    #ocisti-button:active { box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); }
-    #ocisti-button.confirm-mode { background-color: yellow; color: black; }
-    #session-name-container { position: fixed; top: 27em; left: 50%; transform: translateX(-50%); z-index: 4; display: flex; justify-content: center; align-items: center; min-height: 35px; width: 250px; text-align: center; margin-top: 10px; }
-    #add-name-btn { padding: 0.4em 0.8em; font-size: 0.9em; background-color: #e0e0e0; color: black; display: block; }
-    #session-name-input { font-size: 1.5em; padding: 0.3em 0.5em; border: 1px solid #ccc; border-radius: 3px; width: 220px; display: none; }
-    #session-name-display { font-size: 1.1em; font-weight: bold; color: yellow; background-color: rgba(0, 0, 0, 0.5); padding: 0.3em 0.8em; border-radius: 5px; display: none; align-items: center; gap: 8px; }
-    #session-name-display .edit-icon { cursor: pointer; font-size: 0.8em; font-weight: normal; color: white; text-decoration: underline; }
-    #invoice-count { font-size: 1.4em; color: black; padding: 0.1em 0.4em; position: fixed; bottom: 170px; right: 50px; z-index: 2; text-align: right; font-weight: bold; }
-    #duplicate-warning { font-weight: bold; color: red; background-color: rgba(255, 255, 255, 0.8); padding: 0.3em 0.8em; border-radius: 5px; border: 1px solid red; text-align: center; animation: pulse 0.5s ease-in-out 3 alternate; position: fixed; top: 12.8em; left: 50%; transform: translateX(-50%); z-index: 5; display: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-    #loaded-message { font-weight: bold; color: green; display: none; text-align: center; font-size: 2em; position: fixed; top: 30%; left: 50%; transform: translate(-50%, -50%); animation: zoomFade 1s ease-out; z-index: 10; background-color: rgba(255, 255, 255, 0.85); padding: 0.8em 2em; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-     #delete-warning { font-weight: bold; display: none; text-align: center; position: fixed; top: 21.5em; left: 50%; transform: translateX(-50%); padding: 0.3em 0.6em; border-radius: 3px; z-index: 5; box-shadow: 0 1px 2px rgba(0,0,0,0.2); white-space: nowrap; }
-    #delete-warning.delete-mode { color: black; background-color: rgba(255, 255, 0, 0.8); }
-    #delete-warning.info-mode { color: white; background-color: rgba(0, 0, 0, 0.6); border: none; box-shadow: 0 1px 2px rgba(0,0,0,0.4); }
-    #history { max-height: 180px; overflow-y: auto; margin: 0; padding: 1em; background: white; border-radius: 5px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); width: 150px; position: fixed; bottom: 10px; left: 10px; z-index: 1; display: block; }
-    #history ul { list-style: none; padding: 0; margin: 0; }
-    #history li { padding: 0.5em 0; border-bottom: 1px solid #eee; white-space: pre; font-weight: bold; overflow: hidden; text-overflow: ellipsis; font-size: 1em; }
-    #history li:last-child { border-bottom: none; }
-    button { padding: 0.5em 1em; font-size: 1em; border: none; border-radius: 5px; color: black; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-    button:active { box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); }
-    .red-btn { background: #ff0000; color: yellow; }
-    .yellow-btn { background-color: yellow; color: black; }
-    #remove-from-list-btn { position: fixed; bottom: 130px; right: 50px; z-index: 3; }
-    #history-toggle-btn { position: fixed; bottom: 80px; right: 50px; z-index: 3; background-color: white; color: blue; font-weight: bold; }
-    #share-button { position: fixed; bottom: 30px; right: 15px; z-index: 3; background-color: green; color: white; padding: 0.5em 1em; font-size: 1em; border: none; border-radius: 5px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); font-weight: bold; animation: pulse-share 1.5s ease-in-out infinite; }
-    #share-button:active { box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); animation: none; }
-    #history-page { display: none; }
-    #history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1em; border-bottom: 2px solid black; padding-bottom: 0.5em; }
-    #history-header h1 { margin: 0; text-align: center; flex-grow: 1; font-size: 1.3em; }
-    #back-to-scanner-btn { background-color: green; color: white; border: none; font-weight: bold; margin: 0; padding: 0.4em 0.8em; font-size: 0.9em; cursor: pointer; }
-    #back-to-scanner-btn:active { background-color: darkgreen; }
-    #history-content { flex-grow: 1; overflow-y: auto; padding-top: 0; position: relative; }
-     #scan-group-list, #all-days-list-rendered, #search-results ul, #search-results-all-days ul { list-style: none; padding: 0; margin: 0; }
-     #scan-group-list li, #all-days-list-rendered li, #search-results li, #search-results-all-days li { background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background-color 0.2s ease; }
-     #scan-group-list li:hover, #all-days-list-rendered li:hover, #search-results li:hover, #search-results-all-days li:hover { background-color: #efefef; }
-     .scan-group-last-qr-time { font-size: 0.8em; color: #777; margin-left: 15px; flex-shrink: 0; }
-     .session-name-history { font-size: 1em; color: #00008B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; }
-     .scan-time-history { font-size: 1em; color: #333; white-space: nowrap; margin-left: 5px; }
-     #clear-history-btn.confirm-mode, #delete-session-btn.confirm-mode, #clear-day-btn.confirm-mode { background-color: yellow; color: black; }
-     #detail-scan-list { list-style: none; padding: 0; margin: 0; }
-     #detail-scan-list li {display: flex; justify-content: space-between; align-items: center; padding: 0.6em 0.2em; border-bottom: 1px solid #eee; font-size: 1.05em;}
-     #detail-scan-list li:last-child { border-bottom: none; }
-     #all-days-search-container { position: sticky; top: 0; background-color: white; padding: 0.5em 0.2em; border-bottom: 1px solid #eee; z-index: 10; margin-bottom: 0.2em; }
-     #all-days-search-container input { flex-grow: 1; padding: 0.5em; min-width: 50px; font-size: 0.9em; }
-     #all-days-search-container button { padding: 0.5em 0.6em; font-size: 0.9em; flex-shrink: 0; }
-     #all-days-list-rendered li { background-color: #f0f0f0; border: 1px solid #ccc; padding: 12px 15px; margin-bottom: 8px; }
-     #all-days-list-rendered li:hover { background-color: #e0e0e0; }
-    @keyframes pulse { 0% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.1); } 100% { transform: translateX(-50%) scale(1); } }
-    @keyframes zoomFade { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
-    @keyframes pulse-share { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimalni Test Kamere</title>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        /* Minimalni stil samo da vidimo reader */
+        body { margin: 1em; font-family: sans-serif; }
+        #reader {
+            width: 90%;
+            max-width: 400px;
+            height: 300px; /* Fiksna visina za test */
+            border: 2px solid red; /* Jasno vidljiv okvir */
+            margin: 1em auto;
+            background-color: #eee; /* Pozadina da se vidi */
+        }
+        #status { margin-top: 1em; font-weight: bold; }
+    </style>
 </head>
-<body class="scanner-view">
+<body>
 
-  <!-- Scanner View elementi -->
-  <div id="header">QR SKENER-KALKULATOR</div>
-  <div id="scan-instruction">Pozicioniraj qr kod unutar kvadrata kamere</div>
-  <!-- Trčeći tekst kontejner -->
-  <div id="running-text-container">
-    <span id="running-text-content"></span> <!-- Tekst će se učitati iz skripte -->
-  </div>
-  <!-- Kraj trčećeg teksta -->
-  <div id="reader"></div>
-  <div id="loaded-message" style="display: none;">UČITANO</div>
-  <div id="duplicate-warning" style="display: none;">TAJ RAČUN JE URAČUNAT</div>
-  <div id="total-container">
-      <div id="total">UKUPNO: 0.00 €</div>
-      <button id="ocisti-button" onclick="startOcistiConfirm()" style="display: none;">SPREMI<br>I OČISTI</button>
-  </div>
-  <div id="session-name-container">
-      <button id="add-name-btn" onclick="startAddName()">DODAJ NAZIV</button>
-      <input type="text" id="session-name-input" placeholder="Unesi naziv sesije..." maxlength="30">
-      <span id="session-name-display">
-          <span id="session-name-text"></span>
-          <span class="edit-icon" onclick="startAddName()">Uredi</span>
-      </span>
-  </div>
-  <div id="invoice-count">0 RAČUNA</div>
-  <div id="history" style="display: none;"> <ul id="historyList"></ul> </div>
-  <button class="red-btn" id="remove-from-list-btn" onclick="startRemoveFromList()" style="display:none;">Obriši iz liste</button>
-  <button id="history-toggle-btn">POVIJEST</button>
-  <button id="share-button" style="display: none;">DIJELI KALKULATOR</button>
-  <div id="delete-warning" style="display: none;"></div>
-  <!-- Kraj Scanner View elemenata -->
-
-  <!-- History View elementi -->
-  <div id="history-page">
-       <!-- ... (History page HTML ostaje isti) ... -->
-       <div id="history-header">
-           <button id="back-to-scanner-btn">< NA SKENER</button>
-           <h1>POVIJEST</h1>
-       </div>
-       <div id="search-container" style="display: none; padding: 1em 0; border-bottom: 1px solid #eee; margin-bottom: 1em;">
-           <div style="display: flex; gap: 10px; margin-bottom: 0.8em;">
-               <input type="text" id="search-input" placeholder="Datum(dd.mm.yy), dan, naziv..." style="flex-grow: 1; padding: 0.5em;">
-               <button id="execute-search-btn" style="padding: 0.5em 1em;">Traži</button>
-               <button id="close-search-btn" style="padding: 0.5em 1em; background-color: #ccc;">Zatvori</button>
-           </div>
-            <div id="search-summary-info-day" style="display: none; justify-content: space-between; align-items: center; padding: 0.6em 0.2em; font-size: 1.1em; margin-top: 0.8em; border-top: 1px solid #eee;"></div>
-           <div id="search-results"></div>
-       </div>
-       <div id="history-content"></div>
-  </div>
-  <!-- Kraj History View elemenata -->
-
-  <!-- Zvukovi -->
-  <audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
-  <audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
-  <audio id="remove-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
+    <h1>Test Kamere</h1>
+    <div id="reader"></div>
+    <div id="status">Status: Čekanje...</div>
 
     <script>
-    // *** GLOBALNE VARIJABLE I KONSTANTE (Originalne + runningTextContent) ***
-    const MAX_HISTORY_ITEMS = 500; const HISTORY_STORAGE_KEY = 'qrCalculatorHistory';
-    let ukupno = 0; let povijest = []; let removeConfirm = false; let ocistiConfirm = false;
-    const removeBtnInitialText = 'Obriši iz liste'; const ocistiBtnInitialText = 'SPREMI<br>I OČISTI';
-    const ocistiConfirmText = 'POTVRDI<br>SPREMANJE?';
-    let html5QrCodeInstance = null; let isScannerActive = false; let currentCameraId = null; let visibilityListenerAttached = false;
-    let currentSessionName = null; let removeNameConfirm = false;
-    let currentlyViewedDate = new Date(); currentlyViewedDate.setHours(0:type" content="website" />
-  <meta property="og:url" content="https://soboslikar.github.io/qr-kalkulator/" />
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <style>
-    /* CSS (Vraćeno na prikaz teksta) */
-    body { font-family: sans-serif; margin: 0; padding: 0.5em; background: #f4f4f4; overflow-x: hidden; min-height: 100vh; }
-    body.scanner-view #history-page { display: none; }
-    body.history-view { background-color: white; }
-    body.history-view #history-page { display: flex; flex-direction: column; padding: 0.5em 1em; min-height: calc(100vh - 1em); max-height: calc(100vh - 1em); box-sizing: border-box; }
-    body.history-view #header,
-    body.history-view #scan-instruction,
-    body.history-view #running-text-container,
-    body.history-view #reader,
-    body.history-view #loaded-message,
-    body.history-view #duplicate-warning,
-    body.history-view #total-container,
-    body.history-view #session-name-container,
-    body.history-view #invoice-count,
-    body.history-view #history,
-    body.history-view #remove-from-list-btn,
-    body.history-view #history-toggle-btn,
-    body.history-view #share-button,
-    body.history-view #delete-warning { display: none !important; }
-    #header { text-align: center; color: yellow; font-size: 1.2em; font-weight: bold; margin-bottom: 0.5em; position: absolute; width: 100%; left: 0; top: 0.5em; z-index: 3; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); }
-    #scan-instruction { position: absolute; top: 2.8em; left: 50%; transform: translateX(-50%); width: 90%; text-align: center; color: white; font-size: 1em; font-weight: bold; z-index: 2; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); pointer-events: none; display: block; }
+        const readerDiv = document.getElementById('reader');
+        const statusDiv = document.getElementById('status');
+        let html5QrCode = null;
 
-    /* --- STILOVI ZA TRČEĆI TEKST --- */
-    #running-text-container {
-      position: absolute;
-      top: 4.8em;
-      left: 0;
-      , 0, 0, 0);
-    let previousHistoryViewState = 'day-view'; let lastSearchTerm = '';
-    let totalDiv, totalContainer, ocistiButton, invoiceCountDiv, historyList, removeButton, duplicateWarning, loadedMsg, instructionDiv, deleteWarningDiv, shareButton, readerDiv, historyToggleButton, historyDiv, historyPageDiv, backToScannerButton, historyContentDiv, sessionNameContainer, addNameBtn, sessionNameInput, sessionNameDisplay, sessionNameText, runningTextContent; // Varijabla za tekst je tu, ali se neće koristiti
+        function onScanSuccess(decodedText, decodedResult) {
+            // Ne radimo ništa s rezultatom, samo logiramo
+            console.log(`Kod pronađen: ${decodedText}`, decodedResult);
+            statusDiv.textContent = `Kod pronađen: ${decodedText.substring(0, 30)}...`;
+            // Ne zaustavljamo skvan koda koji mijenjamo. Zamijenit ćemo **cijeli** `DOMContentLoaded` listener na kraju tvog `<script>` taga ovim **ultra-minimalnim** kodom koji samo pokušava pokrenuti kameru i dodati listener za Povijest gumb.
 
-    // *** POMOĆNE FUNKCIJE (Originalne) ***
-    const parseTime = (timeStr) => { if (!timeStr || typeof timeStr !== 'string' || timeStr === '??:??' || timeStr.length !== 5 || timeStr[2] !== ':') return -1; const parts = timeStr.split(':'); const hours = parseInt(parts[0], 10); const minutes = parseInt(parts[1], 10); if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return -1; return hours * 60 + minutes; };
-    function playSound(id) { const sound = document.getElementById(id); if (sound) { sound.pause(); sound.currentTime = 0; sound.play().catch(error => { if (error.name !== 'NotAllowedError' && error.name !== 'AbortError') console.warn(`Zvuk "${id}" greška:`, error); }); } else console.warn(`Audio element "${id}" nije pronađen.`); }
-    function getISODateString(date) { if (!(date instanceof Date) || isNaN(date)) { console.error("getISODateString primio neispravan datum:", date); return null; } const year = date.getFullYear(); const month = String(date.getMonth() + 1).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); return `${year}-${month}-${width: 100%;
-      overflow: hidden;
-      white-space: nowrap;
-      z-index: 2;
-      pointer-events: none;
-      background-color: transparent; /* Default pozadina */
-      display: block; /* JS će sakriti ako treba */
-    }
+```javascript
+    // ***eniranje za ovaj test
+        }
 
-    #running-text-container span {
-      display: inline-block;
-      padding-left: 100%;
-      font-size: 1.4em; /* TVOJA POSTAVKA */
-      font-weight: bold;
-      color: yellow; /* Default boja, JS će promijeniti ako treba */
-      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
-      animation: marquee 12s linear infinite; /* TVOJA POSTAVKA */
-    }
+        function onScanFailure(error) {
+            // Ignoriramo QR not found greške
+             if (!error.includes("No MultiFormat Readers found")) {
+                console.warn(`Greška skeniranja = ${error}`);
+                // statusDiv.textContent = `Greška: ${error}`;
+             }
+        }
 
-    @keyframes marquee {
-      0%   { transform: translateX(0); }
-      100% { transform: translateX(-100%); }
-    }
-    /* --- KRAJ STILOVA ZA TRČEĆI TEKST --- */
-
-    #reader { width: 100%; max-width: 400pxday}`; }
-    function normalizeDateForSearch(dateString) { /* ... (isto kao original) ... */ }
-
-    // *** FUNKCIJE ZA LOKALNU POHRANU (Originalne) ***
-    function saveFullHistoryToLocalStorage(fullHistory) { /* ... (isto kao original) ... */ }
-    function loadFullHistoryFromLocalStorage() { /* ... (isto kao original) ... */ }
-
-    // *** FUNKCIJE ZA AŽURIRANJE PRIKAZA (Originalne) ***; margin: auto; height: 55vh; position: relative; border: 1px solid #ccc; background: #e0e0e0; }
-    #total-container { position: fixed; top: 23.5em; left: 49%; transform: translateX(-50%); z-index: 4; display: flex; align-items:
-    function checkOcistiButtonVisibility() { /* ... (isto kao original) ... */ }
-    function updateDisplay() { /* ... (isto kao original) ... */ }
-    function updateSmallHistoryList() { /* ... (isto kao original) ... */ }
-    function checkRemoveButtonVisibility() { /* ... (isto kao original) ... */ }
-    function handleInfo center; gap: 10px; background-color: rgba(0, DeleteMessageVisibility() { /* ... (isto kao original) ... */ }
-
-    // *** FUNKCIJE ZA RESETIRANJE STANJA GUMBA (Originalne) ***
-    function resetRemoveMode() { /* ... (isto kao original) ... */ }
-    function resetOcistiMode() { /* ... (isto kao original) ... */ }
-
-    // *** FUNKCIJE ZA NAZIV SESIJE (Originalne) ***
-0, 0, 0.5); padding: 0.2em 0.5em; border-radius: 5px; }
-    #total { font-size: 1.6em !important; font-weight: bold; color: yellow; text-align: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
-    #ocisti-button { padding: 0; width: 120px; height: 60px; font-size: 0.9em    function startAddName() { /* ... (isto kao original) ... */ }
-    function saveName() { /* ... (isto kao original) ... */ }
-    function updateNameDisplay() { /* ... (isto kao original) ... */ }
-
-    // *** FUNKCIJE ZA UPRAVLJANJE TRENUTNOM SESIJOM SKENIRANJA (Originalne) ***
-    function startRemoveFromList() { /* ... (isto kao original) ... */ }
-    function startOcistiConfirm() { /*; font-weight: bold; background: #ff0000; color: yellow; display: none; line-height: 1.3; text-align: center; border-radius: 5px; margin-left: 20px; }
-    #ocisti-button:active { box-shadow: inset 0 1px 2px ... (isto kao original) ... */ }
-    function ocistiTrenutnoSkeniranje() { /* ... (isto kao original) ... */ }
-
-    // *** OBRADA SKENIRANOG QR KODA (Originalne) ***
-    function handleScan(decodedText) { /* ... rgba(0,0,0,0.3); }
-    #ocisti-button.confirm-mode { background-color: yellow; color (isto kao original) ... */ }
-
-    // *** FUNKCIJE ZA UPRAVLJANJE SKENEROM (Originalne) ***
-    function isElementOrParentHidden(element) { /* ... (isto kao original) ... */ }
-    function initializeScanner() {
-        console.log: black; }
-    #session-name-container { position: fixed; top: 27em; left: 50%; transform: translateX(-50%); z-index: 4; display: flex; justify-(">>> Pokušavam inicijalizirati skener...");
-        if (document.body.classList.contains('history-view') || isScannerActivecontent: center; align-items: center; min-height: 35px; width: 250px; text-align: center; margin-top: 10px; }
-    #add-) {
-             console.log(">>> Skener već aktivan ili history view, prekidam inicijalizaciju.");
-             return;
-        name-btn { padding: 0.4em 0.8em; font-size: 0.9em; background-color: #}
-        console.log("[InitializeScanner] Pokrećem...");
-        if (readerDiv) readerDiv.innerHTML = ''; if (instructionDiv)e0e0e0; color: black; display: block; }
-    #session-name-input { font-size: 1.5em; padding: 0.3em 0.5em; border: instructionDiv.style.display = 'none'; html5QrCodeInstance = 1px solid #ccc; border-radius: 3px; width new Html5Qrcode("reader"); const qrConfig = { fps: : 220px; display: none; }
-    #session-name-display { font-size: 1.1em; font5, qrbox: { width: 250, height: 250 } }; Html5Qrcode.getCameras().then(devices-weight: bold; color: yellow; background-color: rgba(0 => { if (!devices || devices.length === 0) throw new Error("Nema kamera."); const rearCamera = devices.find(d => d.label., 0, 0, 0.5); padding: 0toLowerCase().includes('back') || d.label.toLowerCase().includes('zad.3em 0.8em; border-radius: 5pxnja') || d.label.toLowerCase().includes('environment')); currentCameraId = rear; display: none; align-items: center; gap: 8pxCamera ? rearCamera.id : devices[0].id; requestAnimationFrame(() => {; }
-    #session-name-display .edit-icon { cursor: pointer; font-size: 0.8em; font-weight: normal; if (!html5QrCodeInstance || isScannerActive || document.body.classList.contains('history-view')) return; if (isElementOrParent color: white; text-decoration: underline; }
-    #invoice-count { font-size: 1.4em; color: black;Hidden(readerDiv)) { if (readerDiv) readerDiv.innerHTML = '<div style="padding:20px; color: red;">Greška: Reader skriven.</div>'; return; } html5QrCodeInstance.start( current padding: 0.1em 0.4em; position: fixed; bottom: 170px; right: 50px;CameraId, qrConfig, handleScan, (errorMessage) => {} ).then(() => { console.log(">>> [InitializeScanner][rAF] start() OK"); isScannerActive = true; setTimeout(() => { console.log("[Initialize z-index: 2; text-align: right; font-weight: bold; }
-    #duplicate-warning { font-weight: bold; color: red; background-color: rgba(255, Scanner][rAF][then-delay] Prikazujem uputu i vežem listener."); if (instructionDiv && document.body.classList.contains('scanner-view')) instructionDiv.style.display = 'block'; if (!visibilityListenerAttached255, 255, 0.8); padding: 0.3em 0.8em; border-radius: ) { attachVisibilityListener(); } }, 100); }).catch(err => {5px; border: 1px solid red; text-align: center; animation console.error(">>> [InitializeScanner][rAF] start() FAILED:", err); isScannerActive = false; if (readerDiv) readerDiv: pulse 0.5s ease-in-out 3 alternate; position: fixed; top: 12.8em; left: .innerHTML = `<div style="padding: 20px; color: red;">Greška startanja kamere (${err.name}).</div>`; if (instructionDiv50%; transform: translateX(-50%); z-index: 5) instructionDiv.style.display = 'none'; html5QrCodeInstance; display: none; box-shadow: 0 2px 4 = null; }); }); }).catch(err => { isScannerActive = false; if (readerDiv) readerDiv.innerHTML = `<div style="padding: px rgba(0,0,0,0.2); }
-    #loaded-message { font-weight: bold; color: green; display20px; color: red;">Greška pristupa kamerama (${err.name}).: none; text-align: center; font-size: 2em</div>`; if (instructionDiv) instructionDiv.style.display = 'none'; html5QrCodeInstance = null; });
-    }
-    function stopScanner(); position: fixed; top: 30%; left: 50%; transform: translate(-50%, -50%); animation: zoomFade 1s ease-out; z-index: 10; background { /* ... (isto kao original) ... */ }
-
-    // *** FUNKCIJE ZA PROMJENU PRIKAZA (VIEW) (Originalne) ***
-    function switchToScannerView() { /* ... (isto kao-color: rgba(255, 255, 255, 0.85); padding: 0.8em 2em; border-radius: 10px; box-shadow original) ... */ }
-    function switchToHistoryView() { /* ... (: 0 4px 8px rgba(0,0,0,0.2); }
-     #delete-warning { font-weightisto kao original) ... */ }
-
-    // *** FUNKCIJE ZA: bold; display: none; text-align: center; position: fixed; top RENDERIRANJE HISTORY VIEWA (Originalne) ***
-    function: 21.5em; left: 50%; transform: translateX(-50%); padding: 0.3em 0.6em; renderHistoryView(dateToShow = currentlyViewedDate) { /* ... (isto kao original) ... */ }
-    function generirajHtmlZaSpre border-radius: 3px; z-index: 5; box-shadow: 0 1px 2px rgba(0,0mljenuGrupu(grupa, redniBroj) { /* ... (isto kao original) ... */ }
-    function renderGroupDetailView,0,0.2); white-space: nowrap; }
-    #delete-warning.delete-mode { color: black; background-color(groupData) { /* ... (isto kao original) ... */ }
-    function deleteSpecificSession(timestampString) { /* ... (isto kao original) ... */ }
-    function renderAllDaysView() { /* ... (isto kao original: rgba(255, 255, 0, ) ... */ }
-    function renderAllDaysList(daysData, container0.8); }
-    #delete-warning.info-mode { color: white; background-color: rgba(0, 0, Element) { /* ... (isto kao original) ... */ }
-    function executeAllDaysSearch() { /* ... (isto kao original) ... */ }
-    0, 0.6); border: none; box-shadow: 0 1px 2px rgba(0,0,0,0function renderSessionSearchResults(results, containerElement, searchTerm, summaryContainer) { /* ... (isto kao original) ... */ }
-    function startSearch().4); }
-    #history { max-height: 180px { /* ... (isto kao original) ... */ }
-    function executeSearch() { /* ... (isto kao original) ... */ }
-    function delete; overflow-y: auto; margin: 0; padding: 1em; background: white; border-radius: 5px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); width: 150px; position: fixed; bottom: 10px; left: 10pxScansForDay(dateToDelete) { /* ... (isto kao original) ... */ }
-
-    // *** EVENT LISTENERI (Originalni) ***
-    function handleVisibilityChange() { if (document.visibilityState === 'visible' && document.; z-index: 1; display: block; }
-    #history ul { list-style: none; padding: 0; margin: 0; }
-    #history li { padding: 0.5body.classList.contains('scanner-view')) { if (!isScannerActiveem 0; border-bottom: 1px solid #eee; white) initializeScanner(); } else if (document.visibilityState === 'hidden') { stopScanner(); } }
-    function attachVisibilityListener() { if (-space: pre; font-weight: bold; overflow: hidden; text-overflow: ellipsis; font-size: 1em; }
-    visibilityListenerAttached) return; document.addEventListener("visibilitychange", handleVisibilityChange); visibilityListenerAttached = true; }
-    function globalClickListener(event)#history li:last-child { border-bottom: none; }
- { /* ... (isto kao original) ... */ }
-
-    // *** IN    button { padding: 0.5em 1em; font-size: 1em; border: none; border-radius: 5ICIJALIZACIJA APLIKACIJE (Pojednostavljpx; color: black; cursor: pointer; box-shadow: 0ena) ***
+         INICIJALIZACIJA APLIKACIJE (ULTRA-MINIMALNA) ***
     document.addEventListener('DOMContentLoaded', () => {
-        console.log("DOM spreman... (Pojednostavljena inicijalizacija)"); 2px 4px rgba(0,0,0,0.2); }
-    button:active { box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+        console.log("DOM spreman... (Ultra-minimalna inicijalizacija)");
 
-        // Dohvaćanje elemenata...
-        totalDiv = document.getElementById('total'); totalContainer = document.getElementById('total-container'); ocistiButton = document }
-    .red-btn { background: #ff0000; color: yellow; }
-    .yellow-btn { background-color.getElementById('ocisti-button'); invoiceCountDiv = document.getElementById('invoice-count'); historyList = document.getElementById('historyList'); removeButton: yellow; color: black; }
-    #remove-from-list = document.getElementById('remove-from-list-btn'); duplicateWarning =-btn { position: fixed; bottom: 130px; right document.getElementById('duplicate-warning'); loadedMsg = document.getElementById('loaded-message'); instructionDiv = document.getElementById('scan-instruction'); deleteWarning: 50px; z-index: 3; }
-    #history-toggle-btn { position: fixed; bottom: 80Div = document.getElementById('delete-warning'); shareButton = document.getElementById('share-button'); readerDiv = document.getElementById('reader'); historyToggleButton = document.getElementById('historypx; right: 50px; z-index: 3; background-color: white; color: blue; font-weight: bold;-toggle-btn'); historyDiv = document.getElementById('history'); historyPageDiv = document }
-    #share-button { position: fixed; bottom: 30px; right: 15px; z-index: 3.getElementById('history-page'); backToScannerButton = document.getElementById('back-to-scanner-btn'); historyContentDiv = document.getElementById('; background-color: green; color: white; padding: 0.5em 1em; font-size: 1em; border: none; borderhistory-content'); sessionNameContainer = document.getElementById('session-name-container'); addNameBtn = document.getElementById('add-name-btn');-radius: 5px; cursor: pointer; box-shadow:  sessionNameInput = document.getElementById('session-name-input'); sessionNameDisplay = document0 2px 4px rgba(0,0,0,0.2); font-weight: bold; animation: pulse-share 1.getElementById('session-name-display'); sessionNameText = document.getElementById('session.5s ease-in-out infinite; }
-    #share--name-text');
-        // Dohvaćanje runningTextContent nijebutton:active { box-shadow: inset 0 1px 2 nužno jer ga ne koristimo
-        // runningTextContent = document.getElementById('running-text-content');
+        // Dohvati samo najnužnije elemente
+        readerDiv = document.getElementById('reader');
+        historyToggleButton = document.getElementById('history-toggle-btn');
+        backToScannerButton = document.getElementById('back-to-scanner-btn'); // Treba za gumb Povijest
+        historyPageDiv = document.getElementById('history-page');document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM spreman (Minimalni Test)");
+            statusDiv.textContent = "Status: DOM spreman.";
 
-        // Osnovna provjera elemenata
-        px rgba(0,0,0,0.3); animation: none; }
-    #history-page { display: none; }
-    if (!readerDiv || !historyPageDiv || !historyContentDiv || !backToScannerButton || !historyToggleButton || !sessionNameContainer ) {
-            console.error("GREŠKA: Nedostaju OSNOVNI DOM elementi!");
-            #history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1em; borderdocument.body.innerHTML = '<div style="padding: 20px; color: red; font-weight: bold;">Greška učitavanja-bottom: 2px solid black; padding-bottom: 0.. Osvježite.</div>';
+            if (!readerDiv) {
+                console.error("Element #reader NIJE pronađen!");
+                statusDiv.textContent = "Gre // Treba za gumb Povijest
+
+        // Provjera osnovnih elemenata
+        if (!readerDiv || !historyToggleButton || !backToScannerButton || !historyPageDiv) {
+            console.error("GREŠKA: Nedostaju elementi za kameru ili povijest!");
+            document.ška: #reader element nedostaje!";
+                return;
+            }
+body.innerHTML = '<div style="padding: 20px; color: red; font-weight: bold;">Greška učitavanja osnovnih elemenata.             console.log("Element #reader pronađen.");
+
+            try {
+                html5QrCode = new Html5Qrcode("reader");
+                const config = { fps: 10, qrbox: { width: 250</div>';
             return;
         }
-        console.log("Osnovni DOM elementi pronađeni.");
+        console.log("Elementi za kameru i povijest pronađeni.");
 
-        //5em; }
-    #history-header h1 { margin: 0; text-align: center; flex-grow: 1; font UKLONJENO: Inicijalizacija iz localStorage
-        // UKLONJENO: fetchAndUpdateRunningText()
-        // UKLONJENO-size: 1.3em; }
-    #back-to: setInterval
+        // Dodaj listener za Povijest gumb
+        if (historyToggleButton) {
+             console., height: 250 } };
+                statusDiv.textContent = "Status: Pokušavam pristupiti kamerama...";
+                console.log("Pokušavam pristupiti kamerama...");
 
-        console.log("Dodajem osnovne listenere...");
-        document.body.addEventListener('click', globalClickListener, true);
-
-        //-scanner-btn { background-color: green; color: white; border Provjeri postoji li gumb prije dodavanja listenera
-        if (: none; font-weight: bold; margin: 0; padding:historyToggleButton) {
-             console.log("Dodajem listener za historyToggleButton."); 0.4em 0.8em; font-size: 0.9em; cursor: pointer; }
-    #back-to-scanner-btn:active { background-color: darkgreen; }
-
+                Html5Qrcode.getClog("Dodajem listener za historyToggleButton.");
             historyToggleButton.addEventListener('click', () => {
-                playSound('click-sound');
-                switchToHistoryView();
+                // playSound('click-sound'); // Zvukoviameras().then(devices => {
+                    console.log("Pronađene kam možda ne rade ako je sve ostalo uklonjeno
+                switchToHistoryView();ere:", devices);
+                    if (devices && devices.length) {
+                        // Pokušaj koristiti zadnju kameru ili prvu ako nema zadnje
+                         // Osnovna funkcija prebacivanja
             });
-        } else {
-    #history-content { flex-grow: 1; overflow-y: auto; padding-top: 0; position: relative; }
-            console.error("Element historyToggleButton nije pronađen!");
         }
 
-        if (backToScannerButton) {
-             console.log("Dodajem listener     #scan-group-list, #all-days-list-rendered, #search-results ul, #search-results-all-days ul { list-style: none; padding: 0; margin: 0 za backToScannerButton.");
-            backToScannerButton.addEventListener('click', () =>; }
-     /* ... (ostali CSS za history view) ... */
- {
-                playSound('click-sound');
-                switchToScannerView();
-     @keyframes pulse { 0% { transform: translateX(-50%)            });
-        } else {
-             console.error("Element backTo scale(1); } 50% { transform: translateX(-50ScannerButton nije pronađen!");
+        // Dodaj listener za Natrag gumb (iz povijesti)
+        ifconst cameraId = devices.length > 1 ? devices[devices.length - (backToScannerButton) {
+             console.log("Dodajem listener za backToScannerButton.");
+            backToScannerButton.addEventListener('click 1].id : devices[0].id;
+                         console.log(`Koristim kameru ID: ${cameraId}`);
+                         statusDiv.textContent', () => {
+                // playSound('click-sound');
+                 = `Status: Pokrećem kameru ${cameraId}...`;
+
+                        html5QrswitchToScannerView(); // Osnovna funkcija prebacivanja
+            });Code.start(
+                            cameraId,
+                            config,
+                            onScanSuccess,
+                            onScanFailure
+                        ).then(() => {
+                            console.log
         }
 
-        // Ostali listeneri (%) scale(1.1); } 100% { transform:Share, Session Name Input)
-        if (navigator.share) {
-            if (shareButton) {
-                 console.log("Dodajem listener za shareButton."); translateX(-50%) scale(1); } }
-     @keyframes zoomFade { 0% { transform: translate(-50%, -50%)
-                shareButton.style.display = 'block';
-                shareButton.addEventListener('click', async () => {
-                    if (removeConfirm || removeNameConfirm) reset scale(0.5); opacity: 0; } 50%RemoveMode();
-                    if (ocistiConfirm) resetOcistiMode(); { transform: translate(-50%, -50%) scale(1.
-                    try {
-                        await navigator.share({ title: 'QR SKENER-KALKULATOR', text: 'Skenira i zbra1); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: ja račune...', url: window.location.href });
-                    } catch0; } }
-     @keyframes pulse-share { 0% { (err) {
-                        if (err.name !== 'AbortError') console.error('Greška dijeljenja:', err);
+
+        // Odmah pokušaj pokrenuti kameru ako smo u scanner view
+        if (document.body.classList.contains('scanner("Kamera uspješno pokrenuta.");
+                            statusDiv.textContent = "Status: Kamera aktivna.";
+                        }).catch(err => {
+                            console.error-view')) {
+            console.log("Init: Scanner view... Poz(`Ne mogu pokrenuti kameru: ${err}`);
+                            statusDiv.textContent = `Greška pokretanja kamere: ${err}`;
+                        });
+ivam initializeScanner.");
+            initializeScanner(); // Pokušaj inicijalizacije
+            // attachVisibilityListener(); // Ostaje komentirano
+        } else {
+             console.log("Init: History view... Prebacujem.");
+             switchToHistoryView(); // Za svaki slučaj
+        }
+
+        console.log("Ultra                    } else {
+                         console.error("Nema pronađenih kamera.");
+                         statusDiv.textContent = "Greška: Nema pronađenih kamera.";
                     }
-                }); transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(
-            } else {
-                console.warn("Share button element nije pronađen,1); } }
-  </style>
-</head>
-<body iako navigator.share postoji.");
-            }
-        } else {
-            if class="scanner-view">
-
-  <!-- Scanner View elementi -->
-  <div id(shareButton) shareButton.style.display = 'none';
-        }="header">QR SKENER-KALKULATOR</div>
-  <div id="scan-instruction">Pozicioniraj qr kod unutar kvadrata kamere</div>
-
-        if(sessionNameInput) {
-             console.log("Dodajem listener za
-  <!-- Trčeći tekst kontejner -->
-  <div id sessionNameInput.");
-            sessionNameInput.addEventListener('keydown', (e) => {="running-text-container">
-    <span id="running-text
-                if (e.key === 'Enter') { e.preventDefault(); saveName(); }
-                else if (e.key === 'Escape') {-content"></span> <!-- Tekst će se učitati iz skripte -->
-  </div>
-  <!-- Kraj trčećeg teksta -->
-  <div sessionNameInput.value = currentSessionName || ''; sessionNameInput.style id="reader"></div>
-  <div id="loaded-message" style="display: none;">UČITANO</div>
-  <div id="duplicate-.display = 'none'; updateNameDisplay(); }
-            });
-        } else {
-            console.error("Element sessionNameInput nije pronađen!");
-warning" style="display: none;">TAJ RAČUN JE URA        }
-
-        // Provjera inicijalnog viewa i pokretanje kamČUNAT</div>
-  <div id="total-container"> /* ... (isto) ... */ </div>
-  <div id="session-name-containerere
-        console.log("Provjeravam inicijalni view...");
-        if (document.body.classList.contains('scanner-view')) {
-            console.log("Init: Scanner view...");
-            console.log("Init:"> /* ... (isto) ... */ </div>
-  <div id="invoice-count">0 RAČUNA</div>
-  <div id="history Scanner view... Pozivam initializeScanner.");
-            initializeScanner(); // Pozivamo originalnu funkciju
-             console.log("Init: Scanner view... Pozivam attach" style="display: none;"> <ul id="historyList"></ul> </div>
-  <button class="red-btn" id="remove-fromVisibilityListener."); // Vraćamo i ovo
-             attachVisibilityListener(); // V-list-btn" onclick="startRemoveFromList()" style="display:raćamo listener
-        } else {
-            console.log("Init: History view...");
-            switchToHistoryView();
-        }
-
-        console.log("Initnone;">Obriši iz liste</button>
-  <button id="history-toggle-btn">POVIJEST</button>
-  <button id=": update displaya...");
-        updateDisplay();
-        console.log("share-button" style="display: none;">DIJELI KALKULATOR</button>
-  <div id="delete-warning" style="Inicijalizacija završena.");
+                }).catch(err => {
+                    console-minimalna inicijalizacija završena.");
     });
-  </script>
-
-  <!-- Statcounter kod -->
-  <script type="text/javascript">display: none;"></div>
-  <!-- Kraj Scanner View elemenata -->
-
-  <!-- History View elementi -->
-  <div id="history-page"> /* ... (isto) ... */ </div>
-  <!-- Kraj History View elemenata -->
-
- var sc_project=12702047; var sc_invisible=1; var sc_security="e75d2592"; var scJsHost = "https://"; (function() {  <!-- Zvukovi -->
-  <audio id="scan-sound" src="https://actions.google.com/sounds/v1/ var sc = document.createElement('script'); sc.type = 'text/cartoon/pop.ogg" preload="auto"></audio>
-  <audiojavascript'; sc.async = true; sc.src = scJsHost + "statcounter.com/counter/counter.js"; var s = document id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/.getElementsByTagName('script')[0]; s.parentNode.insertBefore(sc,music/2.mp3" preload="auto"></audio>
-  < s); })(); </script>
-  <noscript><div class="statcounter"><a title="Web Analytics" href="https://statcounter.com/"audio id="remove-sound" src="https://actions.google.com target="_blank"><img class="statcounter" src="https://c./sounds/v1/cartoon/wood_plank_flicks.statcounter.com/12702047/0/ogg" preload="auto"></audio>
-
-  <script>
-    // *** GLOBALNE VARIJABLE I KONSTANTE ***
-    const MAX_e75d2592/1/" alt="Web Analytics" referrerPolicy="no-referrer-when-downgrade"></a></div></HISTORY_ITEMS = 500; const HISTORY_STORAGE_KEY = 'qrCalculatorHistory';
-    let ukupno = 0; let povijest = []; let removeConfirm = false; let ocistiConfirm = false;noscript>
-  <!-- Kraj Statcounter koda -->
-
-</body>
-</html>
