@@ -4,28 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minimalni Test Kamere</title>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    <style>
-        /* Minimalni stil samo da vidimo reader */
-        body { margin: 1em; font-family: sans-serif; }
-        #reader {
-            width: 90%;
-            max-width: 400px;
-            height: 300px; /* Fiksna visina za test */
-            border: 2px solid red; /* Jasno vidljiv okvir */
-            margin: 1em auto;
-            background-color: #eee; /* Pozadina da se vidi */
-        }
-        #status { margin-top: 1em; font-weight: bold; }
-    </style>
-</head>
-<body>
-
-    <h1>Test Kamere</h1>
-    <div id="reader"></div>
-    <div id="status">Status: Čekanje...</div>
-
-    <script>
+    console.log("--- TEST START ---");
+alert("JavaScript radi!");
+console.log("--- TEST END ---");
         const readerDiv = document.getElementById('reader');
         const statusDiv = document.getElementById('status');
         let html5QrCode = null;
