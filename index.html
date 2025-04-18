@@ -738,16 +738,15 @@
             });
         }
 
-        console.log("Provjeravam inicijalni view...");
-        if (document.body.classList.contains('scanner-view')) {
-            console.log("Init: Scanner view...");
-            initializeScanner();
-            attachVisibilityListener();
-        } else {
-            console.log("Init: History view...");
-            switchToHistoryView();
-        }
-
+        
+          console.log("Provjeravam inicijalni view...");
+    if (document.body.classList.contains('scanner-view')) {
+        console.log("Init: Scanner view... Pozivam initializeScanner."); // OVAJ LOG
+        initializeScanner();
+        attachVisibilityListener();
+    } else {
+      // ...
+    }
         console.log("Inicijalizacija završena.");
     });
   </script>
