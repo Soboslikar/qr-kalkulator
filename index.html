@@ -3,120 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimalni Test Kamere</title>
-    console.log("--- TEST START ---");
-alert("JavaScript radi!");
-console.log("--- TEST END ---");
-        const readerDiv = document.getElementById('reader');
-        const statusDiv = document.getElementById('status');
-        let html5QrCode = null;
+    <title>Minimalni Test JavaScripta</title>
+    <!-- Uklonili smo i html5-qrcode skriptu za ovaj najosnovniji test -->
+    <style>
+        body { margin: 1em; font-family: sans-serif; }
+        #reader { display: none; } /* Skrivamo reader jer ga ne koristimo */
+        #status { margin-top: 1em; font-weight: bold; }
+    </style>
+</head>
+<body>
 
-        function onScanSuccess(decodedText, decodedResult) {
-            // Ne radimo ništa s rezultatom, samo logiramo
-            console.log(`Kod pronađen: ${decodedText}`, decodedResult);
-            statusDiv.textContent = `Kod pronađen: ${decodedText.substring(0, 30)}...`;
-            // Ne zaustavljamo skvan koda koji mijenjamo. Zamijenit ćemo **cijeli** `DOMContentLoaded` listener na kraju tvog `<script>` taga ovim **ultra-minimalnim** kodom koji samo pokušava pokrenuti kameru i dodati listener za Povijest gumb.
+    <h1>Test JavaScripta</h1>
+    <div id="reader"></div>
+    <div id="status">Status: Čekanje...</div>
 
-```javascript
-    // ***eniranje za ovaj test
-        }
+    <script>
+      // Samo ovaj kod treba biti unutar script taga!
+      console.log("--- TEST START ---");
+      alert("JavaScript radi!");
+      console.log("--- TEST END ---");
+    </script>
 
-        function onScanFailure(error) {
-            // Ignoriramo QR not found greške
-             if (!error.includes("No MultiFormat Readers found")) {
-                console.warn(`Greška skeniranja = ${error}`);
-                // statusDiv.textContent = `Greška: ${error}`;
-             }
-        }
-
-         INICIJALIZACIJA APLIKACIJE (ULTRA-MINIMALNA) ***
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log("DOM spreman... (Ultra-minimalna inicijalizacija)");
-
-        // Dohvati samo najnužnije elemente
-        readerDiv = document.getElementById('reader');
-        historyToggleButton = document.getElementById('history-toggle-btn');
-        backToScannerButton = document.getElementById('back-to-scanner-btn'); // Treba za gumb Povijest
-        historyPageDiv = document.getElementById('history-page');document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOM spreman (Minimalni Test)");
-            statusDiv.textContent = "Status: DOM spreman.";
-
-            if (!readerDiv) {
-                console.error("Element #reader NIJE pronađen!");
-                statusDiv.textContent = "Gre // Treba za gumb Povijest
-
-        // Provjera osnovnih elemenata
-        if (!readerDiv || !historyToggleButton || !backToScannerButton || !historyPageDiv) {
-            console.error("GREŠKA: Nedostaju elementi za kameru ili povijest!");
-            document.ška: #reader element nedostaje!";
-                return;
-            }
-body.innerHTML = '<div style="padding: 20px; color: red; font-weight: bold;">Greška učitavanja osnovnih elemenata.             console.log("Element #reader pronađen.");
-
-            try {
-                html5QrCode = new Html5Qrcode("reader");
-                const config = { fps: 10, qrbox: { width: 250</div>';
-            return;
-        }
-        console.log("Elementi za kameru i povijest pronađeni.");
-
-        // Dodaj listener za Povijest gumb
-        if (historyToggleButton) {
-             console., height: 250 } };
-                statusDiv.textContent = "Status: Pokušavam pristupiti kamerama...";
-                console.log("Pokušavam pristupiti kamerama...");
-
-                Html5Qrcode.getClog("Dodajem listener za historyToggleButton.");
-            historyToggleButton.addEventListener('click', () => {
-                // playSound('click-sound'); // Zvukoviameras().then(devices => {
-                    console.log("Pronađene kam možda ne rade ako je sve ostalo uklonjeno
-                switchToHistoryView();ere:", devices);
-                    if (devices && devices.length) {
-                        // Pokušaj koristiti zadnju kameru ili prvu ako nema zadnje
-                         // Osnovna funkcija prebacivanja
-            });
-        }
-
-        // Dodaj listener za Natrag gumb (iz povijesti)
-        ifconst cameraId = devices.length > 1 ? devices[devices.length - (backToScannerButton) {
-             console.log("Dodajem listener za backToScannerButton.");
-            backToScannerButton.addEventListener('click 1].id : devices[0].id;
-                         console.log(`Koristim kameru ID: ${cameraId}`);
-                         statusDiv.textContent', () => {
-                // playSound('click-sound');
-                 = `Status: Pokrećem kameru ${cameraId}...`;
-
-                        html5QrswitchToScannerView(); // Osnovna funkcija prebacivanja
-            });Code.start(
-                            cameraId,
-                            config,
-                            onScanSuccess,
-                            onScanFailure
-                        ).then(() => {
-                            console.log
-        }
-
-
-        // Odmah pokušaj pokrenuti kameru ako smo u scanner view
-        if (document.body.classList.contains('scanner("Kamera uspješno pokrenuta.");
-                            statusDiv.textContent = "Status: Kamera aktivna.";
-                        }).catch(err => {
-                            console.error-view')) {
-            console.log("Init: Scanner view... Poz(`Ne mogu pokrenuti kameru: ${err}`);
-                            statusDiv.textContent = `Greška pokretanja kamere: ${err}`;
-                        });
-ivam initializeScanner.");
-            initializeScanner(); // Pokušaj inicijalizacije
-            // attachVisibilityListener(); // Ostaje komentirano
-        } else {
-             console.log("Init: History view... Prebacujem.");
-             switchToHistoryView(); // Za svaki slučaj
-        }
-
-        console.log("Ultra                    } else {
-                         console.error("Nema pronađenih kamera.");
-                         statusDiv.textContent = "Greška: Nema pronađenih kamera.";
-                    }
-                }).catch(err => {
-                    console-minimalna inicijalizacija završena.");
-    });
+</body>
+</html>
