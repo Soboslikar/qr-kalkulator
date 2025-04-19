@@ -11,7 +11,7 @@
   <meta property="og:url" content="https://soboslikar.github.io/qr-kalkulator/" />
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    /* CSS (Iz prethodne verzije + širi gumb + trčeći tekst) */
+    /* CSS (Verzija koja radi s tekstom) */
     body { font-family: sans-serif; margin: 0; padding: 0.5em; background: #f4f4f4; overflow-x: hidden; min-height: 100vh; }
     body.scanner-view #history-page { display: none; }
     body.history-view { background-color: white; }
@@ -44,7 +44,7 @@
       z-index: 2;
       pointer-events: none;
       background-color: transparent; /* Default pozadina */
-      display: none; /* POČINJE SKRIVENO */
+      display: none; /* Počinje skriveno, JS će prikazati */
     }
 
     #running-text-container span {
@@ -67,7 +67,7 @@
         display: none !important;
      }
 
-    /* ... (Ostatak CSS-a je isti kao u tvojoj radnoj verziji) ... */
+    /* ... (Ostatak CSS-a) ... */
      #reader { width: 100%; max-width: 400px; margin: auto; height: 55vh; position: relative; border: 1px solid #ccc; background: #e0e0e0; }
      #total-container { position: fixed; top: 23.5em; left: 49%; transform: translateX(-50%); z-index: 4; display: flex; align-items: center; gap: 10px; background-color: rgba(0, 0, 0, 0.5); padding: 0.2em 0.5em; border-radius: 5px; }
      #total { font-size: 1.6em !important; font-weight: bold; color: yellow; text-align: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
@@ -176,9 +176,9 @@
   <audio id="remove-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
 
   <script>
-    // *** GLOBALNE VARIJABLE I KONSTANTE ***
+    // *** GLOBALNE VARIJABLE I KONSTANTE (Originalne) ***
     const MAX_HISTORY_ITEMS = 500; const HISTORY_STORAGE_KEY = 'qrCalculatorHistory';
-    const INITIAL_FETCH_DELAY = 2000; // Odgoda u ms (2 sekunde)
+    const INITIAL_FETCH_DELAY = 3000; // Odgoda u ms (3 sekunde) <-- DODANO/PRILAGOĐENO
     let ukupno = 0; let povijest = []; let removeConfirm = false; let ocistiConfirm = false;
     const removeBtnInitialText = 'Obriši iz liste'; const ocistiBtnInitialText = 'SPREMI<br>I OČISTI';
     const ocistiConfirmText = 'POTVRDI<br>SPREMANJE?';
@@ -186,10 +186,10 @@
     let currentSessionName = null; let removeNameConfirm = false;
     let currentlyViewedDate = new Date(); currentlyViewedDate.setHours(0, 0, 0, 0);
     let previousHistoryViewState = 'day-view'; let lastSearchTerm = '';
-    let totalDiv, totalContainer, ocistiButton, invoiceCountDiv, historyList, removeButton, duplicateWarning, loadedMsg, instructionDiv, deleteWarningDiv, shareButton, readerDiv, historyToggleButton, historyDiv, historyPageDiv, backToScannerButton, historyContentDiv, sessionNameContainer, addNameBtn, sessionNameInput, sessionNameDisplay, sessionNameText, runningTextContent;
+    let totalDiv, totalContainer, ocistiButton, invoiceCountDiv, historyList, removeButton, duplicateWarning, loadedMsg, instructionDiv, deleteWarningDiv, shareButton, readerDiv, historyToggleButton, historyDiv, historyPageDiv, backToScannerButton, historyContentDiv, sessionNameContainer, addNameBtn, sessionNameInput, sessionNameDisplay, sessionNameText, runningTextContent; // Dodana varijabla
 
     // --- Varijable za dohvat podataka ---
-    let appSettings = { showText: false }; // Samo osnovno
+    let appSettings = {}; // Za spremanje postavki (inicijalno prazno)
     let lastKnownChangeCounter = -1; // Zadnji poznati brojač iz Sheeta
     const CHANGE_COUNTER_STORAGE_KEY = 'qrSheetChangeCounter'; // Ključ za localStorage
     // --- KRAJ ---
@@ -231,8 +231,8 @@
 
     // *** FUNKCIJE ZA UPRAVLJANJE SKENEROM (Originalne) ***
     function isElementOrParentHidden(element) { /* ... */ }
-    function initializeScanner() { /* ... (Originalna funkcija s logovima) ... */ }
-    function stopScanner() { /* ... (Originalna funkcija) ... */ }
+    function initializeScanner() { /* ... */ }
+    function stopScanner() { /* ... */ }
 
     // *** FUNKCIJE ZA PROMJENU PRIKAZA (VIEW) (Originalne) ***
     function switchToScannerView() { /* ... */ }
@@ -250,6 +250,114 @@
     function startSearch() { /* ... */ }
     function executeSearch() { /* ... */ }
     function deleteScansForDay(dateToDelete) { /* ... */ }
+
+    // *** NOVA FUNKCIJA ZA DOHVAT PODATAKA (s provjerom brojača) ***
+    function fetchRunningTextData(forceUpdate = false) {
+        const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbyOxj5sbaVdJVM1tM2Bke5HH9QSK4nAya0YMQ_Ly1iDQcFtJppkHPWjtsutJ528ZFDjNA/exec';
+        const runningTextElement = document.getElementById('running-text-content');
+        const runningTextContainer = document.getElementById('running-text-container');
+
+        if (!runningTextContainer || !runningTextElement) {
+            console.error("Elementi za trčeći tekst nisu pronađeni.");
+            return;
+        }
+
+        // Šaljemo 'lastCounter' samo ako nije forceUpdate
+        const url = forceUpdate ? appsScriptUrl : `${appsScriptUrl}?lastCounter=${lastKnownChangeCounter}`;
+
+        console.log(`(fetchRunningTextData) Pokušavam dohvatiti podatke sa: ${url}`);
+
+        fetch(url)
+            .then(response => {
+                console.log(`(fetchRunningTextData .then) Dobio odgovor, status: ${response.status}`);
+                if (!response.ok) { throw new Error(`HTTP greška ${response.status}`); }
+                return response.json();
+            })
+            .then(data => {
+                console.log("(fetchRunningTextData .then) Primljeni podaci:", data);
+
+                if (data.error) {
+                    console.error("Greška iz Apps Scripta:", data.error);
+                    // Opcionalno: prikaži grešku korisniku
+                    return;
+                }
+
+                // Ako podaci nisu promijenjeni (flag je false), ne radi ništa više
+                if (data.dataChanged === false) {
+                    console.log("(fetchRunningTextData .then) Podaci nisu promijenjeni (brojač isti).");
+                    return;
+                }
+
+                // --- Podaci su NOVI ili je PRVI dohvat ---
+                console.log("(fetchRunningTextData .then) Podaci su NOVI ili PRVI dohvat. Ažuriram...");
+
+                // Ažuriraj globalne postavke (kasnije ćemo ih koristiti)
+                appSettings = data; // Spremi SVE nove podatke
+
+                // Odredi što prikazati
+                const shouldShow = data.settings?.systemEnabled && (data.priorityMessage?.text || (data.messages && data.messages.length > 0));
+                let messageToDisplay = null;
+                 let bgColor = 'transparent';
+                 let textColor = '#FFFF00'; // Default
+
+                 if (shouldShow) {
+                    if(data.priorityMessage?.text){
+                        messageToDisplay = data.priorityMessage;
+                        bgColor = messageToDisplay.bgColor || 'transparent';
+                        textColor = messageToDisplay.textColor || '#FFFF00';
+                        console.log("Prikazujem prioritetnu/ručnu poruku.");
+                    } else if (data.messages && data.messages.length > 0) {
+                        // Za sada prikazujemo samo PRVU poruku iz niza
+                        // Kasnije ćemo dodati rotaciju
+                        currentMessageIndex = 0;
+                        messageToDisplay = data.messages[currentMessageIndex];
+                        bgColor = messageToDisplay.bgColor || 'transparent';
+                        textColor = messageToDisplay.textColor || DEFAULT_TEXT_COLOR;
+                         console.log("Prikazujem prvu poruku iz niza.");
+                    }
+                 }
+
+                // Ažuriraj DOM
+                const newDisplay = shouldShow && messageToDisplay ? 'block' : 'none';
+                runningTextContainer.style.display = newDisplay;
+
+                if (newDisplay === 'block' && messageToDisplay) {
+                     const newMessage = messageToDisplay.text || messageToDisplay.message || ''; // Prilagodi ako treba
+                     runningTextElement.textContent = newMessage;
+                     runningTextContainer.style.backgroundColor = bgColor;
+                     runningTextElement.style.color = textColor;
+
+                     console.log("(fetchRunningTextData .then) Resetiram animaciju.");
+                     runningTextElement.style.animation = 'none';
+                     void runningTextElement.offsetWidth; // Forsiraj reflow
+                     runningTextElement.style.animation = '';
+                } else {
+                    runningTextElement.textContent = ''; // Isprazni ako se ne prikazuje
+                     console.log("(fetchRunningTextData .then) Nema poruke za prikaz, skrivam kontejner.");
+                }
+
+                // Spremi novi brojač u localStorage i globalnu varijablu
+                if (typeof data.changeCounter === 'number') {
+                    lastKnownChangeCounter = data.changeCounter;
+                    localStorage.setItem(CHANGE_COUNTER_STORAGE_KEY, lastKnownChangeCounter.toString());
+                    console.log("Spremljen novi brojač:", lastKnownChangeCounter);
+                }
+
+                 // Ovdje kasnije ide logika za pokretanje/resetiranje ROTACIJE
+                 // stopMessageRotation(); // Zaustavi staru ako je bila
+                 // runningMessages = data.messages || []; // Spremi novi niz
+                 // currentMessageIndex = 0;
+                 // if (shouldShow && !data.priorityMessage && runningMessages.length > 0) {
+                 //     startMessageRotation(); // Pokreni novu rotaciju
+                 // }
+
+            })
+            .catch(error => {
+                console.error('(fetchRunningTextData .then) Greška:', error);
+                if (runningTextContainer) runningTextContainer.style.display = 'none';
+            });
+    }
+
 
     // *** EVENT LISTENERI (Originalni) ***
     function handleVisibilityChange() { /* ... */ }
@@ -304,117 +412,13 @@
         }, INITIAL_FETCH_DELAY);
 
         // 6. Postavi interval za provjeru ažuriranja
-        console.log(`Postavljam interval za provjeru ažuriranja (svake 1 min)...`);
+        console.log(`Postavljam interval za provjeru ažuriranja (svakih ${UPDATE_CHECK_INTERVAL / 1000}s)...`);
         setInterval(() => {
-            fetchRunningTextData(); // Pozovi bez forceUpdate
-        }, 60000); // Svakih 60 sekundi
+            fetchRunningTextData(); // Pozovi bez forceUpdate (provjerit će brojač)
+        }, UPDATE_CHECK_INTERVAL); // Koristi konstantu za interval
 
         console.log("Inicijalizacija završena (fetch zakazan, interval postavljen).");
     }); // Kraj DOMContentLoaded
-
-
-    // *** NOVA FUNKCIJA ZA DOHVAT PODATAKA (s provjerom brojača) ***
-    function fetchRunningTextData(forceUpdate = false) {
-        const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbyOxj5sbaVdJVM1tM2Bke5HH9QSK4nAya0YMQ_Ly1iDQcFtJppkHPWjtsutJ528ZFDjNA/exec';
-        const runningTextElement = document.getElementById('running-text-content');
-        const runningTextContainer = document.getElementById('running-text-container');
-
-        if (!runningTextContainer || !runningTextElement) {
-            console.error("Elementi za trčeći tekst nisu pronađeni.");
-            return;
-        }
-
-        // Dodaj parametar lastCounter ako nije forceUpdate
-        const url = forceUpdate ? appsScriptUrl : `${appsScriptUrl}?lastCounter=${lastKnownChangeCounter}`;
-
-        console.log(`(fetchRunningTextData) Pokušavam dohvatiti podatke sa: ${url}`);
-
-        fetch(url)
-            .then(response => {
-                console.log(`(fetchRunningTextData .then) Dobio odgovor, status: ${response.status}`);
-                if (!response.ok) { throw new Error(`HTTP greška ${response.status}`); }
-                return response.json();
-            })
-            .then(data => {
-                console.log("(fetchRunningTextData .then) Primljeni podaci:", data);
-
-                // Ako je došlo do greške u skripti, prikaži je i prekini
-                if (data.error) {
-                    console.error("Greška iz Apps Scripta:", data.error);
-                    runningTextElement.textContent = `Greška: ${data.error}`;
-                    runningTextContainer.style.display = 'block'; // Pokaži grešku
-                    runningTextContainer.style.backgroundColor = 'red';
-                    runningTextElement.style.color = 'white';
-                    return;
-                }
-
-                // Ako podaci nisu promijenjeni (dataChanged je false), ne radi ništa
-                if (data.dataChanged === false) {
-                    console.log("(fetchRunningTextData .then) Podaci nisu promijenjeni (brojač isti).");
-                    return;
-                }
-
-                // --- Podaci su promijenjeni ili je prvi dohvat ---
-                console.log("(fetchRunningTextData .then) Podaci su NOVI ili PRVI dohvat.");
-
-                // Ažuriraj globalne postavke i poruke
-                // (Ovdje ćemo kasnije dodati spremanje cijelog appSettings)
-                const shouldShow = data.settings?.systemEnabled && (data.priorityMessage?.text || (data.messages && data.messages.length > 0));
-
-                let messageToDisplay = null;
-                if(data.priorityMessage?.text){
-                    messageToDisplay = data.priorityMessage;
-                } else if (data.messages && data.messages.length > 0) {
-                    // Za sada prikazujemo samo PRVU poruku iz niza
-                    currentMessageIndex = 0; // Resetiraj indeks
-                    messageToDisplay = data.messages[currentMessageIndex];
-                }
-
-                const newDisplay = shouldShow ? 'block' : 'none';
-                runningTextContainer.style.display = newDisplay;
-
-                if (shouldShow && messageToDisplay) {
-                     const newMessage = messageToDisplay.text || messageToDisplay.message || '';
-                     const newBgColor = messageToDisplay.bgColor || 'transparent';
-                     const newTextColor = messageToDisplay.textColor || '#FFFF00';
-
-                     if (runningTextElement.textContent !== newMessage ||
-                         runningTextContainer.style.backgroundColor !== newBgColor ||
-                         runningTextElement.style.color !== newTextColor)
-                     {
-                         runningTextElement.textContent = newMessage;
-                         runningTextContainer.style.backgroundColor = newBgColor;
-                         runningTextElement.style.color = newTextColor;
-
-                         console.log("(fetchRunningTextData .then) Ažuriram prikaz i resetiram animaciju.");
-                         runningTextElement.style.animation = 'none';
-                         runningTextElement.offsetHeight; // Trigger reflow
-                         runningTextElement.style.animation = '';
-                     } else {
-                         console.log("(fetchRunningTextData .then) Vizualni prikaz isti, ne resetiram animaciju.");
-                     }
-
-                } else {
-                    runningTextElement.textContent = ''; // Isprazni ako nema što prikazati
-                     console.log("(fetchRunningTextData .then) Nema poruke za prikaz, skrivam kontejner.");
-                }
-
-                // Spremi novi brojač u localStorage i globalnu varijablu
-                if (typeof data.changeCounter === 'number') {
-                    lastKnownChangeCounter = data.changeCounter;
-                    localStorage.setItem(CHANGE_COUNTER_STORAGE_KEY, lastKnownChangeCounter.toString());
-                    console.log("Spremljen novi brojač:", lastKnownChangeCounter);
-                }
-
-                // Ovdje ćemo KASNIJE dodati spremanje cijelog niza `data.messages`
-                // u `runningMessages` i pokretanje/resetiranje intervala rotacije
-
-            })
-            .catch(error => {
-                console.error('(fetchRunningTextData .then) Greška:', error);
-                if (runningTextContainer) runningTextContainer.style.display = 'none';
-            });
-    }
 
   </script>
 
