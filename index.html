@@ -179,6 +179,7 @@
 
   <script>
     // *** GLOBALNE VARIJABLE I KONSTANTE ***
+    const INITIAL_FETCH_DELAY = 2000; // Odgoda u ms (2 sekunde)
     const MAX_HISTORY_ITEMS = 500; const HISTORY_STORAGE_KEY = 'qrCalculatorHistory';
     let ukupno = 0; let povijest = []; let removeConfirm = false; let ocistiConfirm = false;
     const removeBtnInitialText = 'Obriši iz liste'; const ocistiBtnInitialText = 'SPREMI<br>I OČISTI';
@@ -524,7 +525,9 @@ setInterval(periodicallyFetchText, 120000); // Pozovi svake 2 minute
 setTimeout(() => {
    // ... (kod unutar setTimeout ostaje isti) ...
 }, 2000);
-
+// POKUŠAJ DOHVAĆANJA TEKSTA NAKON ŠTO JE SVE OSTALO GOTOVO
+setTimeout(() => {
+    console.log(`Odgođeni poziv fetchAndUpdateRunningText nakon ${INITIAL_FETCHHvala! Pregledao sam kod. Ovo je točno verzija koju smo zadnje pripremili:
     console.log("Inicijalizacija završena.");
 }); // Kraj DOMContentLoaded
   </script>
