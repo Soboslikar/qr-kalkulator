@@ -526,6 +526,74 @@ setTimeout(() => {
 }, 2000);
 
     console.log("Inicijalizacija završena.");
+          // *** DODATAK: Periodično osvježavanje NAKON svega ***
+
+    // Funkcija za dohvaćanje i ažuriranje (slična inicijalnoj, ali za interval)
+    function periodicallyFetchText() {
+        const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbyOxj5sbaVdJVM1tM2Bke5HH9QSK4nAya0YMQ_Ly1iDQcFtJppkHPWjtsutJ528ZFDjNA/exec'; // TVOJ URL!
+        const runningTextElement = document.getElementById('running-text-content');
+        const runningTextContainer = document.getElementById('running-text-container');
+
+        if (!runningTextContainer || !runningTextElement) return; // Samo izađi ako nema elemenata
+
+        console.log("(Interval Fetch) Pokušavam dohvatiti podatke sa:", appsScriptUrl);
+
+        fetch(appsScriptUrl)
+            .then(response => {
+                if (!response.ok) { throw new Error(`HTTP greška ${response.status}`); }
+                return response.json();
+            })
+            .then(data => {
+                console.log("(Interval Fetch .then) Primljeni podaci:", data);
+
+                // Ažuriraj globalne postavke samo ako se prikaz teksta promijenio
+                // Kasnije ćemo ovdje dodati i ostale postavke
+                 const shouldShowText = data.showText ?? false;
+                 if (appSettings.showText !== shouldShowText) {
+                    console.log("(Interval Fetch) Stanje prikaza teksta promijenjeno.");
+                    appSettings.showText = shouldShowText;
+                    // Dodat ćemo ažuriranje ostalih postavki kad ih budemo trebali
+                 }
+
+                 const newMessage = shouldShowText ? (data.messageText || '') : '';
+                 const newDisplay = shouldShowText ? 'block' : 'none';
+                 const newBgColor = shouldShowText ? (data.backgroundColor || 'transparent') : 'transparent';
+                 const newTextColor = shouldShowText ? (data.textColor || '#FFFF00') : '#FFFF00';
+                 const currentDisplay = runningTextContainer.style.display;
+
+                 let visualChanged = false;
+                 // Ažuriraj samo ako se STVARNO nešto promijenilo
+                 if (runningTextElement.textContent !== newMessage) { runningTextElement.textContent = newMessage; visualChanged = true; }
+                 if (currentDisplay !== newDisplay) { runningTextContainer.style.display = newDisplay; visualChanged = true; }
+                 if (runningTextContainer.style.backgroundColor !== newBgColor) { runningTextContainer.style.backgroundColor = newBgColor; visualChanged = true; }
+                 if (runningTextElement.style.color !== newTextColor) { runningTextElement.style.color = newTextColor; visualChanged = true; }
+
+
+                 // Resetiraj animaciju samo ako je bilo vizualne promjene i tekst se prikazuje
+                 if (shouldShowText && visualChanged) {
+                      console.log("(Interval Fetch .then) Resetiram animaciju.");
+                      runningTextElement.style.animation = 'none';
+                      runningTextElement.offsetHeight;
+                      runningTextElement.style.animation = '';
+                 } else {
+                     console.log("(Interval Fetch .then) Nema vizualne promjene za tekst.");
+                 }
+            })
+            .catch(error => {
+                console.error('(Interval Fetch .then) Greška:', error);
+                // U slučaju greške intervala, vjerojatno ne želimo sakriti traku
+                // ako je prije bila vidljiva. Mogli bismo ostaviti kako jest.
+            });
+    }
+
+    // Postavi interval tek nakon što se sve ostalo sigurno učitalo i inicijaliziralo
+    // Koristimo dodatni setTimeout da odgodimo postavljanje intervala za par sekundi više
+    setTimeout(() => {
+        console.log("Postavljam interval za dohvaćanje teksta (svake 2 minute)...");
+        setInterval(periodicallyFetchText, 120000); // 120000 ms = 2 minute
+    }, 5000); // Postavi interval tek 5 sekundi nakon učitavanja stranice
+
+    // *** KRAJ DODATKA za Periodično osvježavanje ***
 }); // Kraj DOMContentLoaded
   </script>
 
