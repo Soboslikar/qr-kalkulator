@@ -454,11 +454,16 @@ function fetchAndUpdateRunningText() {
 
         console.log("Init: update displaya...");
         updateDisplay();
-      // Dohvat podataka za trčeći tekst NAKON svega ostalog
+        // Dohvat podataka za trčeći tekst NAKON svega ostalog
     console.log("Pokrećem MINIMALNO v2 dohvaćanje podataka...");
     fetchAndUpdateRunningText();
-        console.log("Inicijalizacija završena.");
-    });
+
+    // Postavi interval za periodično osvježavanje
+    console.log("Postavljam interval za dohvaćanje teksta (svake 2 minute)...");
+    setInterval(fetchAndUpdateRunningText, 120000); // <-- DODAJ OVU LINIJU
+
+    console.log("Inicijalizacija završena.");
+}); // Kraj DOMContentLoaded
   </script>
 
   <!-- Statcounter kod -->
