@@ -298,6 +298,68 @@ let appSettings = { showText: false }; // Za praćenje treba li tekst biti prika
     function attachVisibilityListener() { if (visibilityListenerAttached) return; document.addEventListener("visibilitychange", handleVisibilityChange); visibilityListenerAttached = true; }
     function globalClickListener(event) { const isClickOnRemoveButton = removeButton && removeButton.contains(event.target); const isClickOnDeleteWarning = deleteWarningDiv && deleteWarningDiv.style.display !== 'none' && deleteWarningDiv.contains(event.target); if ((removeConfirm || removeNameConfirm) && !isClickOnRemoveButton && !isClickOnDeleteWarning) { resetRemoveMode(); } const isClickOnOcistiButton = ocistiButton && ocistiButton.contains(event.target); if (ocistiConfirm && !isClickOnOcistiButton) { resetOcistiMode(); } const isClickOnNameInput = sessionNameInput && sessionNameInput.contains(event.target); const isClickOnAddNameBtn = addNameBtn && addNameBtn.contains(event.target); const isClickOnEditIcon = event.target.classList.contains('edit-icon'); const searchContainerSingleDay = document.getElementById('search-container'); const isClickInSingleDaySearch = searchContainerSingleDay?.contains(event.target) || event.target.id === 'start-search-btn'; const searchContainerAllDays = document.getElementById('all-days-search-container'); const isClickInAllDaysSearch = searchContainerAllDays?.contains(event.target); if (sessionNameInput && sessionNameInput.style.display === 'block' && !isClickOnNameInput && !isClickOnAddNameBtn && !isClickOnEditIcon) { saveName(); } if (!isClickInSingleDaySearch && searchContainerSingleDay?.style.display === 'block' && event.target.id !== 'close-search-btn' && event.target.id !== 'execute-search-btn') { /* Ne zatvaraj automatski */ } if (!isClickInAllDaysSearch && searchContainerAllDays?.style.display === 'block' && event.target.id !== 'history-view-toggle-btn' && event.target.id !== 'close-all-days-search-btn' && event.target.id !== 'execute-all-days-search-btn') { /* Ne zatvaraj automatski */} }
 
+    // --- MINIMALNA FUNKCIJA ZA DOHVAT TEKSTA (koristi .then()) v2 ---
+function fetchAndUpdateRunningText() {
+    const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbyOxj5sbaVdJVM1tM2Bke5HH9QSK4nAya0YMQ_Ly1iDQcFtJppkHPWjtsutJ528ZFDjNA/exec'; // TVOJ URL!
+    const runningTextElement = document.getElementById('running-text-content');
+    const runningTextContainer = document.getElementById('running-text-container');
+
+    if (!runningTextContainer || !runningTextElement) {
+        console.error("Elementi za trčeći tekst nisu pronađeni.");
+        return;
+    }
+
+    console.log("(Fetch MINIMAL v2) Pokušavam dohvatiti podatke sa:", appsScriptUrl);
+
+    fetch(appsScriptUrl)
+        .then(response => {
+            console.log("(Fetch MINIMAL v2 .then) Dobio odgovor, status:", response.status);
+            if (!response.ok) { throw new Error(`HTTP greška ${response.status}`); }
+            return response.json();
+        })
+        .then(data => {
+            console.log("(Fetch MINIMAL v2 .then) Primljeni podaci:", data);
+
+            // Direktno koristi podatke za prikaz
+            const shouldShowText = data.showText ?? false;
+            appSettings.showText = shouldShowText; // Ažuriraj globalno stanje samo radi info
+
+            const newMessage = shouldShowText ? (data.messageText || '') : '';
+            const newDisplay = shouldShowText ? 'block' : 'none';
+            const currentDisplay = runningTextContainer.style.display;
+
+            let visualChanged = false;
+            if (runningTextElement.textContent !== newMessage) {
+                runningTextElement.textContent = newMessage;
+                visualChanged = true;
+            }
+             if (currentDisplay !== newDisplay) {
+                runningTextContainer.style.display = newDisplay;
+                visualChanged = true;
+            }
+
+            // Primijeni boje
+            const newBgColor = shouldShowText ? (data.backgroundColor || 'transparent') : 'transparent';
+            const newTextColor = shouldShowText ? (data.textColor || '#FFFF00') : '#FFFF00';
+            if (runningTextContainer.style.backgroundColor !== newBgColor) { runningTextContainer.style.backgroundColor = newBgColor; visualChanged = true;}
+            if (runningTextElement.style.color !== newTextColor) { runningTextElement.style.color = newTextColor; visualChanged = true;}
+
+            // Resetiraj animaciju ako treba
+            if (shouldShowText && visualChanged) {
+                 console.log("(Fetch MINIMAL v2 .then) Resetiram animaciju.");
+                 runningTextElement.style.animation = 'none';
+                 runningTextElement.offsetHeight; // Trigger reflow
+                 runningTextElement.style.animation = '';
+             } else if (!shouldShowText) {
+                 console.log("(Fetch MINIMAL v2 .then) Tekst se sakriva ili nije promijenjen.");
+             }
+        })
+        .catch(error => {
+            console.error('(Fetch MINIMAL v2 .then) Greška:', error);
+            if (runningTextContainer) runningTextContainer.style.display = 'none';
+            appSettings.showText = false;
+        });
+}
     // *** INICIJALIZACIJA APLIKACIJE ***
     document.addEventListener('DOMContentLoaded', () => {
         console.log("DOM spreman...");
@@ -392,6 +454,9 @@ let appSettings = { showText: false }; // Za praćenje treba li tekst biti prika
 
         console.log("Init: update displaya...");
         updateDisplay();
+      // Dohvat podataka za trčeći tekst NAKON svega ostalog
+    console.log("Pokrećem MINIMALNO v2 dohvaćanje podataka...");
+    fetchAndUpdateRunningText();
         console.log("Inicijalizacija završena.");
     });
   </script>
