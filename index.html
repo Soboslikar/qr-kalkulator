@@ -458,9 +458,72 @@ function fetchAndUpdateRunningText() {
     console.log("Pokrećem MINIMALNO v2 dohvaćanje podataka...");
     fetchAndUpdateRunningText();
 
-    // Postavi interval za periodično osvježavanje
-    console.log("Postavljam interval za dohvaćanje teksta (svake 2 minute)...");
-    setInterval(fetchAndUpdateRunningText, 120000); // <-- DODAJ OVU LINIJU
+   // Postavi interval za periodično osvježavanje NAKON inicijalnog dohvaćanja
+console.log("Postavljam interval za dohvaćanje teksta (svake 2 minute)...");
+// Definirajmo funkciju unutar koje ćemo pozivati fetch da izbjegnemo probleme s dosegom varijabli
+function periodicallyFetchText() {
+    const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbyOxj5sbaVdJVM1tM2Bke5HH9QSK4nAya0YMQ_Ly1iDQcFtJppkHPWjtsutJ528ZFDjNA/exec'; // TVOJ URL!
+    const runningTextElement = document.getElementById('running-text-content');
+    const runningTextContainer = document.getElementById('running-text-container');
+
+    if (!runningTextContainer || !runningTextElement) return; // Samo izađi ako nema elemenata
+
+    console.log("(Interval Fetch) Pokušavam dohvatiti podatke sa:", appsScriptUrl);
+
+    fetch(appsScriptUrl)
+        .then(response => {
+            if (!response.ok) { throw new Error(`HTTP greška ${response.status}`); }
+            return response.json();
+        })
+        .then(data => {
+            console.log("(Interval Fetch .then) Primljeni podaci:", data);
+
+            // Ažuriraj samo ako se tekst ili prikaz promijenio
+             const shouldShowText = data.showText ?? false;
+             const newMessage = shouldShowText ? (data.messageText || '') : '';
+             const newDisplay = shouldShowText ? 'block' : 'none';
+             const newBgColor = shouldShowText ? (data.backgroundColor || 'transparent') : 'transparent';
+             const newTextColor = shouldShowText ? (data.textColor || '#FFFF00') : '#FFFF00';
+
+             let visualChanged = false;
+             if (runningTextElement.textContent !== newMessage) {
+                 runningTextElement.textContent = newMessage;
+                 visualChanged = true;
+             }
+              if (runningTextContainer.style.display !== newDisplay) {
+                 runningTextContainer.style.display = newDisplay;
+                 visualChanged = true;
+             }
+              if (runningTextContainer.style.backgroundColor !== newBgColor) {
+                  runningTextContainer.style.backgroundColor = newBgColor;
+                  visualChanged = true;
+              }
+              if (runningTextElement.style.color !== newTextColor) {
+                  runningTextElement.style.color = newTextColor;
+                  visualChanged = true;
+              }
+
+             // Resetiraj animaciju samo ako je bilo promjene i tekst se prikazuje
+             if (shouldShowText && visualChanged) {
+                  console.log("(Interval Fetch .then) Resetiram animaciju.");
+                  runningTextElement.style.animation = 'none';
+                  runningTextElement.offsetHeight;
+                  runningTextElement.style.animation = '';
+             }
+        })
+        .catch(error => {
+            console.error('(Interval Fetch .then) Greška:', error);
+            // Možda ne želimo sakriti traku ako interval ne uspije? Ovisi o željenom ponašanju.
+            // if (runningTextContainer) runningTextContainer.style.display = 'none';
+        });
+}
+
+setInterval(periodicallyFetchText, 120000); // Pozovi svake 2 minute
+
+// OVDJE IDE POSTOJEĆI setTimeout(() => { ... }, 2000);
+setTimeout(() => {
+   // ... (kod unutar setTimeout ostaje isti) ...
+}, 2000);
 
     console.log("Inicijalizacija završena.");
 }); // Kraj DOMContentLoaded
