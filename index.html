@@ -11,56 +11,14 @@
   <meta property="og:url" content="https://soboslikar.github.io/qr-kalkulator/" />
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    /* CSS (Iz prethodne verzije + širi gumb + trčeći tekst) */
+    /* CSS (Iz prethodne verzije + širi gumb) */
     body { font-family: sans-serif; margin: 0; padding: 0.5em; background: #f4f4f4; overflow-x: hidden; min-height: 100vh; }
     body.scanner-view #history-page { display: none; }
     body.history-view { background-color: white; }
     body.history-view #history-page { display: flex; flex-direction: column; padding: 0.5em 1em; min-height: calc(100vh - 1em); max-height: calc(100vh - 1em); box-sizing: border-box; }
-    body.history-view #header,
-    body.history-view #scan-instruction,
-    body.history-view #running-text-container, /* DODANO OVDJE */
-    body.history-view #reader,
-    body.history-view #loaded-message,
-    body.history-view #duplicate-warning,
-    body.history-view #total-container,
-    body.history-view #session-name-container,
-    body.history-view #invoice-count,
-    body.history-view #history,
-    body.history-view #remove-from-list-btn,
-    body.history-view #history-toggle-btn,
-    body.history-view #share-button,
-    body.history-view #delete-warning { display: none !important; }
+    body.history-view #header, body.history-view #scan-instruction, body.history-view #reader, body.history-view #loaded-message, body.history-view #duplicate-warning, body.history-view #total-container, body.history-view #session-name-container, body.history-view #invoice-count, body.history-view #history, body.history-view #remove-from-list-btn, body.history-view #history-toggle-btn, body.history-view #share-button, body.history-view #delete-warning { display: none !important; }
     #header { text-align: center; color: yellow; font-size: 1.2em; font-weight: bold; margin-bottom: 0.5em; position: absolute; width: 100%; left: 0; top: 0.5em; z-index: 3; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); }
     #scan-instruction { position: absolute; top: 2.8em; left: 50%; transform: translateX(-50%); width: 90%; text-align: center; color: white; font-size: 1em; font-weight: bold; z-index: 2; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); pointer-events: none; display: block; }
-
-    /* --- STILOVI ZA NOVI TRČEĆI TEKST --- */
-    #running-text-container {
-      position: absolute;
-      top: 4.8em; /* Malo ispod #scan-instruction (2.8em + ~2em razmaka) */
-      left: 0;
-      width: 100%;
-      overflow: hidden; /* Sakrij tekst koji izađe izvan ekrana */
-      white-space: nowrap; /* Spriječi prelamanje teksta */
-      z-index: 2; /* Iznad kamere, ali ispod nekih upozorenja ako treba */
-      pointer-events: none; /* Da ne ometa klikove/dodire */
-         }
-
-    #running-text-container span {
-      display: inline-block; /* Potrebno za transformaciju i animaciju */
-      padding-left: 100%; /* Počni s tekstom van desnog ruba */
-      font-size: 1.4em; /* Malo veći od #scan-instruction (koji je 1em) */
-      font-weight: bold;
-      color: yellow; /* Žuta za dobru vidljivost */
-      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); /* Sjena za čitljivost */
-      animation: marquee 5s linear infinite; /* Primijeni animaciju */
-    }
-
-    @keyframes marquee {
-      0%   { transform: translateX(0); } /* Početna pozicija (van desnog ruba zbog paddinga) */
-      100% { transform: translateX(-100%); } /* Krajnja pozicija (pomaknut za svoju širinu ulijevo) */
-    }
-    /* --- KRAJ STILOVA ZA TRČEĆI TEKST --- */
-
     #reader { width: 100%; max-width: 400px; margin: auto; height: 55vh; position: relative; border: 1px solid #ccc; background: #e0e0e0; }
     #total-container { position: fixed; top: 23.5em; left: 49%; transform: translateX(-50%); z-index: 4; display: flex; align-items: center; gap: 10px; background-color: rgba(0, 0, 0, 0.5); padding: 0.2em 0.5em; border-radius: 5px; }
     #total { font-size: 1.6em !important; font-weight: bold; color: yellow; text-align: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
@@ -121,11 +79,6 @@
   <!-- Scanner View elementi -->
   <div id="header">QR SKENER-KALKULATOR</div>
   <div id="scan-instruction">Pozicioniraj qr kod unutar kvadrata kamere</div>
-  <!-- NOVI ELEMENT START -->
-  <div id="running-text-container">
-    <span id="running-text-content"></span>
-  </div>
-  <!-- NOVI ELEMENT END -->
   <div id="reader"></div>
   <div id="loaded-message" style="display: none;">UČITANO</div>
   <div id="duplicate-warning" style="display: none;">TAJ RAČUN JE URAČUNAT</div>
@@ -187,9 +140,8 @@
     let currentSessionName = null; let removeNameConfirm = false;
     let currentlyViewedDate = new Date(); currentlyViewedDate.setHours(0, 0, 0, 0);
     let previousHistoryViewState = 'day-view'; let lastSearchTerm = '';
-    let totalDiv, totalContainer, ocistiButton, invoiceCountDiv, historyList, removeButton, duplicateWarning, loadedMsg, instructionDiv, deleteWarningDiv, shareButton, readerDiv, historyToggleButton, historyDiv, historyPageDiv, backToScannerButton, historyContentDiv, sessionNameContainer, addNameBtn, sessionNameInput, sessionNameDisplay, sessionNameText, runningTextContent; // Dodana varijabla runningTextContent
-    // --- Minimalna globalna varijabla za postavke ---
-let appSettings = { showText: false }; // Za praćenje treba li tekst biti prikazan
+    let totalDiv, totalContainer, ocistiButton, invoiceCountDiv, historyList, removeButton, duplicateWarning, loadedMsg, instructionDiv, deleteWarningDiv, shareButton, readerDiv, historyToggleButton, historyDiv, historyPageDiv, backToScannerButton, historyContentDiv, sessionNameContainer, addNameBtn, sessionNameInput, sessionNameDisplay, sessionNameText;
+
     // *** POMOĆNE FUNKCIJE ***
     const parseTime = (timeStr) => { if (!timeStr || typeof timeStr !== 'string' || timeStr === '??:??' || timeStr.length !== 5 || timeStr[2] !== ':') return -1; const parts = timeStr.split(':'); const hours = parseInt(parts[0], 10); const minutes = parseInt(parts[1], 10); if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return -1; return hours * 60 + minutes; };
     function playSound(id) { const sound = document.getElementById(id); if (sound) { sound.pause(); sound.currentTime = 0; sound.play().catch(error => { if (error.name !== 'NotAllowedError' && error.name !== 'AbortError') console.warn(`Zvuk "${id}" greška:`, error); }); } else console.warn(`Audio element "${id}" nije pronađen.`); }
@@ -298,187 +250,13 @@ let appSettings = { showText: false }; // Za praćenje treba li tekst biti prika
     function attachVisibilityListener() { if (visibilityListenerAttached) return; document.addEventListener("visibilitychange", handleVisibilityChange); visibilityListenerAttached = true; }
     function globalClickListener(event) { const isClickOnRemoveButton = removeButton && removeButton.contains(event.target); const isClickOnDeleteWarning = deleteWarningDiv && deleteWarningDiv.style.display !== 'none' && deleteWarningDiv.contains(event.target); if ((removeConfirm || removeNameConfirm) && !isClickOnRemoveButton && !isClickOnDeleteWarning) { resetRemoveMode(); } const isClickOnOcistiButton = ocistiButton && ocistiButton.contains(event.target); if (ocistiConfirm && !isClickOnOcistiButton) { resetOcistiMode(); } const isClickOnNameInput = sessionNameInput && sessionNameInput.contains(event.target); const isClickOnAddNameBtn = addNameBtn && addNameBtn.contains(event.target); const isClickOnEditIcon = event.target.classList.contains('edit-icon'); const searchContainerSingleDay = document.getElementById('search-container'); const isClickInSingleDaySearch = searchContainerSingleDay?.contains(event.target) || event.target.id === 'start-search-btn'; const searchContainerAllDays = document.getElementById('all-days-search-container'); const isClickInAllDaysSearch = searchContainerAllDays?.contains(event.target); if (sessionNameInput && sessionNameInput.style.display === 'block' && !isClickOnNameInput && !isClickOnAddNameBtn && !isClickOnEditIcon) { saveName(); } if (!isClickInSingleDaySearch && searchContainerSingleDay?.style.display === 'block' && event.target.id !== 'close-search-btn' && event.target.id !== 'execute-search-btn') { /* Ne zatvaraj automatski */ } if (!isClickInAllDaysSearch && searchContainerAllDays?.style.display === 'block' && event.target.id !== 'history-view-toggle-btn' && event.target.id !== 'close-all-days-search-btn' && event.target.id !== 'execute-all-days-search-btn') { /* Ne zatvaraj automatski */} }
 
-    // --- MINIMALNA FUNKCIJA ZA DOHVAT TEKSTA (koristi .then()) v2 ---
-function fetchAndUpdateRunningText() {
-    const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbyOxj5sbaVdJVM1tM2Bke5HH9QSK4nAya0YMQ_Ly1iDQcFtJppkHPWjtsutJ528ZFDjNA/exec'; // TVOJ URL!
-    const runningTextElement = document.getElementById('running-text-content');
-    const runningTextContainer = document.getElementById('running-text-container');
-
-    if (!runningTextContainer || !runningTextElement) {
-        console.error("Elementi za trčeći tekst nisu pronađeni.");
-        return;
-    }
-
-    console.log("(Fetch MINIMAL v2) Pokušavam dohvatiti podatke sa:", appsScriptUrl);
-
-    fetch(appsScriptUrl)
-        .then(response => {
-            console.log("(Fetch MINIMAL v2 .then) Dobio odgovor, status:", response.status);
-            if (!response.ok) { throw new Error(`HTTP greška ${response.status}`); }
-            return response.json();
-        })
-        .then(data => {
-            console.log("(Fetch MINIMAL v2 .then) Primljeni podaci:", data);
-
-            // Direktno koristi podatke za prikaz
-            const shouldShowText = data.showText ?? false;
-            appSettings.showText = shouldShowText; // Ažuriraj globalno stanje samo radi info
-
-            const newMessage = shouldShowText ? (data.messageText || '') : '';
-            const newDisplay = shouldShowText ? 'block' : 'none';
-            const currentDisplay = runningTextContainer.style.display;
-
-            let visualChanged = false;
-            if (runningTextElement.textContent !== newMessage) {
-                runningTextElement.textContent = newMessage;
-                visualChanged = true;
-            }
-             if (currentDisplay !== newDisplay) {
-                runningTextContainer.style.display = newDisplay;
-                visualChanged = true;
-            }
-
-            // Primijeni boje
-            const newBgColor = shouldShowText ? (data.backgroundColor || 'transparent') : 'transparent';
-            const newTextColor = shouldShowText ? (data.textColor || '#FFFF00') : '#FFFF00';
-            if (runningTextContainer.style.backgroundColor !== newBgColor) { runningTextContainer.style.backgroundColor = newBgColor; visualChanged = true;}
-            if (runningTextElement.style.color !== newTextColor) { runningTextElement.style.color = newTextColor; visualChanged = true;}
-
-            // Resetiraj animaciju ako treba
-            if (shouldShowText && visualChanged) {
-                 console.log("(Fetch MINIMAL v2 .then) Resetiram animaciju.");
-                 runningTextElement.style.animation = 'none';
-                 runningTextElement.offsetHeight; // Trigger reflow
-                 runningTextElement.style.animation = '';
-             } else if (!shouldShowText) {
-                 console.log("(Fetch MINIMAL v2 .then) Tekst se sakriva ili nije promijenjen.");
-             }
-        })
-        .catch(error => {
-            console.error('(Fetch MINIMAL v2 .then) Greška:', error);
-            if (runningTextContainer) runningTextContainer.style.display = 'none';
-            appSettings.showText = false;
-        });
-}
     // *** INICIJALIZACIJA APLIKACIJE ***
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log("DOM spreman...");
-        totalDiv = document.getElementById('total');
-        totalContainer = document.getElementById('total-container');
-        ocistiButton = document.getElementById('ocisti-button');
-        invoiceCountDiv = document.getElementById('invoice-count');
-        historyList = document.getElementById('historyList');
-        removeButton = document.getElementById('remove-from-list-btn');
-        duplicateWarning = document.getElementById('duplicate-warning');
-        loadedMsg = document.getElementById('loaded-message');
-        instructionDiv = document.getElementById('scan-instruction');
-        deleteWarningDiv = document.getElementById('delete-warning');
-        shareButton = document.getElementById('share-button');
-        readerDiv = document.getElementById('reader');
-        historyToggleButton = document.getElementById('history-toggle-btn');
-        historyDiv = document.getElementById('history');
-        historyPageDiv = document.getElementById('history-page');
-        backToScannerButton = document.getElementById('back-to-scanner-btn');
-        historyContentDiv = document.getElementById('history-content');
-        sessionNameContainer = document.getElementById('session-name-container');
-        addNameBtn = document.getElementById('add-name-btn');
-        sessionNameInput = document.getElementById('session-name-input');
-        sessionNameDisplay = document.getElementById('session-name-display');
-        sessionNameText = document.getElementById('session-name-text');
-        runningTextContent = document.getElementById('running-text-content'); // Dohvati element za trčeći tekst
-
-        if (!readerDiv || !historyPageDiv || !historyContentDiv || !backToScannerButton || !historyToggleButton || !sessionNameContainer || !runningTextContent ) { // Dodana provjera za runningTextContent
-            console.error("GREŠKA: Nedostaju DOM elementi!");
-            document.body.innerHTML = '<div style="padding: 20px; color: red; font-weight: bold;">Greška učitavanja. Osvježite.</div>';
-            return;
-        }
-
-        document.body.addEventListener('click', globalClickListener, true);
-
-        if (historyToggleButton) {
-            historyToggleButton.addEventListener('click', () => {
-                playSound('click-sound');
-                switchToHistoryView();
-            });
-        }
-        if (backToScannerButton) {
-            backToScannerButton.addEventListener('click', () => {
-                playSound('click-sound');
-                switchToScannerView();
-            });
-        }
-
-        if (navigator.share) {
-            if (shareButton) {
-                shareButton.style.display = 'block';
-                shareButton.addEventListener('click', async () => {
-                    if (removeConfirm || removeNameConfirm) resetRemoveMode();
-                    if (ocistiConfirm) resetOcistiMode();
-                    try {
-                        await navigator.share({
-                            title: 'QR SKENER-KALKULATOR',
-                            text: 'Skenira i zbraja račune...',
-                            url: window.location.href
-                        });
-                    } catch (err) {
-                        if (err.name !== 'AbortError') console.error('Greška dijeljenja:', err);
-                    }
-                });
-            }
-        } else {
-            if(shareButton) shareButton.style.display = 'none';
-        }
-
-        if(sessionNameInput) {
-            sessionNameInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    saveName();
-                } else if (e.key === 'Escape') {
-                    sessionNameInput.value = currentSessionName || '';
-                    sessionNameInput.style.display = 'none';
-                    updateNameDisplay();
-                }
-            });
-        }
-
-        console.log("Provjeravam inicijalni view...");
-        if (document.body.classList.contains('scanner-view')) {
-            console.log("Init: Scanner view...");
-            initializeScanner();
-            attachVisibilityListener();
-        } else {
-            console.log("Init: History view...");
-            switchToHistoryView();
-        }
-
-        console.log("Init: update displaya...");
-        updateDisplay();
-      // Dohvat podataka za trčeći tekst NAKON svega ostalog
-    console.log("Pokrećem MINIMALNO v2 dohvaćanje podataka...");
-    fetchAndUpdateRunningText();
-        console.log("Inicijalizacija završena.");
-    });
+    document.addEventListener('DOMContentLoaded', () => { console.log("DOM spreman..."); totalDiv = document.getElementById('total'); totalContainer = document.getElementById('total-container'); ocistiButton = document.getElementById('ocisti-button'); invoiceCountDiv = document.getElementById('invoice-count'); historyList = document.getElementById('historyList'); removeButton = document.getElementById('remove-from-list-btn'); duplicateWarning = document.getElementById('duplicate-warning'); loadedMsg = document.getElementById('loaded-message'); instructionDiv = document.getElementById('scan-instruction'); deleteWarningDiv = document.getElementById('delete-warning'); shareButton = document.getElementById('share-button'); readerDiv = document.getElementById('reader'); historyToggleButton = document.getElementById('history-toggle-btn'); historyDiv = document.getElementById('history'); historyPageDiv = document.getElementById('history-page'); backToScannerButton = document.getElementById('back-to-scanner-btn'); historyContentDiv = document.getElementById('history-content'); sessionNameContainer = document.getElementById('session-name-container'); addNameBtn = document.getElementById('add-name-btn'); sessionNameInput = document.getElementById('session-name-input'); sessionNameDisplay = document.getElementById('session-name-display'); sessionNameText = document.getElementById('session-name-text'); if (!readerDiv || !historyPageDiv || !historyContentDiv || !backToScannerButton || !historyToggleButton || !sessionNameContainer ) { console.error("GREŠKA: Nedostaju DOM elementi!"); document.body.innerHTML = '<div style="padding: 20px; color: red; font-weight: bold;">Greška učitavanja. Osvježite.</div>'; return; } document.body.addEventListener('click', globalClickListener, true); if (historyToggleButton) { historyToggleButton.addEventListener('click', () => { playSound('click-sound'); switchToHistoryView(); }); } if (backToScannerButton) { backToScannerButton.addEventListener('click', () => { playSound('click-sound'); switchToScannerView(); }); } if (navigator.share) { if (shareButton) { shareButton.style.display = 'block'; shareButton.addEventListener('click', async () => { if (removeConfirm || removeNameConfirm) resetRemoveMode(); if (ocistiConfirm) resetOcistiMode(); try { await navigator.share({ title: 'QR SKENER-KALKULATOR', text: 'Skenira i zbraja račune...', url: window.location.href }); } catch (err) { if (err.name !== 'AbortError') console.error('Greška dijeljenja:', err); } }); } } else { if(shareButton) shareButton.style.display = 'none'; } if(sessionNameInput) { sessionNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); saveName(); } else if (e.key === 'Escape') { sessionNameInput.value = currentSessionName || ''; sessionNameInput.style.display = 'none'; updateNameDisplay(); } }); } console.log("Provjeravam inicijalni view..."); if (document.body.classList.contains('scanner-view')) { console.log("Init: Scanner view..."); initializeScanner(); attachVisibilityListener(); } else { console.log("Init: History view..."); switchToHistoryView(); } console.log("Init: update displaya..."); updateDisplay(); console.log("Inicijalizacija završena."); });
   </script>
 
   <!-- Statcounter kod -->
-  <script type="text/javascript">
-  var sc_project=12702047;
-  var sc_invisible=1;
-  var sc_security="e75d2592";
-  var scJsHost = "https://";
-  (function() {
-  var sc = document.createElement('script'); sc.type = 'text/javascript'; sc.async = true;
-  sc.src = scJsHost + "statcounter.com/counter/counter.js";
-  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(sc, s);
-  })();
-  </script>
-  <noscript><div class="statcounter"><a title="Web Analytics"
-  href="https://statcounter.com/" target="_blank"><img
-  class="statcounter"
-  src="https://c.statcounter.com/12702047/0/e75d2592/1/"
-  alt="Web Analytics"
-  referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
+  <script type="text/javascript"> var sc_project=12702047; var sc_invisible=1; var sc_security="e75d2592"; var scJsHost = "https://"; (function() { var sc = document.createElement('script'); sc.type = 'text/javascript'; sc.async = true; sc.src = scJsHost + "statcounter.com/counter/counter.js"; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(sc, s); })(); </script>
+  <noscript><div class="statcounter"><a title="Web Analytics" href="https://statcounter.com/" target="_blank"><img class="statcounter" src="https://c.statcounter.com/12702047/0/e75d2592/1/" alt="Web Analytics" referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
   <!-- Kraj Statcounter koda -->
 
 </body>
