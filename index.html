@@ -123,7 +123,7 @@
   <div id="scan-instruction">Pozicioniraj qr kod unutar kvadrata kamere</div>
   <!-- NOVI ELEMENT START -->
   <div id="running-text-container">
-    <span id="running-text-content">Probna poruka od Darka  jer dorađuje ovaj kalkulator</span>
+    <span id="running-text-content"></span>
   </div>
   <!-- NOVI ELEMENT END -->
   <div id="reader"></div>
@@ -188,7 +188,8 @@
     let currentlyViewedDate = new Date(); currentlyViewedDate.setHours(0, 0, 0, 0);
     let previousHistoryViewState = 'day-view'; let lastSearchTerm = '';
     let totalDiv, totalContainer, ocistiButton, invoiceCountDiv, historyList, removeButton, duplicateWarning, loadedMsg, instructionDiv, deleteWarningDiv, shareButton, readerDiv, historyToggleButton, historyDiv, historyPageDiv, backToScannerButton, historyContentDiv, sessionNameContainer, addNameBtn, sessionNameInput, sessionNameDisplay, sessionNameText, runningTextContent; // Dodana varijabla runningTextContent
-
+    // --- Minimalna globalna varijabla za postavke ---
+let appSettings = { showText: false }; // Za praćenje treba li tekst biti prikazan
     // *** POMOĆNE FUNKCIJE ***
     const parseTime = (timeStr) => { if (!timeStr || typeof timeStr !== 'string' || timeStr === '??:??' || timeStr.length !== 5 || timeStr[2] !== ':') return -1; const parts = timeStr.split(':'); const hours = parseInt(parts[0], 10); const minutes = parseInt(parts[1], 10); if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return -1; return hours * 60 + minutes; };
     function playSound(id) { const sound = document.getElementById(id); if (sound) { sound.pause(); sound.currentTime = 0; sound.play().catch(error => { if (error.name !== 'NotAllowedError' && error.name !== 'AbortError') console.warn(`Zvuk "${id}" greška:`, error); }); } else console.warn(`Audio element "${id}" nije pronađen.`); }
