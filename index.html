@@ -11,18 +11,29 @@
   <meta property="og:url" content="https://soboslikar.github.io/qr-kalkulator/" />
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    /* CSS (Iz prethodne verzije + širi gumb) */
-    body { font-family: sans-serif; margin: 0; padding: 0.5em; background: #f4f4f4; overflow-x: hidden; min-height: 100vh; }
+    /* CSS (Iz prethodne verzije + širi gumb + IZMJENE ZA SKROLANJE) */
+    body { font-family: sans-serif; margin: 0; padding: 0; background: #f4f4f4; overflow-x: hidden; min-height: 100vh; }
+    body.scanner-view { padding: 0.5em; } /* Vraćamo padding za scanner view */
     body.scanner-view #history-page { display: none; }
+
+    /* --- History View Styles --- */
     body.history-view { background-color: white; }
-    body.history-view #history-page { display: flex; flex-direction: column; padding: 0.5em 1em; min-height: calc(100vh - 1em); max-height: calc(100vh - 1em); box-sizing: border-box; }
+    body.history-view #history-page {
+        display: flex;
+        flex-direction: column;
+        padding: 0; /* Padding će biti na unutarnjim elementima */
+        height: 100vh; /* Fiksna visina za flex container */
+        box-sizing: border-box;
+        overflow: hidden; /* Spriječava skrolanje body-a */
+    }
     body.history-view #header, body.history-view #scan-instruction, body.history-view #reader, body.history-view #loaded-message, body.history-view #duplicate-warning, body.history-view #total-container, body.history-view #session-name-container, body.history-view #invoice-count, body.history-view #history, body.history-view #remove-from-list-btn, body.history-view #history-toggle-btn, body.history-view #share-button, body.history-view #delete-warning { display: none !important; }
+
     #header { text-align: center; color: yellow; font-size: 1.2em; font-weight: bold; margin-bottom: 0.5em; position: absolute; width: 100%; left: 0; top: 0.5em; z-index: 3; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); }
     #scan-instruction { position: absolute; top: 2.8em; left: 50%; transform: translateX(-50%); width: 90%; text-align: center; color: white; font-size: 1em; font-weight: bold; z-index: 2; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); pointer-events: none; display: block; }
     #reader { width: 100%; max-width: 400px; margin: auto; height: 55vh; position: relative; border: 1px solid #ccc; background: #e0e0e0; }
     #total-container { position: fixed; top: 23.5em; left: 49%; transform: translateX(-50%); z-index: 4; display: flex; align-items: center; gap: 10px; background-color: rgba(0, 0, 0, 0.5); padding: 0.2em 0.5em; border-radius: 5px; }
     #total { font-size: 1.6em !important; font-weight: bold; color: yellow; text-align: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
-    #ocisti-button { padding: 0; width: 120px; /* Povećana širina */ height: 60px; font-size: 0.9em; font-weight: bold; background: #ff0000; color: yellow; display: none; line-height: 1.3; text-align: center; border-radius: 5px; margin-left: 20px; }
+    #ocisti-button { padding: 0; width: 120px; height: 60px; font-size: 0.9em; font-weight: bold; background: #ff0000; color: yellow; display: none; line-height: 1.3; text-align: center; border-radius: 5px; margin-left: 20px; }
     #ocisti-button:active { box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); }
     #ocisti-button.confirm-mode { background-color: yellow; color: black; }
     #session-name-container { position: fixed; top: 27em; left: 50%; transform: translateX(-50%); z-index: 4; display: flex; justify-content: center; align-items: center; min-height: 35px; width: 250px; text-align: center; margin-top: 10px; }
@@ -48,27 +59,120 @@
     #history-toggle-btn { position: fixed; bottom: 80px; right: 50px; z-index: 3; background-color: white; color: blue; font-weight: bold; }
     #share-button { position: fixed; bottom: 30px; right: 15px; z-index: 3; background-color: green; color: white; padding: 0.5em 1em; font-size: 1em; border: none; border-radius: 5px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); font-weight: bold; animation: pulse-share 1.5s ease-in-out infinite; }
     #share-button:active { box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); animation: none; }
-    #history-page { display: none; }
-    #history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1em; border-bottom: 2px solid black; padding-bottom: 0.5em; }
+
+    /* --- History Page Specific Styles (including scrolling changes) --- */
+    #history-page { display: none; /* Set by body class */ }
+    #history-header { /* Glavni header (Natrag, POVIJEST) */
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0; /* Smanjen razmak */
+        border-bottom: 2px solid black;
+        padding: 0.5em 1em; /* Dodan padding */
+        flex-shrink: 0; /* Ne smanjuje se */
+        background-color: white; /* Osigurava pozadinu */
+    }
     #history-header h1 { margin: 0; text-align: center; flex-grow: 1; font-size: 1.3em; }
     #back-to-scanner-btn { background-color: green; color: white; border: none; font-weight: bold; margin: 0; padding: 0.4em 0.8em; font-size: 0.9em; cursor: pointer; }
     #back-to-scanner-btn:active { background-color: darkgreen; }
-    #history-content { flex-grow: 1; overflow-y: auto; padding-top: 0; position: relative; }
-     #scan-group-list, #all-days-list-rendered, #search-results ul, #search-results-all-days ul { list-style: none; padding: 0; margin: 0; }
+
+    /* Kontejneri za informacije o danu/sažetku */
+     #history-date-info, #history-summary-info, #all-days-summary-info, #search-summary-info-day {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.6em 1em; /* Usklađen padding */
+        font-size: 1.1em;
+        margin-bottom: 0.5em;
+        border-bottom: 1px solid #eee;
+        flex-shrink: 0; /* Važno: Ne smanjuje se */
+        background-color: white; /* Osigurava pozadinu */
+     }
+     #history-summary-info, #all-days-summary-info, #search-summary-info-day {
+         border-top: 1px solid #eee;
+         margin-bottom: 0; /* Nema margine ispod sažetka */
+     }
+     /* Sakrivanje summary divova inicijalno (osim za dan) */
+     #all-days-summary-info, #search-summary-info-day { display: none; }
+
+     /* Kontejner za pretragu u prikazu jednog dana */
+    #search-container {
+        /* display: none; inicijalno */
+        flex-grow: 1; /* Zauzima prostor kad je vidljiv */
+        display: flex; /* Koristimo flex za unutarnji raspored */
+        flex-direction: column;
+        overflow: hidden; /* Spriječava čudno ponašanje */
+        background-color: white;
+    }
+    #search-container > div:first-of-type { /* Div s inputom i gumbima */
+        padding: 1em 1em 0.8em 1em;
+        border-bottom: 1px solid #eee;
+        flex-shrink: 0; /* Ne smanjuje se */
+    }
+    #search-results {
+        flex-grow: 1; /* Zauzima ostatak prostora unutar #search-container */
+        overflow-y: auto; /* SAMO OVDJE je scroll za rezultate pretrage dana */
+        padding: 0.5em 1em; /* Razmak unutar scroll područja */
+    }
+     #search-container input { flex-grow: 1; padding: 0.5em; min-width: 50px; font-size: 0.9em; }
+     #search-container button { padding: 0.5em 1em; }
+
+    /* Glavni kontejner za sadržaj (liste dana, svih dana, detalja) */
+    #history-content {
+        flex-grow: 1; /* Zauzima sav preostali prostor u #history-page */
+        overflow-y: auto; /* OMOGUĆAVA SKROLANJE SAMO OVOG DIJELA */
+        padding: 0.5em 1em; /* Padding unutar skrolajućeg područja */
+        position: relative; /* Za sticky search bar */
+        background-color: white;
+    }
+
+    /* Pretraga za sve dane (unutar #history-content) */
+     #all-days-search-container {
+        position: sticky; /* Lijepi se za vrh #history-content */
+        top: 0;
+        background-color: white;
+        padding: 0.8em 1em 0.8em 1em; /* Malo veći padding */
+        border-bottom: 1px solid #ddd; /* Malo jača linija */
+        z-index: 10;
+        flex-shrink: 0; /* Ne smanjuje se */
+        margin: -0.5em -1em 0 -1em; /* Kompenzira padding roditelja */
+     }
+      #all-days-search-container > div { display: flex; gap: 5px; }
+     #all-days-search-container input { flex-grow: 1; padding: 0.5em; min-width: 50px; font-size: 0.9em; }
+     #all-days-search-container button { padding: 0.5em 0.6em; font-size: 0.9em; flex-shrink: 0; }
+     #search-results-all-days {
+         /* Ovaj div više ne treba flex-grow ni overflow, jer #history-content skrola */
+         padding-top: 0.5em; /* Mali razmak ispod sticky trake */
+     }
+
+     /* Liste - uklonjen overflow s njih, roditelj skrola */
+     #scan-group-list, #all-days-list-rendered, #search-results ul, #search-results-all-days ul, #detail-scan-list {
+         list-style: none;
+         padding: 0;
+         margin: 0;
+     }
+     /* Stilovi za stavke listi ostaju isti */
      #scan-group-list li, #all-days-list-rendered li, #search-results li, #search-results-all-days li { background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background-color 0.2s ease; }
      #scan-group-list li:hover, #all-days-list-rendered li:hover, #search-results li:hover, #search-results-all-days li:hover { background-color: #efefef; }
      .scan-group-last-qr-time { font-size: 0.8em; color: #777; margin-left: 15px; flex-shrink: 0; }
      .session-name-history { font-size: 1em; color: #00008B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; }
      .scan-time-history { font-size: 1em; color: #333; white-space: nowrap; margin-left: 5px; }
      #clear-history-btn.confirm-mode, #delete-session-btn.confirm-mode, #clear-day-btn.confirm-mode { background-color: yellow; color: black; }
-     #detail-scan-list { list-style: none; padding: 0; margin: 0; }
      #detail-scan-list li {display: flex; justify-content: space-between; align-items: center; padding: 0.6em 0.2em; border-bottom: 1px solid #eee; font-size: 1.05em;}
      #detail-scan-list li:last-child { border-bottom: none; }
-     #all-days-search-container { position: sticky; top: 0; background-color: white; padding: 0.5em 0.2em; border-bottom: 1px solid #eee; z-index: 10; margin-bottom: 0.2em; }
-     #all-days-search-container input { flex-grow: 1; padding: 0.5em; min-width: 50px; font-size: 0.9em; }
-     #all-days-search-container button { padding: 0.5em 0.6em; font-size: 0.9em; flex-shrink: 0; }
      #all-days-list-rendered li { background-color: #f0f0f0; border: 1px solid #ccc; padding: 12px 15px; margin-bottom: 8px; }
      #all-days-list-rendered li:hover { background-color: #e0e0e0; }
+
+     /* Detalji grupe - headeri trebaju flex-shrink */
+     /* (JS dodaje ove elemente, možemo im dodati klasu ili ciljati ovako) */
+     #history-content > div:first-child[style*="display: flex"] { /* Header detalja */
+         flex-shrink: 0;
+     }
+      #history-content > div:nth-child(2)[style*="display: flex"] { /* Sažetak detalja */
+         flex-shrink: 0;
+     }
+
+
     @keyframes pulse { 0% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.1); } 100% { transform: translateX(-50%) scale(1); } }
     @keyframes zoomFade { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
     @keyframes pulse-share { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
@@ -108,19 +212,31 @@
           <button id="back-to-scanner-btn">< NA SKENER</button>
           <h1>POVIJEST</h1>
       </div>
+      <!-- Datum / Sažetak / Gumb OSTALI DANI (dodaje JS) -->
+      <!-- <div id="history-date-info">...</div> -->
+      <!-- <div id="history-summary-info">...</div> -->
+
       <!-- Kontejner za pretragu u prikazu jednog dana -->
-      <div id="search-container" style="display: none; padding: 1em 0; border-bottom: 1px solid #eee; margin-bottom: 1em;">
-          <div style="display: flex; gap: 10px; margin-bottom: 0.8em;">
-              <input type="text" id="search-input" placeholder="Datum(dd.mm.yy), dan, naziv..." style="flex-grow: 1; padding: 0.5em;">
-              <button id="execute-search-btn" style="padding: 0.5em 1em;">Traži</button>
-              <button id="close-search-btn" style="padding: 0.5em 1em; background-color: #ccc;">Zatvori</button>
+      <div id="search-container" style="display: none;">
+          <div> <!-- Kontejner za input/gumbe pretrage -->
+              <input type="text" id="search-input" placeholder="Datum(dd.mm.yy), dan, naziv...">
+              <button id="execute-search-btn">Traži</button>
+              <button id="close-search-btn" style="background-color: #ccc;">Zatvori</button>
           </div>
-           <div id="search-summary-info-day" style="display: none; justify-content: space-between; align-items: center; padding: 0.6em 0.2em; font-size: 1.1em; margin-top: 0.8em; border-top: 1px solid #eee;"></div>
-          <div id="search-results"></div>
+           <div id="search-summary-info-day" style="/* display: none; */"></div> <!-- Sažetak pretrage dana -->
+          <div id="search-results"></div> <!-- Lista rezultata (scrollable) -->
       </div>
-      <!-- Glavni kontejner -->
+
+      <!-- Glavni kontejner za sadržaj povijesti (scrollable) -->
       <div id="history-content">
           <!-- Sadržaj generira JS -->
+          <!-- Ovdje ide:
+               - #all-days-search-container (za sve dane)
+               - #all-days-summary-info (za sve dane)
+               - #search-results-all-days (lista svih dana ili rezultata pretrage)
+               - ILI: Tekst "Izaberi sken" + #scan-group-list (za jedan dan)
+               - ILI: Header detalja + Sažetak detalja + #detail-scan-list (za detalje)
+               - Gumbi za brisanje -->
       </div>
   </div>
   <!-- Kraj History View elemenata -->
@@ -174,9 +290,10 @@
     // *** FUNKCIJE ZA AŽURIRANJE PRIKAZA ***
     function checkOcistiButtonVisibility() { if (!ocistiButton) return; ocistiButton.style.display = (povijest.length > 0 && ukupno > 0) ? 'block' : 'none'; if ((povijest.length === 0 || ukupno <= 0) && ocistiConfirm) { resetOcistiMode(); } }
     function updateDisplay() { if (totalDiv) totalDiv.innerText = `UKUPNO: ${ukupno.toFixed(2)} €`; const count = povijest.length; if (invoiceCountDiv) invoiceCountDiv.innerText = `${count} ${count === 1 ? 'RAČUN' : 'RAČUNA'}`; if (document.body.classList.contains('scanner-view')) { updateSmallHistoryList(); checkRemoveButtonVisibility(); handleInfoDeleteMessageVisibility(); checkOcistiButtonVisibility(); updateNameDisplay(); } }
-    function updateSmallHistoryList() { if (!historyList || !historyDiv) return; if (povijest.length > 0) { historyDiv.style.display = 'block'; historyList.innerHTML = ''; const recentHistory = povijest; recentHistory.forEach((item, index) => { const globalIndex = povijest.length - recentHistory.length + index; const listItem = document.createElement('li'); listItem.innerText = `${globalIndex + 1}. ${item.time} - ${item.amount.toFixed(2)} €`; historyList.appendChild(listItem); }); historyDiv.scrollTop = historyDiv.scrollHeight; } else { historyDiv.style.display = 'none'; } }
+    function updateSmallHistoryList() { if (!historyList || !historyDiv) return; if (povijest.length > 0) { historyDiv.style.display = 'block'; historyList.innerHTML = ''; const recentHistory = povijest.slice(-10); recentHistory.forEach((item, index) => { const globalIndex = povijest.length - recentHistory.length + index; const listItem = document.createElement('li'); listItem.innerText = `${globalIndex + 1}. ${item.time} - ${item.amount.toFixed(2)} €`; historyList.appendChild(listItem); }); historyDiv.scrollTop = historyDiv.scrollHeight; } else { historyDiv.style.display = 'none'; } }
     function checkRemoveButtonVisibility() { if (!removeButton) return; removeButton.style.display = (povijest.length > 0 || currentSessionName) ? 'block' : 'none'; if (povijest.length === 0 && !currentSessionName && (removeConfirm || removeNameConfirm)) resetRemoveMode(); }
-    function handleInfoDeleteMessageVisibility() { const isScannerView = document.body.classList.contains('scanner-view'); if (!deleteWarningDiv || !isScannerView) { if(deleteWarningDiv) deleteWarningDiv.style.display = 'none'; return; } let shouldDisplay = false, textToShow = '', modeClass = ''; if (removeConfirm && povijest.length > 0) { const lastItem = povijest[povijest.length - 1]; textToShow = `OBRIŠI ${lastItem.time} = ${lastItem.amount.toFixed(2)} €?`; modeClass = 'delete-mode'; shouldDisplay = true; } else if (removeNameConfirm && currentSessionName) { textToShow = `OBRIŠI NAZIV "${currentSessionName}"?`; modeClass = 'delete-mode'; shouldDisplay = true; } else if (!removeConfirm && !removeNameConfirm && povijest.length > 0 && deleteWarningDiv.dataset.lastScanText) { textToShow = deleteWarningDiv.dataset.lastScanText; modeClass = 'info-mode'; shouldDisplay = true; } if (shouldDisplay) { deleteWarningDiv.innerText = textToShow; deleteWarningDiv.className = `delete-warning ${modeClass}`; deleteWarningDiv.style.display = 'block'; } else { deleteWarningDiv.style.display = 'none'; } }
+    function handleInfoDeleteMessageVisibility() { const isScannerView = document.body.classList.contains('scanner-view'); if (!deleteWarningDiv || !isScannerView) { if(deleteWarningDiv) deleteWarningDiv.style.display = 'none'; return; } let shouldDisplay = false, textToShow = '', modeClass = ''; if (removeConfirm && povijest.length > 0) { const lastItem = povijest[povijest.length - 1]; textToShow = `OBRIŠI ${lastItem.time} = ${lastItem.amount.toFixed(2)} €?`; modeClass = 'delete-mode'; shouldDisplay = true; } else if (removeNameConfirm && currentSessionName) { textToShow = `OBRIŠI NAZIV "${currentSessionName}"?`; modeClass = 'delete-mode'; shouldDisplay = true; } else if (!removeConfirm && !removeNameConfirm && povijest.length > 0 && deleteWarningDiv.dataset.lastScanText) { textToShow = deleteWarningDiv.dataset.lastScanText; modeClass = 'info-mode'; shouldDisplay = true; } if (shouldDisplay) { deleteWarningDiv.innerText = textToShow; deleteWarningDiv.className = `delete-warning ${modeClass}`; // ClassName set for CSS targeting
+         deleteWarningDiv.style.display = 'block'; } else { deleteWarningDiv.style.display = 'none'; } }
 
     // *** FUNKCIJE ZA RESETIRANJE STANJA GUMBA ***
     function resetRemoveMode() { if (!removeButton) return; removeButton.innerText = removeBtnInitialText; removeButton.classList.remove('yellow-btn'); removeButton.classList.add('red-btn'); removeConfirm = false; removeNameConfirm = false; if (deleteWarningDiv && deleteWarningDiv.dataset.beforeConfirmText) { deleteWarningDiv.dataset.lastScanText = deleteWarningDiv.dataset.beforeConfirmText; delete deleteWarningDiv.dataset.beforeConfirmText; } else if (deleteWarningDiv && povijest.length === 0) { delete deleteWarningDiv.dataset.lastScanText; } handleInfoDeleteMessageVisibility(); checkRemoveButtonVisibility(); }
@@ -201,57 +318,712 @@
     function stopScanner() { const instanceToStop = html5QrCodeInstance; if (instanceToStop && isScannerActive) { isScannerActive = false; currentCameraId = null; if (instructionDiv) instructionDiv.style.display = 'none'; return instanceToStop.stop().then(() => { if (readerDiv) readerDiv.innerHTML = ''; }).catch(err => { if (readerDiv) readerDiv.innerHTML = ''; }).finally(() => { html5QrCodeInstance = null; }); } else { isScannerActive = false; if (readerDiv) readerDiv.innerHTML = ''; return Promise.resolve(); } }
 
     // *** FUNKCIJE ZA PROMJENU PRIKAZA (VIEW) ***
-    function switchToScannerView() { if (document.body.classList.contains('scanner-view')) { if (!isScannerActive) initializeScanner(); return; } const clearBtn = document.getElementById('clear-history-btn'); if (clearBtn && clearBtn.dataset.confirming === 'true') { clearBtn.innerText = "IZBRIŠI SVU POVIJEST"; clearBtn.classList.remove('confirm-mode'); clearBtn.dataset.confirming = 'false'; } const deleteSessionBtn = document.getElementById('delete-session-btn'); if (deleteSessionBtn && deleteSessionBtn.dataset.confirming === 'true') { deleteSessionBtn.innerText = "IZBRIŠI OVAJ SKEN"; deleteSessionBtn.classList.remove('confirm-mode'); deleteSessionBtn.dataset.confirming = 'false'; } const clearDayBtn = document.getElementById('clear-day-btn'); if (clearDayBtn && clearDayBtn.dataset.confirming === 'true') { clearDayBtn.innerText = "IZBRIŠI OVAJ DAN"; clearDayBtn.classList.remove('confirm-mode'); clearDayBtn.dataset.confirming = 'false'; } document.getElementById('search-container').style.display = 'none'; const allDaysSearch = document.getElementById('all-days-search-container'); if (allDaysSearch) allDaysSearch.style.display = 'none'; document.body.classList.remove('history-view'); document.body.classList.add('scanner-view'); document.body.style.backgroundColor = '#f4f4f4'; currentlyViewedDate = new Date(); currentlyViewedDate.setHours(0, 0, 0, 0); previousHistoryViewState = 'day-view'; updateDisplay(); requestAnimationFrame(initializeScanner); }
-    function switchToHistoryView() { if (document.body.classList.contains('history-view')) { renderHistoryView(currentlyViewedDate); return; } if (removeConfirm || removeNameConfirm) resetRemoveMode(); if (ocistiConfirm) resetOcistiMode(); stopScanner().finally(() => { document.body.classList.remove('scanner-view'); document.body.classList.add('history-view'); document.body.style.backgroundColor = 'white'; renderHistoryView(currentlyViewedDate); }); }
+    function switchToScannerView() { if (document.body.classList.contains('scanner-view')) { if (!isScannerActive) initializeScanner(); return; }
+        // Reset confirmation modes from history view if active
+        const clearBtn = document.getElementById('clear-history-btn'); if (clearBtn && clearBtn.dataset.confirming === 'true') { clearBtn.innerText = "IZBRIŠI SVU POVIJEST"; clearBtn.classList.remove('confirm-mode'); clearBtn.dataset.confirming = 'false'; }
+        const deleteSessionBtn = document.getElementById('delete-session-btn'); if (deleteSessionBtn && deleteSessionBtn.dataset.confirming === 'true') { deleteSessionBtn.innerText = "IZBRIŠI OVAJ SKEN"; deleteSessionBtn.classList.remove('confirm-mode'); deleteSessionBtn.dataset.confirming = 'false'; }
+        const clearDayBtn = document.getElementById('clear-day-btn'); if (clearDayBtn && clearDayBtn.dataset.confirming === 'true') { clearDayBtn.innerText = "IZBRIŠI OVAJ DAN"; clearDayBtn.classList.remove('confirm-mode'); clearDayBtn.dataset.confirming = 'false'; }
+        // Hide history specific elements
+        const searchContainer = document.getElementById('search-container'); if(searchContainer) searchContainer.style.display = 'none';
+        const historyContent = document.getElementById('history-content'); if(historyContent) historyContent.style.display = 'none'; // Sakrij content area da se ne vidi kratko
+        const dateInfo = document.getElementById('history-date-info'); if(dateInfo) dateInfo.style.display = 'none';
+        const summaryInfo = document.getElementById('history-summary-info'); if(summaryInfo) summaryInfo.style.display = 'none';
+
+        document.body.classList.remove('history-view');
+        document.body.classList.add('scanner-view');
+        document.body.style.backgroundColor = '#f4f4f4'; // Vrati pozadinu scannera
+        currentlyViewedDate = new Date(); currentlyViewedDate.setHours(0, 0, 0, 0);
+        previousHistoryViewState = 'day-view'; // Reset state
+        updateDisplay(); // Update scanner UI elements
+        requestAnimationFrame(initializeScanner); // Initialize scanner after DOM update
+    }
+    function switchToHistoryView() { if (document.body.classList.contains('history-view')) { renderHistoryView(currentlyViewedDate); return; }
+        if (removeConfirm || removeNameConfirm) resetRemoveMode();
+        if (ocistiConfirm) resetOcistiMode();
+        stopScanner().finally(() => {
+            document.body.classList.remove('scanner-view');
+            document.body.classList.add('history-view');
+            document.body.style.backgroundColor = 'white'; // Postavi bijelu pozadinu
+            // Osiguraj da su pravi elementi vidljivi
+            const historyContent = document.getElementById('history-content'); if(historyContent) historyContent.style.display = 'block'; // Pokaži content area
+            const searchContainer = document.getElementById('search-container'); if(searchContainer) searchContainer.style.display = 'none'; // Sakrij search container
+            renderHistoryView(currentlyViewedDate); // Render the initial history view
+        });
+    }
 
     // *** FUNKCIJE ZA RENDERIRANJE HISTORY VIEWA ***
-    // Prikazuje jedan dan
     function renderHistoryView(dateToShow = currentlyViewedDate) {
-        previousHistoryViewState = 'day-view'; currentlyViewedDate = new Date(dateToShow); currentlyViewedDate.setHours(0,0,0,0);
-        const punaPovijest = loadFullHistoryFromLocalStorage(); if (!historyContentDiv || !historyPageDiv) return; const mainHeaderDiv = document.getElementById('history-header'); if (!mainHeaderDiv) return;
-        const allDaysSearch = document.getElementById('all-days-search-container'); if (allDaysSearch) allDaysSearch.style.display = 'none'; const allDaysResults = document.getElementById('search-results-all-days'); if (allDaysResults) allDaysResults.innerHTML = '';
+        previousHistoryViewState = 'day-view';
+        currentlyViewedDate = new Date(dateToShow);
+        currentlyViewedDate.setHours(0,0,0,0);
+
+        const punaPovijest = loadFullHistoryFromLocalStorage();
+        if (!historyContentDiv || !historyPageDiv) return;
+
+        const mainHeaderDiv = document.getElementById('history-header');
+        if (!mainHeaderDiv) return;
+
+        // Sakrij elemente drugih prikaza
         const searchContainer = document.getElementById('search-container'); if(searchContainer) searchContainer.style.display = 'none';
-        const opcijeDana = { weekday: 'long' }; const opcijeDatuma = { day: '2-digit', month: '2-digit', year: 'numeric' }; let imeDana = currentlyViewedDate.toLocaleDateString('hr-HR', opcijeDana); imeDana = imeDana.charAt(0).toUpperCase() + imeDana.slice(1); const formatiraniDatum = currentlyViewedDate.toLocaleDateString('hr-HR', opcijeDatuma); const startOfDay = new Date(currentlyViewedDate); const endOfDay = new Date(currentlyViewedDate); endOfDay.setHours(23, 59, 59, 999); const sesijeZaPrikazaniDan = punaPovijest.filter(grupa => { const grupaDate = new Date(grupa.timestamp); return grupaDate >= startOfDay && grupaDate <= endOfDay; }); sesijeZaPrikazaniDan.sort((a, b) => a.timestamp - b.timestamp); const brojRacunaOvajDan = sesijeZaPrikazaniDan.reduce((sum, grupa) => sum + grupa.racuni.length, 0); const ukupanIznosOvajDan = sesijeZaPrikazaniDan.reduce((sum, grupa) => sum + grupa.racuni.reduce((gSum, item) => gSum + item.amount, 0), 0);
-        let dateInfoDiv = document.getElementById('history-date-info'); if (!dateInfoDiv) { dateInfoDiv = document.createElement('div'); dateInfoDiv.id = 'history-date-info'; dateInfoDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 0.3em 0.2em; margin-bottom: 0.5em;'; mainHeaderDiv.parentNode.insertBefore(dateInfoDiv, mainHeaderDiv.nextSibling); } else {dateInfoDiv.style.display = 'flex';} const currentViewDateStr = getISODateString(currentlyViewedDate); const hasOtherDays = punaPovijest.some(grupa => { const grupaDateStr = getISODateString(new Date(grupa.timestamp)); return grupaDateStr && grupaDateStr !== currentViewDateStr; }); dateInfoDiv.innerHTML = `<span style="font-weight: bold; font-size: 1.1em;">${imeDana}, ${formatiraniDatum}</span> <button id="history-view-toggle-btn" style="background-color: yellow; color: black; padding: 0.4em 0.8em; font-size: 0.9em; font-weight: bold;" ${!hasOtherDays ? 'disabled' : ''}>OSTALI DANI ></button>`; const historyViewToggleButton = dateInfoDiv.querySelector('#history-view-toggle-btn'); if (historyViewToggleButton) { const newHistoryViewToggleButton = historyViewToggleButton.cloneNode(true); historyViewToggleButton.parentNode.replaceChild(newHistoryViewToggleButton, historyViewToggleButton); if (!newHistoryViewToggleButton.disabled) { newHistoryViewToggleButton.addEventListener('click', () => { playSound('click-sound'); renderAllDaysView(); }); newHistoryViewToggleButton.style.cursor = 'pointer'; newHistoryViewToggleButton.style.opacity = '1'; } else { newHistoryViewToggleButton.style.cssText += ';cursor: not-allowed; opacity: 0.7;'; } }
-        let summaryInfoDiv = document.getElementById('history-summary-info'); if (!summaryInfoDiv) { summaryInfoDiv = document.createElement('div'); summaryInfoDiv.id = 'history-summary-info'; summaryInfoDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 0.6em 0.2em; font-size: 1.1em; margin-bottom: 1em; border-top: 1px solid #eee; border-bottom: 1px solid #eee;'; dateInfoDiv.parentNode.insertBefore(summaryInfoDiv, dateInfoDiv.nextSibling); } else { summaryInfoDiv.style.display = 'flex'; } summaryInfoDiv.innerHTML = `<span>RAČUNA: <span style="font-weight: bold;">${brojRacunaOvajDan}</span></span> <span style="font-weight: bold;">UKUPNO: ${ukupanIznosOvajDan.toFixed(2)} €</span>`;
-        const uputaHtml = `<p id="history-select-group-text" style="text-align: center; color: black; font-weight: bold; font-style: normal; margin-bottom: 1em; margin-top: 0.5em; font-size: 0.9em;">IZABERI SKEN ILI <button id="start-search-btn" style="background:none; border:none; padding:0; color:blue; text-decoration:underline; cursor:pointer; font-size:inherit; font-weight:bold;">(TRAŽI)</button></p>`; let sesijeHtml = '<ul id="scan-group-list" style="list-style: none; padding: 0; margin: 0;">'; if (sesijeZaPrikazaniDan.length === 0) { sesijeHtml += '<li style="text-align:center; color: grey; border: none; cursor: default; padding: 1em 0;"><i>Nema spremljenih skenova za ovaj dan.</i></li>'; } else { sesijeZaPrikazaniDan.forEach((sesija, index) => { sesijeHtml += generirajHtmlZaSpremljenuGrupu(sesija, index + 1); }); } sesijeHtml += '</ul>';
-        historyContentDiv.innerHTML = uputaHtml + sesijeHtml;
-        if (sesijeZaPrikazaniDan.length > 0) { const clearDayButton = document.createElement('button'); clearDayButton.id = 'clear-day-btn'; clearDayButton.className = 'red-btn'; clearDayButton.style.margin = '2em auto 1em auto'; clearDayButton.style.display = 'block'; clearDayButton.innerText = 'IZBRIŠI OVAJ DAN'; historyContentDiv.appendChild(clearDayButton); clearDayButton.dataset.confirming = 'false'; const newClearDayBtn = clearDayButton.cloneNode(true); clearDayButton.parentNode.replaceChild(newClearDayBtn, clearDayButton); newClearDayBtn.addEventListener('click', () => { if (newClearDayBtn.disabled) return; playSound('click-sound'); if (newClearDayBtn.dataset.confirming === 'false') { newClearDayBtn.innerText = "Potvrdi Brisanje Dana?"; newClearDayBtn.classList.add('confirm-mode'); newClearDayBtn.dataset.confirming = 'true'; } else { deleteScansForDay(currentlyViewedDate); } }); const dayParentPageClickHandler = (e) => { const currentClearDayBtn = document.getElementById('clear-day-btn'); if (currentClearDayBtn && currentClearDayBtn.dataset.confirming === 'true' && !currentClearDayBtn.contains(e.target)) { currentClearDayBtn.innerText = "IZBRIŠI OVAJ DAN"; currentClearDayBtn.classList.remove('confirm-mode'); currentClearDayBtn.dataset.confirming = 'false'; } }; historyPageDiv.removeEventListener('click', dayParentPageClickHandler, true); historyPageDiv.addEventListener('click', dayParentPageClickHandler, true); }
-        const groupList = document.getElementById('scan-group-list'); if (groupList) { const newGroupList = groupList.cloneNode(true); groupList.parentNode.replaceChild(newGroupList, groupList); newGroupList.addEventListener('click', (e) => { const clickedLi = e.target.closest('li[data-timestamp]'); if (clickedLi && clickedLi.dataset.timestamp) { const timestamp = clickedLi.dataset.timestamp; const selectedGroup = punaPovijest.find(g => String(g.timestamp) === timestamp); if (selectedGroup) { playSound('click-sound'); previousHistoryViewState = 'day-view'; renderGroupDetailView(selectedGroup); } else { console.error("Nije pronađena grupa:", timestamp); alert("Greška otvaranja detalja."); } } }); }
-        const searchBtn = document.getElementById('start-search-btn'); if(searchBtn) { searchBtn.addEventListener('click', startSearch); }
+        const allDaysSearch = document.getElementById('all-days-search-container'); // Ovo je unutar historyContent, bit će očišćeno
+
+        // Očisti content div prije dodavanja novog sadržaja
+        historyContentDiv.innerHTML = '';
+
+        // Ukloni stare info divove ako postoje iznad historyContent-a
+        const oldDateInfoDiv = document.getElementById('history-date-info'); if (oldDateInfoDiv) oldDateInfoDiv.remove();
+        const oldSummaryInfoDiv = document.getElementById('history-summary-info'); if (oldSummaryInfoDiv) oldSummaryInfoDiv.remove();
+
+        const opcijeDana = { weekday: 'long' };
+        const opcijeDatuma = { day: '2-digit', month: '2-digit', year: 'numeric' };
+        let imeDana = currentlyViewedDate.toLocaleDateString('hr-HR', opcijeDana);
+        imeDana = imeDana.charAt(0).toUpperCase() + imeDana.slice(1);
+        const formatiraniDatum = currentlyViewedDate.toLocaleDateString('hr-HR', opcijeDatuma);
+
+        const startOfDay = new Date(currentlyViewedDate);
+        const endOfDay = new Date(currentlyViewedDate);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const sesijeZaPrikazaniDan = punaPovijest.filter(grupa => {
+            const grupaDate = new Date(grupa.timestamp);
+            return grupaDate >= startOfDay && grupaDate <= endOfDay;
+        });
+        sesijeZaPrikazaniDan.sort((a, b) => a.timestamp - b.timestamp);
+
+        const brojRacunaOvajDan = sesijeZaPrikazaniDan.reduce((sum, grupa) => sum + grupa.racuni.length, 0);
+        const ukupanIznosOvajDan = sesijeZaPrikazaniDan.reduce((sum, grupa) => sum + grupa.racuni.reduce((gSum, item) => gSum + item.amount, 0), 0);
+
+        // Kreiraj i dodaj div za datum i gumb "OSTALI DANI" (iznad history-content)
+        let dateInfoDiv = document.createElement('div');
+        dateInfoDiv.id = 'history-date-info';
+        // style.cssText se primjenjuje putem CSS-a sada
+        const currentViewDateStr = getISODateString(currentlyViewedDate);
+        const hasOtherDays = punaPovijest.some(grupa => {
+            const grupaDateStr = getISODateString(new Date(grupa.timestamp));
+            return grupaDateStr && grupaDateStr !== currentViewDateStr;
+        });
+        dateInfoDiv.innerHTML = `<span style="font-weight: bold; font-size: 1.1em;">${imeDana}, ${formatiraniDatum}</span> <button id="history-view-toggle-btn" style="background-color: yellow; color: black; padding: 0.4em 0.8em; font-size: 0.9em; font-weight: bold;" ${!hasOtherDays ? 'disabled' : ''}>OSTALI DANI ></button>`;
+        mainHeaderDiv.parentNode.insertBefore(dateInfoDiv, mainHeaderDiv.nextSibling); // Umetni ISPOD headera
+
+        const historyViewToggleButton = dateInfoDiv.querySelector('#history-view-toggle-btn');
+        if (historyViewToggleButton) {
+            if (!historyViewToggleButton.disabled) {
+                historyViewToggleButton.addEventListener('click', () => { playSound('click-sound'); renderAllDaysView(); });
+                historyViewToggleButton.style.cursor = 'pointer';
+                historyViewToggleButton.style.opacity = '1';
+            } else {
+                historyViewToggleButton.style.cssText += ';cursor: not-allowed; opacity: 0.7;';
+            }
+        }
+
+        // Kreiraj i dodaj div za sažetak dana (iznad history-content)
+        let summaryInfoDiv = document.createElement('div');
+        summaryInfoDiv.id = 'history-summary-info';
+        // style.cssText se primjenjuje putem CSS-a sada
+        summaryInfoDiv.innerHTML = `<span>RAČUNA: <span style="font-weight: bold;">${brojRacunaOvajDan}</span></span> <span style="font-weight: bold;">UKUPNO: ${ukupanIznosOvajDan.toFixed(2)} €</span>`;
+        dateInfoDiv.parentNode.insertBefore(summaryInfoDiv, dateInfoDiv.nextSibling); // Umetni ISPOD dateInfo
+
+        // Generiraj HTML za listu sesija i dodaj ga U historyContentDiv
+        const uputaHtml = `<p id="history-select-group-text" style="text-align: center; color: black; font-weight: bold; font-style: normal; margin-bottom: 1em; margin-top: 0.5em; font-size: 0.9em;">IZABERI SKEN ILI <button id="start-search-btn" style="background:none; border:none; padding:0; color:blue; text-decoration:underline; cursor:pointer; font-size:inherit; font-weight:bold;">(TRAŽI)</button></p>`;
+        let sesijeHtml = '<ul id="scan-group-list">'; // Nema više style ovdje
+        if (sesijeZaPrikazaniDan.length === 0) {
+            sesijeHtml += '<li style="text-align:center; color: grey; border: none; cursor: default; padding: 1em 0;"><i>Nema spremljenih skenova za ovaj dan.</i></li>';
+        } else {
+            sesijeZaPrikazaniDan.forEach((sesija, index) => {
+                sesijeHtml += generirajHtmlZaSpremljenuGrupu(sesija, index + 1);
+            });
+        }
+        sesijeHtml += '</ul>';
+
+        historyContentDiv.innerHTML = uputaHtml + sesijeHtml; // Dodajemo u scrollable content
+
+        // Dodaj gumb za brisanje dana (ako ima sesija) UNUTAR historyContentDiv
+        if (sesijeZaPrikazaniDan.length > 0) {
+            const clearDayButton = document.createElement('button');
+            clearDayButton.id = 'clear-day-btn';
+            clearDayButton.className = 'red-btn';
+            clearDayButton.style.margin = '1.5em auto 1em auto'; // Smanjena margina
+            clearDayButton.style.display = 'block';
+            clearDayButton.innerText = 'IZBRIŠI OVAJ DAN';
+            clearDayButton.dataset.confirming = 'false';
+            historyContentDiv.appendChild(clearDayButton); // Dodaj na kraj skrolajućeg sadržaja
+
+            clearDayButton.addEventListener('click', () => {
+                if (clearDayButton.disabled) return;
+                playSound('click-sound');
+                if (clearDayButton.dataset.confirming === 'false') {
+                    clearDayButton.innerText = "Potvrdi Brisanje Dana?";
+                    clearDayButton.classList.add('confirm-mode');
+                    clearDayButton.dataset.confirming = 'true';
+                } else {
+                    deleteScansForDay(currentlyViewedDate);
+                }
+            });
+
+             // Listener za poništavanje potvrde
+             const dayParentPageClickHandler = (e) => {
+                const currentClearDayBtn = document.getElementById('clear-day-btn');
+                if (currentClearDayBtn && currentClearDayBtn.dataset.confirming === 'true' && !currentClearDayBtn.contains(e.target)) {
+                     currentClearDayBtn.innerText = "IZBRIŠI OVAJ DAN";
+                     currentClearDayBtn.classList.remove('confirm-mode');
+                     currentClearDayBtn.dataset.confirming = 'false';
+                }
+            };
+            // Koristimo historyPageDiv za hvatanje klika izvan gumba
+            historyPageDiv.removeEventListener('click', dayParentPageClickHandler, true);
+            historyPageDiv.addEventListener('click', dayParentPageClickHandler, true);
+        }
+
+        // Dodaj event listenere za klik na sesiju i gumb za pretragu
+        const groupList = document.getElementById('scan-group-list');
+        if (groupList) {
+            groupList.addEventListener('click', (e) => {
+                const clickedLi = e.target.closest('li[data-timestamp]');
+                if (clickedLi && clickedLi.dataset.timestamp) {
+                    const timestamp = clickedLi.dataset.timestamp;
+                    const selectedGroup = punaPovijest.find(g => String(g.timestamp) === timestamp);
+                    if (selectedGroup) {
+                        playSound('click-sound');
+                        previousHistoryViewState = 'day-view';
+                        renderGroupDetailView(selectedGroup);
+                    } else {
+                        console.error("Nije pronađena grupa:", timestamp);
+                        alert("Greška otvaranja detalja.");
+                    }
+                }
+            });
+        }
+
+        const searchBtn = document.getElementById('start-search-btn');
+        if(searchBtn) {
+            searchBtn.addEventListener('click', startSearch);
+        }
     }
     // Generira HTML za redak sesije
-    function generirajHtmlZaSpremljenuGrupu(grupa, redniBroj) { const vrijemeSpremanja = new Date(grupa.timestamp); const satiSpremanja = vrijemeSpremanja.getHours().toString().padStart(2, '0'); const minuteSpremanja = vrijemeSpremanja.getMinutes().toString().padStart(2, '0'); const vrijemeSpremanjaFormatirano = `${satiSpremanja}:${minuteSpremanja}`; const ukupnoGrupa = grupa.racuni.reduce((sum, item) => sum + item.amount, 0); const zadnjeVrijeme = grupa.lastQrTime || '??:??'; const prikazNaziva = grupa.name ? `<span class="session-name-history">${grupa.name} U ${vrijemeSpremanjaFormatirano}</span>` : `<span class="scan-time-history">SKEN U ${vrijemeSpremanjaFormatirano}</span>`; return `<li data-timestamp="${grupa.timestamp}" style="background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background-color 0.2s ease;"><span style="flex-shrink: 0; display: inline-flex; align-items: center; min-width: 0; flex-grow: 1; overflow: hidden;"><span style="margin-right: 5px; flex-shrink: 0;">${redniBroj}.</span> ${prikazNaziva}</span><span class="scan-group-last-qr-time" style="flex-shrink: 0; margin-left: 15px;">${zadnjeVrijeme !== '??:??' ? 'zadnji iz ' + zadnjeVrijeme : ''}</span><span style="font-weight: bold; margin-left: auto; padding-left: 10px; flex-shrink: 0;">${ukupnoGrupa.toFixed(2)} €</span></li>`; }
+    function generirajHtmlZaSpremljenuGrupu(grupa, redniBroj) { const vrijemeSpremanja = new Date(grupa.timestamp); const satiSpremanja = vrijemeSpremanja.getHours().toString().padStart(2, '0'); const minuteSpremanja = vrijemeSpremanja.getMinutes().toString().padStart(2, '0'); const vrijemeSpremanjaFormatirano = `${satiSpremanja}:${minuteSpremanja}`; const ukupnoGrupa = grupa.racuni.reduce((sum, item) => sum + item.amount, 0); const zadnjeVrijeme = grupa.lastQrTime || '??:??'; const prikazNaziva = grupa.name ? `<span class="session-name-history">${grupa.name} U ${vrijemeSpremanjaFormatirano}</span>` : `<span class="scan-time-history">SKEN U ${vrijemeSpremanjaFormatirano}</span>`; return `<li data-timestamp="${grupa.timestamp}"><span style="flex-shrink: 0; display: inline-flex; align-items: center; min-width: 0; flex-grow: 1; overflow: hidden;"><span style="margin-right: 5px; flex-shrink: 0;">${redniBroj}.</span> ${prikazNaziva}</span><span class="scan-group-last-qr-time" style="flex-shrink: 0; margin-left: 15px;">${zadnjeVrijeme !== '??:??' ? 'zadnji iz ' + zadnjeVrijeme : ''}</span><span style="font-weight: bold; margin-left: auto; padding-left: 10px; flex-shrink: 0;">${ukupnoGrupa.toFixed(2)} €</span></li>`; }
     // Prikazuje detalje jedne sesije
-    function renderGroupDetailView(groupData) { if (!historyContentDiv || !groupData || !groupData.racuni) { console.error("Nedostaju podaci za detalje."); renderHistoryView(); return; } const sessionTimestamp = groupData.timestamp; const vrijemeSpremanja = new Date(sessionTimestamp); const satiSpremanja = vrijemeSpremanja.getHours().toString().padStart(2, '0'); const minuteSpremanja = vrijemeSpremanja.getMinutes().toString().padStart(2, '0'); const vrijemeSpremanjaFormatirano = `${satiSpremanja}:${minuteSpremanja}`; const ukupnoGrupa = groupData.racuni.reduce((sum, item) => sum + item.amount, 0); const brojRacunaSesije = groupData.racuni.length; const naslovDetalja = groupData.name ? groupData.name : `SKEN U ${vrijemeSpremanjaFormatirano}`; let detailHtml = `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1em; border-bottom: 1px solid #ccc; padding-bottom: 0.5em;"><button id="back-to-group-list-btn" style="background-color: #6c757d; color: white; padding: 0.4em 0.8em; font-size: 0.9em; border: none; border-radius: 3px; cursor: pointer; font-weight: bold;">< Lista</button><h3 style="margin: 0; text-align: center; flex-grow: 1; font-size: 1.1em;">${naslovDetalja}</h3><span style="font-weight: bold; font-size: 1.1em;">${ukupnoGrupa.toFixed(2)} €</span></div><div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6em 0.2em; font-size: 1.1em; margin-bottom: 1em; border-bottom: 1px solid #eee;"><span>RAČUNA: <span style="font-weight: bold;">${brojRacunaSesije}</span></span><span style="font-weight: bold;">UKUPNO: ${ukupnoGrupa.toFixed(2)} €</span></div><ul id="detail-scan-list">`; const racuniZaPrikaz = groupData.racuni; racuniZaPrikaz.forEach((racun, index) => { const vrijemeRacuna = racun.time !== '??:??' ? `${racun.time}` : 'Vrijeme?'; detailHtml += `<li><span style="color: #333; min-width: 80px;">${index + 1}. ${vrijemeRacuna}</span><span style="font-weight: bold; margin-left: auto;">${racun.amount.toFixed(2)} €</span></li>`; }); detailHtml += `</ul>`; detailHtml += `<button id="delete-session-btn" class="red-btn" data-timestamp="${sessionTimestamp}" style="margin: 2em auto 1em auto; display: block;">IZBRIŠI OVAJ SKEN</button>`; const searchContainerSingle = document.getElementById('search-container'); if(searchContainerSingle) searchContainerSingle.style.display = 'none'; const searchContainerAll = document.getElementById('all-days-search-container'); if(searchContainerAll) searchContainerAll.style.display = 'none'; historyContentDiv.innerHTML = detailHtml; const backBtn = document.getElementById('back-to-group-list-btn'); if (backBtn) { const newBackBtn = backBtn.cloneNode(true); backBtn.parentNode.replaceChild(newBackBtn, backBtn); newBackBtn.addEventListener('click', () => { playSound('click-sound'); console.log("Vraćanje iz detalja, prethodno stanje:", previousHistoryViewState); switch (previousHistoryViewState) { case 'day-search-results': renderHistoryView(currentlyViewedDate); startSearch(); const searchInputDay = document.getElementById('search-input'); if(searchInputDay) searchInputDay.value = lastSearchTerm; executeSearch(); break; case 'all-days-search-results': renderAllDaysView(); const searchInputAll = document.getElementById('all-days-search-input'); if(searchInputAll) searchInputAll.value = lastSearchTerm; executeAllDaysSearch(); break; case 'day-view': default: renderHistoryView(currentlyViewedDate); break; } }); } const deleteSessionBtn = document.getElementById('delete-session-btn'); if(deleteSessionBtn) { deleteSessionBtn.dataset.confirming = 'false'; const newDeleteSessionBtn = deleteSessionBtn.cloneNode(true); deleteSessionBtn.parentNode.replaceChild(newDeleteSessionBtn, deleteSessionBtn); newDeleteSessionBtn.addEventListener('click', () => { playSound('click-sound'); if (newDeleteSessionBtn.dataset.confirming === 'false') { newDeleteSessionBtn.innerText = "Potvrdi brisanje?"; newDeleteSessionBtn.classList.add('confirm-mode'); newDeleteSessionBtn.dataset.confirming = 'true'; } else { const timestampToDelete = newDeleteSessionBtn.dataset.timestamp; deleteSpecificSession(timestampToDelete); } }); const detailClickHandler = (e) => { const currentDeleteBtn = document.getElementById('delete-session-btn'); if (currentDeleteBtn && currentDeleteBtn.dataset.confirming === 'true' && !currentDeleteBtn.contains(e.target)) { currentDeleteBtn.innerText = "IZBRIŠI OVAJ SKEN"; currentDeleteBtn.classList.remove('confirm-mode'); currentDeleteBtn.dataset.confirming = 'false'; historyContentDiv.removeEventListener('click', detailClickHandler, true); } }; historyContentDiv.addEventListener('click', detailClickHandler, true); } else { console.warn("Gumb #delete-session-btn nije pronađen."); } }
+    function renderGroupDetailView(groupData) {
+        if (!historyContentDiv || !groupData || !groupData.racuni) { console.error("Nedostaju podaci za detalje."); renderHistoryView(); return; }
+
+        // Sakrij info headere od prikaza dana
+        const dateInfoDiv = document.getElementById('history-date-info'); if (dateInfoDiv) dateInfoDiv.style.display = 'none';
+        const summaryInfoDiv = document.getElementById('history-summary-info'); if (summaryInfoDiv) summaryInfoDiv.style.display = 'none';
+        // Sakrij search container ako je bio aktivan
+        const searchContainer = document.getElementById('search-container'); if (searchContainer) searchContainer.style.display = 'none';
+
+        const sessionTimestamp = groupData.timestamp;
+        const vrijemeSpremanja = new Date(sessionTimestamp);
+        const satiSpremanja = vrijemeSpremanja.getHours().toString().padStart(2, '0');
+        const minuteSpremanja = vrijemeSpremanja.getMinutes().toString().padStart(2, '0');
+        const vrijemeSpremanjaFormatirano = `${satiSpremanja}:${minuteSpremanja}`;
+        const ukupnoGrupa = groupData.racuni.reduce((sum, item) => sum + item.amount, 0);
+        const brojRacunaSesije = groupData.racuni.length;
+        const naslovDetalja = groupData.name ? groupData.name : `SKEN U ${vrijemeSpremanjaFormatirano}`;
+
+        // Kreiraj HTML za detalje (headeri + lista + gumb)
+        // Dodajemo klase radi lakšeg stiliziranja flex-shrink-a
+        let detailHtml = `<div class="history-detail-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1em; border-bottom: 1px solid #ccc; padding-bottom: 0.5em; flex-shrink: 0;"><button id="back-to-group-list-btn" style="background-color: #6c757d; color: white; padding: 0.4em 0.8em; font-size: 0.9em; border: none; border-radius: 3px; cursor: pointer; font-weight: bold;">< Lista</button><h3 style="margin: 0; text-align: center; flex-grow: 1; font-size: 1.1em;">${naslovDetalja}</h3><span style="font-weight: bold; font-size: 1.1em;">${ukupnoGrupa.toFixed(2)} €</span></div>`;
+        detailHtml += `<div class="history-detail-summary" style="display: flex; justify-content: space-between; align-items: center; padding: 0.6em 0.2em; font-size: 1.1em; margin-bottom: 1em; border-bottom: 1px solid #eee; flex-shrink: 0;"><span>RAČUNA: <span style="font-weight: bold;">${brojRacunaSesije}</span></span><span style="font-weight: bold;">UKUPNO: ${ukupnoGrupa.toFixed(2)} €</span></div>`;
+        detailHtml += `<ul id="detail-scan-list">`; // Lista će skrolati unutar history-content
+
+        const racuniZaPrikaz = groupData.racuni;
+        racuniZaPrikaz.forEach((racun, index) => {
+            const vrijemeRacuna = racun.time !== '??:??' ? `${racun.time}` : 'Vrijeme?';
+            detailHtml += `<li><span style="color: #333; min-width: 80px;">${index + 1}. ${vrijemeRacuna}</span><span style="font-weight: bold; margin-left: auto;">${racun.amount.toFixed(2)} €</span></li>`;
+        });
+        detailHtml += `</ul>`;
+        detailHtml += `<button id="delete-session-btn" class="red-btn" data-timestamp="${sessionTimestamp}" style="margin: 1.5em auto 1em auto; display: block; flex-shrink: 0;">IZBRIŠI OVAJ SKEN</button>`; // flex-shrink za svaki slučaj
+
+        // Postavi HTML u scrollable content div
+        historyContentDiv.innerHTML = detailHtml;
+
+        // Dodaj event listenere za gumbe
+        const backBtn = document.getElementById('back-to-group-list-btn');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                playSound('click-sound');
+                console.log("Vraćanje iz detalja, prethodno stanje:", previousHistoryViewState);
+                // Pokaži opet headere dana ako se vraćamo na prikaz dana
+                if (previousHistoryViewState === 'day-view' || previousHistoryViewState === 'day-search-results') {
+                     const dateInfoDiv = document.getElementById('history-date-info'); if (dateInfoDiv) dateInfoDiv.style.display = 'flex';
+                     const summaryInfoDiv = document.getElementById('history-summary-info'); if (summaryInfoDiv) summaryInfoDiv.style.display = 'flex';
+                }
+
+                switch (previousHistoryViewState) {
+                    case 'day-search-results':
+                        renderHistoryView(currentlyViewedDate); // Prvo renderiraj dan
+                        startSearch(); // Onda otvori pretragu
+                        const searchInputDay = document.getElementById('search-input'); if(searchInputDay) searchInputDay.value = lastSearchTerm;
+                        executeSearch(); // I izvrši je
+                        break;
+                    case 'all-days-search-results':
+                        renderAllDaysView(); // Renderiraj all-days
+                        const searchInputAll = document.getElementById('all-days-search-input'); if(searchInputAll) searchInputAll.value = lastSearchTerm;
+                        executeAllDaysSearch(); // I izvrši pretragu
+                        break;
+                    case 'day-view':
+                    default:
+                        renderHistoryView(currentlyViewedDate);
+                        break;
+                }
+            });
+        }
+
+        const deleteSessionBtn = document.getElementById('delete-session-btn');
+        if(deleteSessionBtn) {
+            deleteSessionBtn.dataset.confirming = 'false';
+            deleteSessionBtn.addEventListener('click', () => {
+                playSound('click-sound');
+                if (deleteSessionBtn.dataset.confirming === 'false') {
+                    deleteSessionBtn.innerText = "Potvrdi brisanje?";
+                    deleteSessionBtn.classList.add('confirm-mode');
+                    deleteSessionBtn.dataset.confirming = 'true';
+                } else {
+                    const timestampToDelete = deleteSessionBtn.dataset.timestamp;
+                    deleteSpecificSession(timestampToDelete);
+                }
+            });
+
+             // Listener za poništavanje potvrde
+             const detailClickHandler = (e) => {
+                const currentDeleteBtn = document.getElementById('delete-session-btn');
+                if (currentDeleteBtn && currentDeleteBtn.dataset.confirming === 'true' && !currentDeleteBtn.contains(e.target)) {
+                    currentDeleteBtn.innerText = "IZBRIŠI OVAJ SKEN";
+                    currentDeleteBtn.classList.remove('confirm-mode');
+                    currentDeleteBtn.dataset.confirming = 'false';
+                    // Uklanjamo listener nakon jedne upotrebe unutar ovog prikaza
+                    historyPageDiv.removeEventListener('click', detailClickHandler, true);
+                 }
+             };
+             // Koristimo historyPageDiv za hvatanje klika izvan gumba
+             historyPageDiv.removeEventListener('click', detailClickHandler, true); // Prvo ukloni stari ako postoji
+             historyPageDiv.addEventListener('click', detailClickHandler, true); // Dodaj novi
+        } else {
+            console.warn("Gumb #delete-session-btn nije pronađen.");
+        }
+    }
     // Brisanje specifične sesije
-    function deleteSpecificSession(timestampString) { if (!timestampString) { console.error("Pokušaj brisanja bez timestampa."); alert("Greška: Nije moguće identificirati sken."); return; } const timestampToDelete = Number(timestampString); if (isNaN(timestampToDelete)) { console.error("Nevažeći timestamp za brisanje:", timestampString); alert("Greška: Nevažeći identifikator skena."); const deleteBtn = document.getElementById('delete-session-btn'); if(deleteBtn && deleteBtn.dataset.confirming === 'true') { deleteBtn.innerText = "IZBRIŠI OVAJ SKEN"; deleteBtn.classList.remove('confirm-mode'); deleteBtn.dataset.confirming = 'false'; } return; } console.log("Brisanje sesije s timestampom:", timestampToDelete); let punaPovijest = loadFullHistoryFromLocalStorage(); const originalLength = punaPovijest.length; const filtriranaPovijest = punaPovijest.filter(grupa => { if (typeof grupa.timestamp !== 'number' || isNaN(grupa.timestamp)) { return true; } return grupa.timestamp !== timestampToDelete; }); const newLength = filtriranaPovijest.length; console.log(`Originalna dužina: ${originalLength}, Nova dužina: ${newLength}`); if (newLength < originalLength) { saveFullHistoryToLocalStorage(filtriranaPovijest); playSound('remove-sound'); alert("Sken obrisan iz povijesti."); renderHistoryView(currentlyViewedDate); } else { console.warn("Sesija za brisanje nije pronađena:", timestampToDelete); alert("Greška: Sken nije pronađen."); const deleteBtn = document.getElementById('delete-session-btn'); if(deleteBtn && deleteBtn.dataset.confirming === 'true') { deleteBtn.innerText = "IZBRIŠI OVAJ SKEN"; deleteBtn.classList.remove('confirm-mode'); deleteBtn.dataset.confirming = 'false'; } } }
+    function deleteSpecificSession(timestampString) { if (!timestampString) { console.error("Pokušaj brisanja bez timestampa."); alert("Greška: Nije moguće identificirati sken."); return; } const timestampToDelete = Number(timestampString); if (isNaN(timestampToDelete)) { console.error("Nevažeći timestamp za brisanje:", timestampString); alert("Greška: Nevažeći identifikator skena."); const deleteBtn = document.getElementById('delete-session-btn'); if(deleteBtn && deleteBtn.dataset.confirming === 'true') { deleteBtn.innerText = "IZBRIŠI OVAJ SKEN"; deleteBtn.classList.remove('confirm-mode'); deleteBtn.dataset.confirming = 'false'; } return; } console.log("Brisanje sesije s timestampom:", timestampToDelete); let punaPovijest = loadFullHistoryFromLocalStorage(); const originalLength = punaPovijest.length; const filtriranaPovijest = punaPovijest.filter(grupa => { if (typeof grupa.timestamp !== 'number' || isNaN(grupa.timestamp)) { return true; } return grupa.timestamp !== timestampToDelete; }); const newLength = filtriranaPovijest.length; console.log(`Originalna dužina: ${originalLength}, Nova dužina: ${newLength}`); if (newLength < originalLength) { saveFullHistoryToLocalStorage(filtriranaPovijest); playSound('remove-sound'); alert("Sken obrisan iz povijesti."); // Vrati se na prethodni prikaz
+        if (previousHistoryViewState === 'day-view' || previousHistoryViewState === 'day-search-results') { renderHistoryView(currentlyViewedDate); } else { renderAllDaysView(); } } else { console.warn("Sesija za brisanje nije pronađena:", timestampToDelete); alert("Greška: Sken nije pronađen."); const deleteBtn = document.getElementById('delete-session-btn'); if(deleteBtn && deleteBtn.dataset.confirming === 'true') { deleteBtn.innerText = "IZBRIŠI OVAJ SKEN"; deleteBtn.classList.remove('confirm-mode'); deleteBtn.dataset.confirming = 'false'; } } }
     // Prikaz liste svih dana
     function renderAllDaysView() {
-        previousHistoryViewState = 'all-days-view'; const punaPovijest = loadFullHistoryFromLocalStorage(); if (!historyContentDiv || !historyPageDiv) return; const mainHeaderDiv = document.getElementById('history-header'); if (!mainHeaderDiv) return;
-        const dateInfoDiv = document.getElementById('history-date-info'); if (dateInfoDiv) dateInfoDiv.remove(); const summaryInfoDiv = document.getElementById('history-summary-info'); if (summaryInfoDiv) summaryInfoDiv.remove(); const searchContainerSingleDay = document.getElementById('search-container'); if(searchContainerSingleDay) searchContainerSingleDay.style.display = 'none';
-        const searchBarHtml = `<div id="all-days-search-container"><div style="display: flex; gap: 5px;"><input type="text" id="all-days-search-input" placeholder="UPIŠI ZA PRETRAGU..." style="flex-grow: 1; padding: 0.5em; font-size: 0.9em;"><button id="execute-all-days-search-btn" style="padding: 0.5em 0.6em; font-size: 0.9em;">Traži</button><button id="close-all-days-search-btn" style="padding: 0.5em 0.6em; background-color: #ccc; font-size: 0.9em;">Svi Dani</button></div></div><div id="all-days-summary-info" style="display: none; justify-content: space-between; align-items: center; padding: 0.6em 0.2em; font-size: 1.1em; margin-bottom: 1em; border-top: 1px solid #eee; border-bottom: 1px solid #eee;"></div><div id="search-results-all-days"><p style="text-align:center; color: grey; padding: 1em 0;"><i>Unesite pojam za pretragu ili kliknite "Svi Dani" za prikaz liste.</i></p></div>`;
-        historyContentDiv.innerHTML = searchBarHtml; const searchResultsContainer = document.getElementById('search-results-all-days'); const allDaysSummaryContainer = document.getElementById('all-days-summary-info'); const sessionsByDate = punaPovijest.reduce((acc, session) => { const dateStr = getISODateString(new Date(session.timestamp)); if (!dateStr) return acc; if (!acc[dateStr]) { acc[dateStr] = { date: new Date(session.timestamp), sessions: [], totalAmount: 0, totalCount: 0 }; acc[dateStr].date.setHours(0, 0, 0, 0); } acc[dateStr].sessions.push(session); acc[dateStr].totalAmount += session.racuni.reduce((sum, item) => sum + item.amount, 0); acc[dateStr].totalCount += session.racuni.length; return acc; }, {}); const sortedDays = Object.values(sessionsByDate).sort((a, b) => b.date - a.date); const searchInput = document.getElementById('all-days-search-input'); const executeBtn = document.getElementById('execute-all-days-search-btn'); const closeBtn = document.getElementById('close-all-days-search-btn'); if(searchInput && executeBtn && closeBtn && searchResultsContainer && allDaysSummaryContainer) { const newSearchInput = searchInput.cloneNode(true); searchInput.parentNode.replaceChild(newSearchInput, searchInput); newSearchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') executeAllDaysSearch(); }); const newExecuteBtn = executeBtn.cloneNode(true); executeBtn.parentNode.replaceChild(newExecuteBtn, executeBtn); newExecuteBtn.addEventListener('click', () => { executeAllDaysSearch(); }); const newCloseBtn = closeBtn.cloneNode(true); closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn); newCloseBtn.addEventListener('click', () => { playSound('click-sound'); newSearchInput.value = ''; renderAllDaysList(sortedDays, searchResultsContainer); const totalCountAll = punaPovijest.reduce((sum, grupa) => sum + grupa.racuni.length, 0); const totalAmountAll = punaPovijest.reduce((sum, grupa) => sum + grupa.racuni.reduce((gSum, item) => gSum + item.amount, 0), 0); allDaysSummaryContainer.innerHTML = `<span>RAČUNA: <span style="font-weight: bold;">${totalCountAll}</span></span><span style="font-weight: bold;">UKUPNO: ${totalAmountAll.toFixed(2)} €</span>`; allDaysSummaryContainer.style.display = punaPovijest.length > 0 ? 'flex' : 'none'; }); } else { console.error("Nisu pronađeni svi elementi za pretragu u All Days View."); } if (punaPovijest.length > 0) { const backButtonHtml = `<button id="back-to-current-day-btn" style="background-color: #6c757d; color: white; margin-right: 10px;">< NATRAG</button>`; const clearAllButtonHtml = `<button id="clear-history-btn" class="red-btn">IZBRIŠI SVU POVIJEST</button>`; const buttonsHtml = `<div style="text-align: center; margin-top: 1.5em;">${backButtonHtml}${clearAllButtonHtml}</div>`; if (!document.getElementById('back-to-current-day-btn') && !document.getElementById('clear-history-btn')) { historyContentDiv.insertAdjacentHTML('beforeend', buttonsHtml); } const backToDayBtn = document.getElementById('back-to-current-day-btn'); if (backToDayBtn) { const newBackBtn = backToDayBtn.cloneNode(true); backToDayBtn.parentNode.replaceChild(newBackBtn, backToDayBtn); newBackBtn.addEventListener('click', () => { playSound('click-sound'); renderHistoryView(currentlyViewedDate); }); } const clearAllBtn = document.getElementById('clear-history-btn'); if (clearAllBtn) { if (punaPovijest.length === 0) { clearAllBtn.disabled = true; clearAllBtn.style.opacity = '0.6'; clearAllBtn.style.cursor = 'not-allowed'; } else { clearAllBtn.disabled = false; clearAllBtn.style.opacity = '1'; clearAllBtn.style.cursor = 'pointer'; } clearAllBtn.dataset.confirming = 'false'; const newClearAllBtn = clearAllBtn.cloneNode(true); clearAllBtn.parentNode.replaceChild(newClearAllBtn, clearAllBtn); newClearAllBtn.addEventListener('click', () => { if (newClearAllBtn.disabled) return; playSound('click-sound'); if (newClearAllBtn.dataset.confirming === 'false') { newClearAllBtn.innerText = "Potvrdi Brisanje SVEGA?"; newClearAllBtn.classList.add('confirm-mode'); newClearAllBtn.dataset.confirming = 'true'; } else { localStorage.removeItem(HISTORY_STORAGE_KEY); alert("Sva spremljena povijest obrisana."); currentlyViewedDate = new Date(); currentlyViewedDate.setHours(0,0,0,0); renderAllDaysView(); } }); const allDaysParentClickHandler = (e) => { const currentClearAllBtn = document.getElementById('clear-history-btn'); if (currentClearAllBtn && currentClearAllBtn.dataset.confirming === 'true' && !currentClearAllBtn.contains(e.target)) { currentClearAllBtn.innerText = "IZBRIŠI SVU POVIJEST"; currentClearAllBtn.classList.remove('confirm-mode'); currentClearAllBtn.dataset.confirming = 'false'; } }; historyPageDiv.removeEventListener('click', allDaysParentClickHandler, true); historyPageDiv.addEventListener('click', allDaysParentClickHandler, true); } } }
+        previousHistoryViewState = 'all-days-view';
+        const punaPovijest = loadFullHistoryFromLocalStorage();
+        if (!historyContentDiv || !historyPageDiv) return;
+
+        // Sakrij/ukloni headere specifične za prikaz dana
+        const dateInfoDiv = document.getElementById('history-date-info'); if (dateInfoDiv) dateInfoDiv.remove();
+        const summaryInfoDiv = document.getElementById('history-summary-info'); if (summaryInfoDiv) summaryInfoDiv.remove();
+        const searchContainerSingleDay = document.getElementById('search-container'); if(searchContainerSingleDay) searchContainerSingleDay.style.display = 'none';
+
+        // Pripremi HTML za traku za pretragu i rezultate (unutar history-content)
+        const searchBarHtml = `<div id="all-days-search-container"><div><input type="text" id="all-days-search-input" placeholder="UPIŠI ZA PRETRAGU..."/><button id="execute-all-days-search-btn">Traži</button><button id="close-all-days-search-btn" style="background-color: #ccc;">Svi Dani</button></div></div>`;
+        const summaryHtml = `<div id="all-days-summary-info" style="/* display: none; */"></div>`; // CSS će ga prikazati
+        const resultsHtml = `<div id="search-results-all-days"><p style="text-align:center; color: grey; padding: 1em 0;"><i>Unesite pojam za pretragu ili kliknite "Svi Dani" za prikaz liste.</i></p></div>`;
+
+        historyContentDiv.innerHTML = searchBarHtml + summaryHtml + resultsHtml; // Postavi u scrollable content
+
+        const searchResultsContainer = document.getElementById('search-results-all-days');
+        const allDaysSummaryContainer = document.getElementById('all-days-summary-info');
+
+        // Pripremi podatke za listu svih dana
+        const sessionsByDate = punaPovijest.reduce((acc, session) => { const dateStr = getISODateString(new Date(session.timestamp)); if (!dateStr) return acc; if (!acc[dateStr]) { acc[dateStr] = { date: new Date(session.timestamp), sessions: [], totalAmount: 0, totalCount: 0 }; acc[dateStr].date.setHours(0, 0, 0, 0); } acc[dateStr].sessions.push(session); acc[dateStr].totalAmount += session.racuni.reduce((sum, item) => sum + item.amount, 0); acc[dateStr].totalCount += session.racuni.length; return acc; }, {});
+        const sortedDays = Object.values(sessionsByDate).sort((a, b) => b.date - a.date);
+
+        // Prikaz inicijalnog sažetka za sve dane
+        const totalCountAll = punaPovijest.reduce((sum, grupa) => sum + grupa.racuni.length, 0);
+        const totalAmountAll = punaPovijest.reduce((sum, grupa) => sum + grupa.racuni.reduce((gSum, item) => gSum + item.amount, 0), 0);
+        allDaysSummaryContainer.innerHTML = `<span>RAČUNA: <span style="font-weight: bold;">${totalCountAll}</span></span><span style="font-weight: bold;">UKUPNO: ${totalAmountAll.toFixed(2)} €</span>`;
+        allDaysSummaryContainer.style.display = punaPovijest.length > 0 ? 'flex' : 'none';
+
+        // Dodaj event listenere za pretragu
+        const searchInput = document.getElementById('all-days-search-input');
+        const executeBtn = document.getElementById('execute-all-days-search-btn');
+        const closeBtn = document.getElementById('close-all-days-search-btn');
+
+        if(searchInput && executeBtn && closeBtn && searchResultsContainer && allDaysSummaryContainer) {
+            searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') executeAllDaysSearch(); });
+            executeBtn.addEventListener('click', executeAllDaysSearch);
+            closeBtn.addEventListener('click', () => {
+                playSound('click-sound');
+                searchInput.value = '';
+                renderAllDaysList(sortedDays, searchResultsContainer); // Pokaži sve dane opet
+                // Prikaz ukupnog sažetka
+                allDaysSummaryContainer.innerHTML = `<span>RAČUNA: <span style="font-weight: bold;">${totalCountAll}</span></span><span style="font-weight: bold;">UKUPNO: ${totalAmountAll.toFixed(2)} €</span>`;
+                allDaysSummaryContainer.style.display = punaPovijest.length > 0 ? 'flex' : 'none';
+            });
+        } else {
+            console.error("Nisu pronađeni svi elementi za pretragu u All Days View.");
+        }
+
+        // Dodaj gumbe "Natrag" i "Izbriši sve" na kraj historyContentDiv
+        if (punaPovijest.length > 0) {
+            const backButtonHtml = `<button id="back-to-current-day-btn" style="background-color: #6c757d; color: white; margin-right: 10px;">< NATRAG</button>`;
+            const clearAllButtonHtml = `<button id="clear-history-btn" class="red-btn">IZBRIŠI SVU POVIJEST</button>`;
+            const buttonsHtml = `<div style="text-align: center; margin-top: 1.5em; flex-shrink: 0;">${backButtonHtml}${clearAllButtonHtml}</div>`; // flex-shrink da ne nestane
+
+            // Provjeri da gumbi već ne postoje prije dodavanja
+            if (!document.getElementById('back-to-current-day-btn')) {
+                 historyContentDiv.insertAdjacentHTML('beforeend', buttonsHtml);
+            }
+
+            const backToDayBtn = document.getElementById('back-to-current-day-btn');
+            if (backToDayBtn) {
+                backToDayBtn.addEventListener('click', () => {
+                    playSound('click-sound');
+                    renderHistoryView(currentlyViewedDate); // Vrati se na zadnje gledani dan
+                });
+            }
+
+            const clearAllBtn = document.getElementById('clear-history-btn');
+            if (clearAllBtn) {
+                clearAllBtn.disabled = false; // Omogući gumb
+                clearAllBtn.style.opacity = '1';
+                clearAllBtn.style.cursor = 'pointer';
+                clearAllBtn.dataset.confirming = 'false';
+
+                clearAllBtn.addEventListener('click', () => {
+                    if (clearAllBtn.disabled) return;
+                    playSound('click-sound');
+                    if (clearAllBtn.dataset.confirming === 'false') {
+                        clearAllBtn.innerText = "Potvrdi Brisanje SVEGA?";
+                        clearAllBtn.classList.add('confirm-mode');
+                        clearAllBtn.dataset.confirming = 'true';
+                    } else {
+                        localStorage.removeItem(HISTORY_STORAGE_KEY);
+                        alert("Sva spremljena povijest obrisana.");
+                        currentlyViewedDate = new Date(); // Resetiraj datum
+                        currentlyViewedDate.setHours(0,0,0,0);
+                        renderAllDaysView(); // Osvježi prikaz
+                    }
+                });
+
+                // Listener za poništavanje potvrde
+                const allDaysParentClickHandler = (e) => {
+                    const currentClearAllBtn = document.getElementById('clear-history-btn');
+                    if (currentClearAllBtn && currentClearAllBtn.dataset.confirming === 'true' && !currentClearAllBtn.contains(e.target)) {
+                        currentClearAllBtn.innerText = "IZBRIŠI SVU POVIJEST";
+                        currentClearAllBtn.classList.remove('confirm-mode');
+                        currentClearAllBtn.dataset.confirming = 'false';
+                    }
+                };
+                 historyPageDiv.removeEventListener('click', allDaysParentClickHandler, true);
+                 historyPageDiv.addEventListener('click', allDaysParentClickHandler, true);
+            }
+        } else {
+             // Ako nema povijesti, prikaži poruku i gumb Natrag
+             searchResultsContainer.innerHTML = '<p style="text-align:center; color: grey; padding: 1em 0;"><i>Nema spremljene povijesti.</i></p>';
+             const backButtonHtml = `<button id="back-to-current-day-btn" style="background-color: #6c757d; color: white; margin: 1.5em auto 1em auto; display: block;">< NATRAG</button>`;
+             if (!document.getElementById('back-to-current-day-btn')) {
+                 historyContentDiv.insertAdjacentHTML('beforeend', backButtonHtml);
+                 const backToDayBtn = document.getElementById('back-to-current-day-btn');
+                 if (backToDayBtn) {
+                     backToDayBtn.addEventListener('click', () => {
+                         playSound('click-sound');
+                         renderHistoryView(currentlyViewedDate);
+                     });
+                 }
+             }
+        }
+    }
     // Prikazuje listu dana
-    function renderAllDaysList(daysData, containerElement) { if (!containerElement) return; const opcijeDana = { weekday: 'long' }; const opcijeDatuma = { day: '2-digit', month: '2-digit', year: '2-digit' }; let daysHtml = '<ul id="all-days-list-rendered" style="list-style: none; padding: 0; margin: 0;">'; if (daysData.length === 0) { if (containerElement.id === 'search-results-all-days') { daysHtml += '<li style="text-align:center; color: grey; padding: 1em 0;"><i>Nema rezultata za traženi pojam.</i></li>'; } else { daysHtml += '<li style="text-align:center; color: grey; padding: 1em 0;"><i>Nema spremljene povijesti.</i></li>'; } } else { daysData.forEach(dayInfo => { let imeDana = dayInfo.date.toLocaleDateString('hr-HR', opcijeDana); imeDana = imeDana.charAt(0).toUpperCase() + imeDana.slice(1); const formatiraniDatum = dayInfo.date.toLocaleDateString('hr-HR', opcijeDatuma); const isoDate = getISODateString(dayInfo.date); daysHtml += `<li data-date-iso="${isoDate}" style="background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; padding: 12px 15px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;"><span style="font-weight: bold; font-size: 1.1em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 10px;">${imeDana}, ${formatiraniDatum}</span><div style="flex-shrink: 0; text-align: right;"><span style="font-size: 0.9em; color: #555; white-space: nowrap;">Računa: ${dayInfo.totalCount}</span><span style="font-weight: bold; margin-left: 15px; white-space: nowrap;">${dayInfo.totalAmount.toFixed(2)} €</span></div></li>`; }); } daysHtml += '</ul>'; containerElement.innerHTML = daysHtml; const listElement = containerElement.querySelector('ul'); if (listElement) { const newListElement = listElement.cloneNode(true); listElement.parentNode.replaceChild(newListElement, listElement); newListElement.addEventListener('click', (e) => { const clickedDayLi = e.target.closest('li[data-date-iso]'); if (clickedDayLi && clickedDayLi.dataset.dateIso) { const selectedDate = new Date(clickedDayLi.dataset.dateIso + 'T00:00:00'); playSound('click-sound'); currentlyViewedDate = selectedDate; renderHistoryView(selectedDate); } }); } }
+    function renderAllDaysList(daysData, containerElement) {
+        if (!containerElement) return;
+        const opcijeDana = { weekday: 'long' };
+        const opcijeDatuma = { day: '2-digit', month: '2-digit', year: '2-digit' };
+        let daysHtml = '<ul id="all-days-list-rendered">'; // Nema više style
+        if (daysData.length === 0) {
+             // Različita poruka ovisno je li prazna povijest ili prazni rezultati pretrage
+             if (containerElement.id === 'search-results-all-days' && document.getElementById('all-days-search-input')?.value.trim()) {
+                 daysHtml += '<li style="text-align:center; color: grey; border: none; cursor: default; padding: 1em 0;"><i>Nema rezultata za traženi pojam.</i></li>';
+             } else {
+                 daysHtml += '<li style="text-align:center; color: grey; border: none; cursor: default; padding: 1em 0;"><i>Nema spremljene povijesti.</i></li>';
+             }
+        } else {
+            daysData.forEach(dayInfo => {
+                let imeDana = dayInfo.date.toLocaleDateString('hr-HR', opcijeDana);
+                imeDana = imeDana.charAt(0).toUpperCase() + imeDana.slice(1);
+                const formatiraniDatum = dayInfo.date.toLocaleDateString('hr-HR', opcijeDatuma);
+                const isoDate = getISODateString(dayInfo.date);
+                daysHtml += `<li data-date-iso="${isoDate}"><span style="font-weight: bold; font-size: 1.1em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 10px;">${imeDana}, ${formatiraniDatum}</span><div style="flex-shrink: 0; text-align: right;"><span style="font-size: 0.9em; color: #555; white-space: nowrap;">Računa: ${dayInfo.totalCount}</span><span style="font-weight: bold; margin-left: 15px; white-space: nowrap;">${dayInfo.totalAmount.toFixed(2)} €</span></div></li>`;
+            });
+        }
+        daysHtml += '</ul>';
+        containerElement.innerHTML = daysHtml;
+
+        const listElement = containerElement.querySelector('ul');
+        if (listElement) {
+             // Ne treba klonirati za event listener
+             listElement.addEventListener('click', (e) => {
+                const clickedDayLi = e.target.closest('li[data-date-iso]');
+                if (clickedDayLi && clickedDayLi.dataset.dateIso) {
+                    const selectedDate = new Date(clickedDayLi.dataset.dateIso + 'T00:00:00'); // Osiguraj točno vrijeme
+                    playSound('click-sound');
+                    currentlyViewedDate = selectedDate;
+                    renderHistoryView(selectedDate); // Prebaci na prikaz tog dana
+                }
+            });
+        }
+    }
     // Izvršava pretragu u prikazu svih dana
-    function executeAllDaysSearch() { const searchInput = document.getElementById('all-days-search-input'); const resultsContainer = document.getElementById('search-results-all-days'); const summaryContainer = document.getElementById('all-days-summary-info'); if (!searchInput || !resultsContainer || !summaryContainer) return; const searchTerm = searchInput.value.trim().toLowerCase(); lastSearchTerm = searchInput.value.trim(); const normalizedSearchDate = normalizeDateForSearch(searchInput.value.trim()); resultsContainer.innerHTML = ''; summaryContainer.style.display = 'none'; if (!searchTerm) { resultsContainer.innerHTML = '<p style="text-align:center; color: grey; padding: 1em 0;"><i>Unesite pojam za pretragu (datum, dan, naziv).</i></p>'; resultsContainer.style.display = 'block'; return; } console.log("Tražim sesije po:", searchTerm, "Normalizirano:", normalizedSearchDate); const punaPovijest = loadFullHistoryFromLocalStorage(); const searchResults = []; const opcijeDana = { weekday: 'long' }; const opcijeDatumaNumeric = { day: '2-digit', month: '2-digit', year: 'numeric' }; const opcijeDatumaShort = { day: '2-digit', month: '2-digit', year: '2-digit' }; punaPovijest.forEach(grupa => { const sessionDate = new Date(grupa.timestamp); const formattedDateNumeric = sessionDate.toLocaleDateString('hr-HR', opcijeDatumaNumeric); const formattedDateShort = sessionDate.toLocaleDateString('hr-HR', opcijeDatumaShort); const normalizedSessionDate = getISODateString(sessionDate); const dayName = sessionDate.toLocaleDateString('hr-HR', opcijeDana).toLowerCase(); const sessionName = grupa.name ? grupa.name.toLowerCase() : ''; let match = false; if ((normalizedSearchDate && normalizedSessionDate && normalizedSessionDate === normalizedSearchDate) || formattedDateShort.includes(searchTerm) || formattedDateNumeric.includes(searchTerm) || dayName.includes(searchTerm) || (sessionName && sessionName.includes(searchTerm))) { match = true; } if (match) { searchResults.push(grupa); } }); renderSessionSearchResults(searchResults, resultsContainer, searchTerm, summaryContainer); resultsContainer.style.display = 'block'; }
-    // Prikazuje listu pronađenih SESIJA
-    function renderSessionSearchResults(results, containerElement, searchTerm, summaryContainer) { if (!containerElement || !summaryContainer) return; containerElement.innerHTML = ''; summaryContainer.style.display = 'none'; if (results.length === 0) { containerElement.innerHTML = '<p style="text-align:center; color: grey; padding: 1em 0;"><i>Nema rezultata za traženi pojam.</i></p>'; return; } const brojRacunaRezultati = results.reduce((sum, grupa) => sum + grupa.racuni.length, 0); const ukupanIznosRezultati = results.reduce((sum, grupa) => sum + grupa.racuni.reduce((gSum, item) => gSum + item.amount, 0), 0); summaryContainer.innerHTML = `<span>RAČUNA: <span style="font-weight: bold;">${brojRacunaRezultati}</span></span><span style="font-weight: bold;">UKUPNO: ${ukupanIznosRezultati.toFixed(2)} €</span>`; summaryContainer.style.display = 'flex'; results.sort((a, b) => b.timestamp - a.timestamp); let resultsHtml = '<ul id="search-results-list" style="list-style: none; padding: 0; margin: 0;">'; const opcijeDatuma = { day: '2-digit', month: '2-digit', year: '2-digit' }; results.forEach(grupa => { const vrijemeSpremanja = new Date(grupa.timestamp); const datumString = vrijemeSpremanja.toLocaleDateString('hr-HR', opcijeDatuma); const satiSpremanja = vrijemeSpremanja.getHours().toString().padStart(2, '0'); const minuteSpremanja = vrijemeSpremanja.getMinutes().toString().padStart(2, '0'); const vrijemeSpremanjaFormatirano = `${satiSpremanja}:${minuteSpremanja}`; const ukupnoGrupa = grupa.racuni.reduce((sum, item) => sum + item.amount, 0); const zadnjeVrijeme = grupa.lastQrTime || '??:??'; const prikazNaziva = grupa.name ? `<span class="session-name-history">${grupa.name}</span>` : `<span class="scan-time-history">SKEN</span>`; resultsHtml += `<li data-timestamp="${grupa.timestamp}" style="border: 1px solid #eee; border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; cursor: pointer;"><div style="font-weight: bold; margin-right: 8px; color: #666;">${datumString}</div><div style="flex-grow: 1; min-width: 100px; display: inline-flex; align-items: center;">${prikazNaziva} <span style="font-size:0.9em; color:#555; margin-left: 5px;">u ${vrijemeSpremanjaFormatirano}</span></div><div style="flex-shrink: 0; margin-left: auto; padding-left: 10px; text-align: right;"><span class="scan-group-last-qr-time">${zadnjeVrijeme !== '??:??' ? 'zadnji iz ' + zadnjeVrijeme : ''}</span><span style="font-weight: bold; margin-left: 10px;">${ukupnoGrupa.toFixed(2)} €</span></div></li>`; }); resultsHtml += '</ul>'; containerElement.innerHTML = resultsHtml; const resultsList = containerElement.querySelector('ul'); if (resultsList) { const newResultsList = resultsList.cloneNode(true); resultsList.parentNode.replaceChild(newResultsList, resultsList); newResultsList.addEventListener('click', (e) => { const clickedLi = e.target.closest('li[data-timestamp]'); if (clickedLi && clickedLi.dataset.timestamp) { const timestamp = clickedLi.dataset.timestamp; const punaPovijest = loadFullHistoryFromLocalStorage(); const selectedGroup = punaPovijest.find(g => String(g.timestamp) === timestamp); if (selectedGroup) { playSound('click-sound'); if (containerElement.id === 'search-results') { previousHistoryViewState = 'day-search-results'; } else if (containerElement.id === 'search-results-all-days') { previousHistoryViewState = 'all-days-search-results'; } lastSearchTerm = document.getElementById('search-input')?.value || document.getElementById('all-days-search-input')?.value || ''; currentlyViewedDate = new Date(selectedGroup.timestamp); currentlyViewedDate.setHours(0,0,0,0); renderGroupDetailView(selectedGroup); } else { console.error("Nije pronađena grupa iz rezultata pretrage:", timestamp); alert("Greška pri otvaranju detalja."); } } }); } }
+    function executeAllDaysSearch() {
+        const searchInput = document.getElementById('all-days-search-input');
+        const resultsContainer = document.getElementById('search-results-all-days');
+        const summaryContainer = document.getElementById('all-days-summary-info');
+        if (!searchInput || !resultsContainer || !summaryContainer) return;
+
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        lastSearchTerm = searchInput.value.trim(); // Spremi za povratak
+        const normalizedSearchDate = normalizeDateForSearch(searchInput.value.trim());
+
+        resultsContainer.innerHTML = ''; // Očisti rezultate
+        summaryContainer.style.display = 'none'; // Sakrij sažetak dok ne znamo rezultate
+
+        if (!searchTerm) {
+            resultsContainer.innerHTML = '<p style="text-align:center; color: grey; padding: 1em 0;"><i>Unesite pojam za pretragu (datum, dan, naziv).</i></p>';
+            resultsContainer.style.display = 'block';
+            return;
+        }
+
+        console.log("Tražim sesije po:", searchTerm, "Normalizirano:", normalizedSearchDate);
+        const punaPovijest = loadFullHistoryFromLocalStorage();
+        const searchResults = [];
+        const opcijeDana = { weekday: 'long' };
+        const opcijeDatumaNumeric = { day: '2-digit', month: '2-digit', year: 'numeric' };
+        const opcijeDatumaShort = { day: '2-digit', month: '2-digit', year: '2-digit' };
+
+        punaPovijest.forEach(grupa => {
+            const sessionDate = new Date(grupa.timestamp);
+            const formattedDateNumeric = sessionDate.toLocaleDateString('hr-HR', opcijeDatumaNumeric);
+            const formattedDateShort = sessionDate.toLocaleDateString('hr-HR', opcijeDatumaShort);
+            const normalizedSessionDate = getISODateString(sessionDate);
+            const dayName = sessionDate.toLocaleDateString('hr-HR', opcijeDana).toLowerCase();
+            const sessionName = grupa.name ? grupa.name.toLowerCase() : '';
+
+            let match = false;
+            // Provjeri sve uvjete
+             if ((normalizedSearchDate && normalizedSessionDate && normalizedSessionDate === normalizedSearchDate) || // Točan datum
+                 formattedDateShort.includes(searchTerm) || // dd.mm.yy format
+                 formattedDateNumeric.includes(searchTerm) || // dd.mm.yyyy format
+                 dayName.includes(searchTerm) || // Ime dana
+                 (sessionName && sessionName.includes(searchTerm))) { // Naziv sesije
+                 match = true;
+            }
+
+            if (match) {
+                searchResults.push(grupa);
+            }
+        });
+
+        // Prikaz rezultata (lista sesija)
+        renderSessionSearchResults(searchResults, resultsContainer, searchTerm, summaryContainer);
+        resultsContainer.style.display = 'block';
+    }
+    // Prikazuje listu pronađenih SESIJA (koristi se i za pretragu dana i svih dana)
+    function renderSessionSearchResults(results, containerElement, searchTerm, summaryContainer) {
+        if (!containerElement || !summaryContainer) return;
+        containerElement.innerHTML = ''; // Očisti prethodne rezultate
+        summaryContainer.style.display = 'none'; // Sakrij sažetak
+
+        if (results.length === 0) {
+            containerElement.innerHTML = '<p style="text-align:center; color: grey; padding: 1em 0;"><i>Nema rezultata za traženi pojam.</i></p>';
+            return;
+        }
+
+        // Izračunaj i prikaži sažetak rezultata
+        const brojRacunaRezultati = results.reduce((sum, grupa) => sum + grupa.racuni.length, 0);
+        const ukupanIznosRezultati = results.reduce((sum, grupa) => sum + grupa.racuni.reduce((gSum, item) => gSum + item.amount, 0), 0);
+        summaryContainer.innerHTML = `<span>RAČUNA: <span style="font-weight: bold;">${brojRacunaRezultati}</span></span><span style="font-weight: bold;">UKUPNO: ${ukupanIznosRezultati.toFixed(2)} €</span>`;
+        summaryContainer.style.display = 'flex';
+
+        // Sortiraj rezultate (najnoviji prvo)
+        results.sort((a, b) => b.timestamp - a.timestamp);
+
+        // Generiraj HTML za listu rezultata
+        let resultsHtml = '<ul class="search-results-list">'; // Dodana klasa za eventualno specifično stiliziranje
+        const opcijeDatuma = { day: '2-digit', month: '2-digit', year: '2-digit' };
+        results.forEach(grupa => {
+            const vrijemeSpremanja = new Date(grupa.timestamp);
+            const datumString = vrijemeSpremanja.toLocaleDateString('hr-HR', opcijeDatuma);
+            const satiSpremanja = vrijemeSpremanja.getHours().toString().padStart(2, '0');
+            const minuteSpremanja = vrijemeSpremanja.getMinutes().toString().padStart(2, '0');
+            const vrijemeSpremanjaFormatirano = `${satiSpremanja}:${minuteSpremanja}`;
+            const ukupnoGrupa = grupa.racuni.reduce((sum, item) => sum + item.amount, 0);
+            const zadnjeVrijeme = grupa.lastQrTime || '??:??';
+            const prikazNaziva = grupa.name ? `<span class="session-name-history">${grupa.name}</span>` : `<span class="scan-time-history">SKEN</span>`;
+
+            // Malo drugačiji layout za prikaz rezultata
+            resultsHtml += `<li data-timestamp="${grupa.timestamp}">
+                              <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 3px;">
+                                <div style="font-weight: bold; margin-right: 8px; color: #666;">${datumString}</div>
+                                <div style="font-weight: bold; margin-left: auto;">${ukupnoGrupa.toFixed(2)} €</div>
+                              </div>
+                              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.9em; color: #333;">
+                                 <div style="flex-grow: 1; min-width: 100px; display: inline-flex; align-items: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    ${prikazNaziva} <span style="font-size:0.9em; color:#555; margin-left: 5px; flex-shrink: 0;">u ${vrijemeSpremanjaFormatirano}</span>
+                                 </div>
+                                 <div style="flex-shrink: 0; margin-left: 10px; text-align: right; font-size: 0.9em; color: #777;">
+                                     ${zadnjeVrijeme !== '??:??' ? 'zadnji iz ' + zadnjeVrijeme : ''}
+                                 </div>
+                              </div>
+                           </li>`;
+        });
+        resultsHtml += '</ul>';
+        containerElement.innerHTML = resultsHtml;
+
+        // Dodaj event listener za klik na rezultat
+        const resultsList = containerElement.querySelector('ul');
+        if (resultsList) {
+            resultsList.addEventListener('click', (e) => {
+                const clickedLi = e.target.closest('li[data-timestamp]');
+                if (clickedLi && clickedLi.dataset.timestamp) {
+                    const timestamp = clickedLi.dataset.timestamp;
+                    const punaPovijest = loadFullHistoryFromLocalStorage();
+                    const selectedGroup = punaPovijest.find(g => String(g.timestamp) === timestamp);
+                    if (selectedGroup) {
+                        playSound('click-sound');
+                        // Postavi prethodno stanje ovisno o tome odakle je pretraga pokrenuta
+                        if (containerElement.id === 'search-results') {
+                            previousHistoryViewState = 'day-search-results';
+                        } else if (containerElement.id === 'search-results-all-days') {
+                            previousHistoryViewState = 'all-days-search-results';
+                        }
+                        // Spremi zadnji pojam pretrage
+                         lastSearchTerm = document.getElementById('search-input')?.value || document.getElementById('all-days-search-input')?.value || '';
+                         currentlyViewedDate = new Date(selectedGroup.timestamp); // Postavi datum na dan odabrane sesije
+                         currentlyViewedDate.setHours(0,0,0,0);
+                         renderGroupDetailView(selectedGroup); // Pokaži detalje
+                    } else {
+                        console.error("Nije pronađena grupa iz rezultata pretrage:", timestamp);
+                        alert("Greška pri otvaranju detalja.");
+                    }
+                }
+            });
+        }
+    }
     // Pokretanje pretrage iz prikaza jednog dana
-    function startSearch() { playSound('click-sound'); console.log("Pokretanje pretrage (jedan dan)..."); const searchContainer = document.getElementById('search-container'); const historyContent = document.getElementById('history-content'); const dateInfoDiv = document.getElementById('history-date-info'); const summaryInfoDiv = document.getElementById('history-summary-info'); const searchSummaryDay = document.getElementById('search-summary-info-day'); if (!searchContainer || !historyContent) return; if (dateInfoDiv) dateInfoDiv.style.display = 'none'; if (summaryInfoDiv) summaryInfoDiv.style.display = 'none'; historyContent.innerHTML = ''; searchContainer.style.display = 'block'; if(searchSummaryDay) searchSummaryDay.style.display = 'none'; const searchInput = document.getElementById('search-input'); if (searchInput) { searchInput.value = ''; searchInput.focus(); } const executeBtn = document.getElementById('execute-search-btn'); const closeBtn = document.getElementById('close-search-btn'); if (executeBtn) { const newExecuteBtn = executeBtn.cloneNode(true); executeBtn.parentNode.replaceChild(newExecuteBtn, executeBtn); newExecuteBtn.addEventListener('click', executeSearch); } if (closeBtn) { const newCloseBtn = closeBtn.cloneNode(true); closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn); newCloseBtn.addEventListener('click', () => { playSound('click-sound'); searchContainer.style.display = 'none'; document.getElementById('search-results').innerHTML = ''; document.getElementById('search-input').value = ''; if(searchSummaryDay) searchSummaryDay.style.display = 'none'; if (dateInfoDiv) dateInfoDiv.style.display = 'flex'; if (summaryInfoDiv) summaryInfoDiv.style.display = 'flex'; renderHistoryView(currentlyViewedDate); }); } if (searchInput) { const newSearchInput = searchInput.cloneNode(true); searchInput.parentNode.replaceChild(newSearchInput, searchInput); newSearchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') executeSearch(); }); } }
+    function startSearch() {
+        playSound('click-sound');
+        console.log("Pokretanje pretrage (jedan dan)...");
+        const searchContainer = document.getElementById('search-container');
+        const historyContent = document.getElementById('history-content');
+        const dateInfoDiv = document.getElementById('history-date-info');
+        const summaryInfoDiv = document.getElementById('history-summary-info');
+        const searchSummaryDay = document.getElementById('search-summary-info-day');
+
+        if (!searchContainer || !historyContent || !dateInfoDiv || !summaryInfoDiv || !searchSummaryDay) return;
+
+        // Sakrij elemente prikaza dana
+        dateInfoDiv.style.display = 'none';
+        summaryInfoDiv.style.display = 'none';
+        historyContent.style.display = 'none'; // Sakrij glavni content
+
+        // Pokaži kontejner za pretragu
+        searchContainer.style.display = 'flex'; // *** KORISTI FLEX ***
+        searchSummaryDay.style.display = 'none'; // Sakrij sažetak pretrage inicijalno
+        document.getElementById('search-results').innerHTML = ''; // Očisti rezultate
+
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) {
+            searchInput.value = '';
+            searchInput.focus();
+        }
+
+        // Dodaj listenere (bolje je ukloniti stare ako postoje)
+        const executeBtn = document.getElementById('execute-search-btn');
+        const closeBtn = document.getElementById('close-search-btn');
+
+        if (executeBtn) {
+            const newExecuteBtn = executeBtn.cloneNode(true);
+            executeBtn.parentNode.replaceChild(newExecuteBtn, executeBtn);
+            newExecuteBtn.addEventListener('click', executeSearch);
+        }
+        if (closeBtn) {
+            const newCloseBtn = closeBtn.cloneNode(true);
+            closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+            newCloseBtn.addEventListener('click', () => {
+                playSound('click-sound');
+                searchContainer.style.display = 'none'; // Sakrij pretragu
+                document.getElementById('search-results').innerHTML = '';
+                document.getElementById('search-input').value = '';
+                searchSummaryDay.style.display = 'none';
+                // Pokaži opet elemente dana
+                dateInfoDiv.style.display = 'flex';
+                summaryInfoDiv.style.display = 'flex';
+                historyContent.style.display = 'block'; // Pokaži opet content (renderHistoryView će ga popuniti)
+                renderHistoryView(currentlyViewedDate); // Renderiraj prikaz dana
+            });
+        }
+         if (searchInput) {
+             const newSearchInput = searchInput.cloneNode(true);
+             searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+             newSearchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') executeSearch(); });
+         }
+    }
     // Izvršavanje pretrage iz prikaza jednog dana
-    function executeSearch() { const searchInput = document.getElementById('search-input'); const resultsContainer = document.getElementById('search-results'); const summaryContainer = document.getElementById('search-summary-info-day'); if (!searchInput || !resultsContainer || !summaryContainer) return; const searchTerm = searchInput.value.trim().toLowerCase(); lastSearchTerm = searchInput.value.trim(); const normalizedSearchDate = normalizeDateForSearch(searchInput.value.trim()); resultsContainer.innerHTML = ''; summaryContainer.style.display = 'none'; if (!searchTerm) { resultsContainer.innerHTML = '<p style="text-align:center; color: grey;"><i>Unesite pojam za pretragu.</i></p>'; return; } console.log("Tražim pojam:", searchTerm, "Normalizirano:", normalizedSearchDate); const punaPovijest = loadFullHistoryFromLocalStorage(); const searchResults = []; const opcijeDana = { weekday: 'long' }; const opcijeDatumaNumeric = { day: '2-digit', month: '2-digit', year: 'numeric' }; const opcijeDatumaShort = { day: '2-digit', month: '2-digit', year: '2-digit' }; punaPovijest.forEach(grupa => { const sessionDate = new Date(grupa.timestamp); const formattedDateNumeric = sessionDate.toLocaleDateString('hr-HR', opcijeDatumaNumeric); const formattedDateShort = sessionDate.toLocaleDateString('hr-HR', opcijeDatumaShort); const normalizedSessionDate = getISODateString(sessionDate); const dayName = sessionDate.toLocaleDateString('hr-HR', opcijeDana).toLowerCase(); const sessionName = grupa.name ? grupa.name.toLowerCase() : ''; let match = false; if ((normalizedSearchDate && normalizedSessionDate && normalizedSessionDate === normalizedSearchDate) || formattedDateShort.includes(searchTerm) || formattedDateNumeric.includes(searchTerm) || dayName.includes(searchTerm) || (sessionName && sessionName.includes(searchTerm))) { match = true; } if (match) { searchResults.push(grupa); } }); renderSessionSearchResults(searchResults, resultsContainer, searchTerm, summaryContainer); }
+    function executeSearch() {
+        const searchInput = document.getElementById('search-input');
+        const resultsContainer = document.getElementById('search-results');
+        const summaryContainer = document.getElementById('search-summary-info-day');
+        if (!searchInput || !resultsContainer || !summaryContainer) return;
+
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        lastSearchTerm = searchInput.value.trim(); // Spremi za povratak
+        const normalizedSearchDate = normalizeDateForSearch(searchInput.value.trim());
+
+        resultsContainer.innerHTML = ''; // Očisti
+        summaryContainer.style.display = 'none'; // Sakrij
+
+        if (!searchTerm) {
+            resultsContainer.innerHTML = '<p style="text-align:center; color: grey; padding: 0.5em 0;"><i>Unesite pojam za pretragu (naziv skena).</i></p>';
+            return;
+        }
+
+        console.log("Tražim pojam unutar dana:", searchTerm);
+        const punaPovijest = loadFullHistoryFromLocalStorage();
+        const searchResults = [];
+
+        // Filtriraj sesije samo za trenutno gledani dan
+        const startOfDay = new Date(currentlyViewedDate); startOfDay.setHours(0,0,0,0);
+        const endOfDay = new Date(currentlyViewedDate); endOfDay.setHours(23,59,59,999);
+
+        punaPovijest.forEach(grupa => {
+            const sessionDate = new Date(grupa.timestamp);
+            // Provjeri je li sesija unutar traženog dana
+            if (sessionDate >= startOfDay && sessionDate <= endOfDay) {
+                 const sessionName = grupa.name ? grupa.name.toLowerCase() : '';
+                 // Traži samo po imenu unutar dana
+                 if (sessionName && sessionName.includes(searchTerm)) {
+                     searchResults.push(grupa);
+                 }
+            }
+        });
+
+        // Koristi istu funkciju za renderiranje rezultata
+        renderSessionSearchResults(searchResults, resultsContainer, searchTerm, summaryContainer);
+    }
     // Brisanje svih sesija za određeni dan
-    function deleteScansForDay(dateToDelete) { if (!(dateToDelete instanceof Date) || isNaN(dateToDelete)) { console.error("Pokušaj brisanja dana s neispravnim datumom."); alert("Greška: Nije moguće identificirati dan za brisanje."); return; } const dateToDeleteStr = getISODateString(dateToDelete); if (!dateToDeleteStr) return; console.log("Brisanje svih skenova za dan:", dateToDeleteStr); let punaPovijest = loadFullHistoryFromLocalStorage(); const originalLength = punaPovijest.length; const filtriranaPovijest = punaPovijest.filter(grupa => { const grupaDateStr = getISODateString(new Date(grupa.timestamp)); return grupaDateStr !== dateToDeleteStr; }); const newLength = filtriranaPovijest.length; console.log(`Originalna dužina: ${originalLength}, Nova dužina: ${newLength}`); if (newLength < originalLength) { saveFullHistoryToLocalStorage(filtriranaPovijest); playSound('remove-sound'); alert(`Svi skenovi za ${dateToDelete.toLocaleDateString('hr-HR')} obrisani.`); renderAllDaysView(); } else { console.warn("Nisu pronađeni skenovi za brisanje za dan:", dateToDeleteStr); alert("Greška: Nisu pronađeni skenovi za ovaj dan."); const clearDayBtn = document.getElementById('clear-day-btn'); if(clearDayBtn && clearDayBtn.dataset.confirming === 'true') { clearDayBtn.innerText = "IZBRIŠI OVAJ DAN"; clearDayBtn.classList.remove('confirm-mode'); clearDayBtn.dataset.confirming = 'false'; } } }
+    function deleteScansForDay(dateToDelete) { if (!(dateToDelete instanceof Date) || isNaN(dateToDelete)) { console.error("Pokušaj brisanja dana s neispravnim datumom."); alert("Greška: Nije moguće identificirati dan za brisanje."); return; } const dateToDeleteStr = getISODateString(dateToDelete); if (!dateToDeleteStr) return; console.log("Brisanje svih skenova za dan:", dateToDeleteStr); let punaPovijest = loadFullHistoryFromLocalStorage(); const originalLength = punaPovijest.length; const filtriranaPovijest = punaPovijest.filter(grupa => { const grupaDateStr = getISODateString(new Date(grupa.timestamp)); return grupaDateStr !== dateToDeleteStr; }); const newLength = filtriranaPovijest.length; console.log(`Originalna dužina: ${originalLength}, Nova dužina: ${newLength}`); if (newLength < originalLength) { saveFullHistoryToLocalStorage(filtriranaPovijest); playSound('remove-sound'); alert(`Svi skenovi za ${dateToDelete.toLocaleDateString('hr-HR')} obrisani.`); // Prebaci na prikaz svih dana nakon brisanja
+        renderAllDaysView(); } else { console.warn("Nisu pronađeni skenovi za brisanje za dan:", dateToDeleteStr); alert("Greška: Nisu pronađeni skenovi za ovaj dan."); const clearDayBtn = document.getElementById('clear-day-btn'); if(clearDayBtn && clearDayBtn.dataset.confirming === 'true') { clearDayBtn.innerText = "IZBRIŠI OVAJ DAN"; clearDayBtn.classList.remove('confirm-mode'); clearDayBtn.dataset.confirming = 'false'; } } }
 
     // *** EVENT LISTENERI ***
     function handleVisibilityChange() { if (document.visibilityState === 'visible' && document.body.classList.contains('scanner-view')) { if (!isScannerActive) initializeScanner(); } else if (document.visibilityState === 'hidden') { stopScanner(); } }
     function attachVisibilityListener() { if (visibilityListenerAttached) return; document.addEventListener("visibilitychange", handleVisibilityChange); visibilityListenerAttached = true; }
-    function globalClickListener(event) { const isClickOnRemoveButton = removeButton && removeButton.contains(event.target); const isClickOnDeleteWarning = deleteWarningDiv && deleteWarningDiv.style.display !== 'none' && deleteWarningDiv.contains(event.target); if ((removeConfirm || removeNameConfirm) && !isClickOnRemoveButton && !isClickOnDeleteWarning) { resetRemoveMode(); } const isClickOnOcistiButton = ocistiButton && ocistiButton.contains(event.target); if (ocistiConfirm && !isClickOnOcistiButton) { resetOcistiMode(); } const isClickOnNameInput = sessionNameInput && sessionNameInput.contains(event.target); const isClickOnAddNameBtn = addNameBtn && addNameBtn.contains(event.target); const isClickOnEditIcon = event.target.classList.contains('edit-icon'); const searchContainerSingleDay = document.getElementById('search-container'); const isClickInSingleDaySearch = searchContainerSingleDay?.contains(event.target) || event.target.id === 'start-search-btn'; const searchContainerAllDays = document.getElementById('all-days-search-container'); const isClickInAllDaysSearch = searchContainerAllDays?.contains(event.target); if (sessionNameInput && sessionNameInput.style.display === 'block' && !isClickOnNameInput && !isClickOnAddNameBtn && !isClickOnEditIcon) { saveName(); } if (!isClickInSingleDaySearch && searchContainerSingleDay?.style.display === 'block' && event.target.id !== 'close-search-btn' && event.target.id !== 'execute-search-btn') { /* Ne zatvaraj automatski */ } if (!isClickInAllDaysSearch && searchContainerAllDays?.style.display === 'block' && event.target.id !== 'history-view-toggle-btn' && event.target.id !== 'close-all-days-search-btn' && event.target.id !== 'execute-all-days-search-btn') { /* Ne zatvaraj automatski */} }
+    function globalClickListener(event) { const isClickOnRemoveButton = removeButton && removeButton.contains(event.target); const isClickOnDeleteWarning = deleteWarningDiv && deleteWarningDiv.style.display !== 'none' && deleteWarningDiv.contains(event.target); if ((removeConfirm || removeNameConfirm) && !isClickOnRemoveButton && !isClickOnDeleteWarning) { resetRemoveMode(); } const isClickOnOcistiButton = ocistiButton && ocistiButton.contains(event.target); if (ocistiConfirm && !isClickOnOcistiButton) { resetOcistiMode(); } const isClickOnNameInput = sessionNameInput && sessionNameInput.contains(event.target); const isClickOnAddNameBtn = addNameBtn && addNameBtn.contains(event.target); const isClickOnEditIcon = event.target.classList.contains('edit-icon'); if (sessionNameInput && sessionNameInput.style.display === 'block' && !isClickOnNameInput && !isClickOnAddNameBtn && !isClickOnEditIcon) { saveName(); }
+        // Ne trebamo više logiku za zatvaranje searcha klikom van jer su gumbi unutar containera
+     }
 
     // *** INICIJALIZACIJA APLIKACIJE ***
-    document.addEventListener('DOMContentLoaded', () => { console.log("DOM spreman..."); totalDiv = document.getElementById('total'); totalContainer = document.getElementById('total-container'); ocistiButton = document.getElementById('ocisti-button'); invoiceCountDiv = document.getElementById('invoice-count'); historyList = document.getElementById('historyList'); removeButton = document.getElementById('remove-from-list-btn'); duplicateWarning = document.getElementById('duplicate-warning'); loadedMsg = document.getElementById('loaded-message'); instructionDiv = document.getElementById('scan-instruction'); deleteWarningDiv = document.getElementById('delete-warning'); shareButton = document.getElementById('share-button'); readerDiv = document.getElementById('reader'); historyToggleButton = document.getElementById('history-toggle-btn'); historyDiv = document.getElementById('history'); historyPageDiv = document.getElementById('history-page'); backToScannerButton = document.getElementById('back-to-scanner-btn'); historyContentDiv = document.getElementById('history-content'); sessionNameContainer = document.getElementById('session-name-container'); addNameBtn = document.getElementById('add-name-btn'); sessionNameInput = document.getElementById('session-name-input'); sessionNameDisplay = document.getElementById('session-name-display'); sessionNameText = document.getElementById('session-name-text'); if (!readerDiv || !historyPageDiv || !historyContentDiv || !backToScannerButton || !historyToggleButton || !sessionNameContainer ) { console.error("GREŠKA: Nedostaju DOM elementi!"); document.body.innerHTML = '<div style="padding: 20px; color: red; font-weight: bold;">Greška učitavanja. Osvježite.</div>'; return; } document.body.addEventListener('click', globalClickListener, true); if (historyToggleButton) { historyToggleButton.addEventListener('click', () => { playSound('click-sound'); switchToHistoryView(); }); } if (backToScannerButton) { backToScannerButton.addEventListener('click', () => { playSound('click-sound'); switchToScannerView(); }); } if (navigator.share) { if (shareButton) { shareButton.style.display = 'block'; shareButton.addEventListener('click', async () => { if (removeConfirm || removeNameConfirm) resetRemoveMode(); if (ocistiConfirm) resetOcistiMode(); try { await navigator.share({ title: 'QR SKENER-KALKULATOR', text: 'Skenira i zbraja račune...', url: window.location.href }); } catch (err) { if (err.name !== 'AbortError') console.error('Greška dijeljenja:', err); } }); } } else { if(shareButton) shareButton.style.display = 'none'; } if(sessionNameInput) { sessionNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); saveName(); } else if (e.key === 'Escape') { sessionNameInput.value = currentSessionName || ''; sessionNameInput.style.display = 'none'; updateNameDisplay(); } }); } console.log("Provjeravam inicijalni view..."); if (document.body.classList.contains('scanner-view')) { console.log("Init: Scanner view..."); initializeScanner(); attachVisibilityListener(); } else { console.log("Init: History view..."); switchToHistoryView(); } console.log("Init: update displaya..."); updateDisplay(); console.log("Inicijalizacija završena."); });
+    document.addEventListener('DOMContentLoaded', () => { console.log("DOM spreman..."); totalDiv = document.getElementById('total'); totalContainer = document.getElementById('total-container'); ocistiButton = document.getElementById('ocisti-button'); invoiceCountDiv = document.getElementById('invoice-count'); historyList = document.getElementById('historyList'); removeButton = document.getElementById('remove-from-list-btn'); duplicateWarning = document.getElementById('duplicate-warning'); loadedMsg = document.getElementById('loaded-message'); instructionDiv = document.getElementById('scan-instruction'); deleteWarningDiv = document.getElementById('delete-warning'); shareButton = document.getElementById('share-button'); readerDiv = document.getElementById('reader'); historyToggleButton = document.getElementById('history-toggle-btn'); historyDiv = document.getElementById('history'); historyPageDiv = document.getElementById('history-page'); backToScannerButton = document.getElementById('back-to-scanner-btn'); historyContentDiv = document.getElementById('history-content'); sessionNameContainer = document.getElementById('session-name-container'); addNameBtn = document.getElementById('add-name-btn'); sessionNameInput = document.getElementById('session-name-input'); sessionNameDisplay = document.getElementById('session-name-display'); sessionNameText = document.getElementById('session-name-text'); if (!readerDiv || !historyPageDiv || !historyContentDiv || !backToScannerButton || !historyToggleButton || !sessionNameContainer ) { console.error("GREŠKA: Nedostaju DOM elementi!"); document.body.innerHTML = '<div style="padding: 20px; color: red; font-weight: bold;">Greška učitavanja. Osvježite.</div>'; return; } document.body.addEventListener('click', globalClickListener, true); if (historyToggleButton) { historyToggleButton.addEventListener('click', () => { playSound('click-sound'); switchToHistoryView(); }); } if (backToScannerButton) { backToScannerButton.addEventListener('click', () => { playSound('click-sound'); switchToScannerView(); }); } if (navigator.share) { if (shareButton) { shareButton.style.display = 'block'; shareButton.addEventListener('click', async () => { if (removeConfirm || removeNameConfirm) resetRemoveMode(); if (ocistiConfirm) resetOcistiMode(); try { await navigator.share({ title: 'QR SKENER-KALKULATOR', text: 'Skenira i zbraja račune...', url: window.location.href }); } catch (err) { if (err.name !== 'AbortError') console.error('Greška dijeljenja:', err); } }); } } else { if(shareButton) shareButton.style.display = 'none'; } if(sessionNameInput) { sessionNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); saveName(); } else if (e.key === 'Escape') { sessionNameInput.value = currentSessionName || ''; sessionNameInput.style.display = 'none'; updateNameDisplay(); } }); } console.log("Provjeravam inicijalni view..."); if (document.body.classList.contains('scanner-view')) { console.log("Init: Scanner view..."); initializeScanner(); attachVisibilityListener(); } else { // Ako inicijalno nije scanner view, forsiraj ga (ili history?) - ostavljam scanner kao default
+         console.log("Init: Forsiram Scanner view...");
+         document.body.classList.remove('history-view');
+         document.body.classList.add('scanner-view');
+         initializeScanner();
+         attachVisibilityListener();
+         // Ako želiš da history bude default:
+         // console.log("Init: History view...");
+         // switchToHistoryView();
+     } console.log("Init: update displaya..."); updateDisplay(); console.log("Inicijalizacija završena."); });
   </script>
 
   <!-- Statcounter kod -->
