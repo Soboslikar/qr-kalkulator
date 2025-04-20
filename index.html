@@ -149,29 +149,36 @@
   <div id="delete-warning" style="display: none;"></div>
   <!-- Kraj Scanner View elemenata -->
 
-  <!-- History View elementi -->
-  <div id="history-page">
-      <div id="history-header">
-          <button id="back-to-scanner-btn">< NA SKENER</button>
-          <h1>POVIJEST</h1>
-      </div>
-      <!-- Kontejner za pretragu u prikazu jednog dana -->
-      <div id="search-container" style="display: none; padding: 1em 0; border-bottom: 1px solid #eee; margin-bottom: 1em;">
-          <div style="display: flex; gap: 10px; margin-bottom: 0.8em;">
-              <input type="text" id="search-input" placeholder="Datum(dd.mm.yy), dan, naziv..." style="flex-grow: 1; padding: 0.5em;">
-              <button id="execute-search-btn" style="padding: 0.5em 1em;">Traži</button>
-              <button id="close-search-btn" style="padding: 0.5em 1em; background-color: #ccc;">Zatvori</button>
-          </div>
-           <div id="search-summary-info-day" style="display: none; justify-content: space-between; align-items: center; padding: 0.6em 0.2em; font-size: 1.1em; margin-top: 0.8em; border-top: 1px solid #eee;"></div>
-          <div id="search-results"></div>
-      </div>
-      <!-- Glavni kontejner -->
-      <div id="history-content">
-          <!-- Sadržaj generira JS -->
-      </div>
-  </div>
-  <!-- Kraj History View elemenata -->
+ <!-- History View elementi -->
+<div id="history-page">
+    <!-- **** NOVI WRAPPER ZA FIKSNI DIO **** -->
+    <div class="history-fixed-header">
+        <div id="history-header">
+            <button id="back-to-scanner-btn">< NA SKENER</button>
+            <h1>POVIJEST</h1>
+        </div>
+        <!-- Dinamički dodani #history-date-info i #history-summary-info će se pojaviti ovdje zahvaljujući JS-u -->
+        <!-- Kontejner za pretragu u prikazu jednog dana -->
+        <div id="search-container" style="display: none; padding: 1em 0.2em 0.5em 0.2em; border-bottom: 1px solid #eee; margin-bottom: 0;">
+            <div style="display: flex; gap: 10px; margin-bottom: 0.8em;">
+                <input type="text" id="search-input" placeholder="Datum(dd.mm.yy), dan, naziv..." style="flex-grow: 1; padding: 0.5em;">
+                <button id="execute-search-btn" style="padding: 0.5em 1em;">Traži</button>
+                <button id="close-search-btn" style="padding: 0.5em 1em; background-color: #ccc;">Zatvori</button>
+            </div>
+            <div id="search-summary-info-day" style="display: none; justify-content: space-between; align-items: center; padding: 0.6em 0.2em; font-size: 1.1em; margin-top: 0.8em; border-top: 1px solid #eee;"></div>
+            <!-- **** REZULTATI PRETRAGE DANA VIŠE NISU OVDJE **** -->
+        </div>
+    </div>
+    <!-- **** KRAJ NOVOG WRAPPERA **** -->
 
+    <!-- Glavni kontejner (SADA JE OVO SKROLAJUĆI DIO) -->
+    <div id="history-content">
+        <!-- **** REZULTATI PRETRAGE DANA IDU OVDJE **** -->
+         <div id="search-results"></div>
+        <!-- Sadržaj generira JS (liste, ostali search barovi, gumbi itd.) -->
+    </div>
+</div>
+<!-- Kraj History View elemenata -->
   <!-- Zvukovi -->
   <audio id="scan-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
   <audio id="click-sound" src="https://cdn.jsdelivr.net/gh/himalayasingh/music-player-1@master/music/2.mp3" preload="auto"></audio>
