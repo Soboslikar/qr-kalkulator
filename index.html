@@ -331,49 +331,141 @@
     function globalClickListener(event) { const isClickOnRemoveButton = removeButton && removeButton.contains(event.target); const isClickOnDeleteWarning = deleteWarningDiv && deleteWarningDiv.style.display !== 'none' && deleteWarningDiv.contains(event.target); if ((removeConfirm || removeNameConfirm) && !isClickOnRemoveButton && !isClickOnDeleteWarning) { resetRemoveMode(); } const isClickOnOcistiButton = ocistiButton && ocistiButton.contains(event.target); if (ocistiConfirm && !isClickOnOcistiButton) { resetOcistiMode(); } const isClickOnNameInput = sessionNameInput && sessionNameInput.contains(event.target); const isClickOnAddNameBtn = addNameBtn && addNameBtn.contains(event.target); const isClickOnEditIcon = event.target.classList.contains('edit-icon'); if (sessionNameInput && sessionNameInput.style.display === 'block' && !isClickOnNameInput && !isClickOnAddNameBtn && !isClickOnEditIcon) { saveName(); } }
 
     // *** INICIJALIZACIJA APLIKACIJE ***
+       // *** INICIJALIZACIJA APLIKACIJE (IZMIJENJEN REDOSLIJED) ***
     document.addEventListener('DOMContentLoaded', () => {
         console.log("DOM spreman...");
+        // Dohvati sve DOM elemente (isto kao prije)
         totalDiv = document.getElementById('total'); totalContainer = document.getElementById('total-container'); ocistiButton = document.getElementById('ocisti-button'); invoiceCountDiv = document.getElementById('invoice-count'); historyList = document.getElementById('historyList'); removeButton = document.getElementById('remove-from-list-btn'); duplicateWarning = document.getElementById('duplicate-warning'); loadedMsg = document.getElementById('loaded-message'); instructionDiv = document.getElementById('scan-instruction'); deleteWarningDiv = document.getElementById('delete-warning'); shareButton = document.getElementById('share-button'); readerDiv = document.getElementById('reader'); historyToggleButton = document.getElementById('history-toggle-btn'); historyDiv = document.getElementById('history'); historyPageDiv = document.getElementById('history-page'); backToScannerButton = document.getElementById('back-to-scanner-btn'); historyContentDiv = document.getElementById('history-content'); sessionNameContainer = document.getElementById('session-name-container'); addNameBtn = document.getElementById('add-name-btn'); sessionNameInput = document.getElementById('session-name-input'); sessionNameDisplay = document.getElementById('session-name-display'); sessionNameText = document.getElementById('session-name-text'); historyStickyHeaderDiv = document.getElementById('history-sticky-header'); historyDynamicHeaderContentDiv = document.getElementById('history-dynamic-header-content'); runningTextContainer = document.getElementById('running-text-container'); runningTextSpan = runningTextContainer ? runningTextContainer.querySelector('span') : null; sharePromptOverlay = document.getElementById('share-prompt-overlay'); counterDeactivatedIndicator = document.getElementById('counter-deactivated-indicator');
 
+
+        // Provjera osnovnih elemenata (isto kao prije)
         if (!readerDiv || !historyPageDiv || !historyContentDiv || !backToScannerButton || !historyToggleButton || !sessionNameContainer || !historyStickyHeaderDiv || !historyDynamicHeaderContentDiv || !runningTextContainer || !sharePromptOverlay || !counterDeactivatedIndicator || !loadedMsg ) { console.error("GREŠKA: Nedostaju DOM elementi!"); document.body.innerHTML = '<div style="padding: 20px; color: red; font-weight: bold;">Greška učitavanja. Osvježite.</div>'; return; }
+
+        // Globalni listener i listeneri za gumbe (isto kao prije)
         document.body.addEventListener('click', globalClickListener, true);
 
-        // IZMJENA: Dodano logiranje i osigurano da se listener veže samo jednom
+        // IZMJENA: Dodano logiranje i osigurano da se listener veže samo jednom (za history toggle)
         if (historyToggleButton) {
              const newHistoryToggleButton = historyToggleButton.cloneNode(true);
              historyToggleButton.parentNode.replaceChild(newHistoryToggleButton, historyToggleButton);
              historyToggleButton = newHistoryToggleButton; // Ažuriraj referencu
              historyToggleButton.addEventListener('click', () => {
-                 console.log("Klik na 'POVIJEST' gumb detektiran."); // <-- NOVI LOG
+                 console.log("Klik na 'POVIJEST' gumb detektiran.");
                  playSound('click-sound');
                  switchToHistoryView();
              });
         } else {
-             console.error("DOM spreman, ali #history-toggle-btn nije pronađen!"); // <-- NOVI LOG
+             console.error("DOM spreman, ali #history-toggle-btn nije pronađen!");
         }
 
         if (backToScannerButton) { backToScannerButton.addEventListener('click', () => { playSound('click-sound'); switchToScannerView(); }); }
 
-        // IZMJENA: Listener za Share gumb (IZMIJENJENA LOGIKA RESETIRANJA)
-        if (navigator.share) { if (shareButton) { shareButton.style.display = 'block'; shareButton.addEventListener('click', async () => { if (removeConfirm || removeNameConfirm) resetRemoveMode(); if (ocistiConfirm) resetOcistiMode(); const shareData = { title: 'QR SKENER-KALKULATOR', text: 'QR RAČUNATOR skenira i zbraja račune-ne instalira se', url:'https://soboslikar.github.io/QR-RACUNATOR/' }; try { await navigator.share(shareData); console.log('Share dijalog zatvoren (pretpostavljamo uspješno ili zatvoreno na drugi način osim Abort).'); if (brojac === 0 && brojac2 > 0) { brojac = brojac2; saveBrojac(); checkSharePrompt(); console.log("Brojač resetiran na", brojac, "nakon zatvaranja share dijaloga."); } } catch (err) { console.error('Greška dijeljenja:', err); if (err.name === 'AbortError') { console.log('Korisnik odustao od dijeljenja (AbortError). Brojač NIJE resetiran.'); } else { console.log('Došlo je do druge greške pri dijeljenju. Brojač NIJE resetiran.'); } } }); } } else { if (shareButton) shareButton.style.display = 'none'; }
-        if(sessionNameInput) { sessionNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); saveName(); } else if (e.key === 'Escape') { sessionNameInput.value = currentSessionName || ''; sessionNameInput.style.display = 'none'; updateNameDisplay(); } }); }
+        // Listener za Share gumb (s logiranjem)
+        if (navigator.share) {
+            if (shareButton) {
+                shareButton.style.display = 'block';
+                shareButton.addEventListener('click', async () => {
+                    if (removeConfirm || removeNameConfirm) resetRemoveMode(); if (ocistiConfirm) resetOcistiMode();
+                    const shareData = { title: 'QR SKENER-KALKULATOR', text: 'Skenira i zbraja račune...', url: window.location.href };
 
+                    // Odkomentiraj logiranje ako/kad implementiraš logUsageEvent
+                    // logUsageEvent('share_button_clicked');
+
+                    try {
+                        await navigator.share(shareData);
+                        // Odkomentiraj logiranje ako/kad implementiraš logUsageEvent
+                        // logUsageEvent('share_dialog_closed_success');
+                        console.log('Share dijalog zatvoren...');
+                        if (brojac === 0 && brojac2 > 0) {
+                            brojac = brojac2;
+                            saveBrojac();
+                            checkSharePrompt();
+                            console.log("Brojač resetiran na", brojac, "nakon zatvaranja share dijaloga.");
+                            // Odkomentiraj logiranje ako/kad implementiraš logUsageEvent
+                            // logUsageEvent('counter_reset_after_share');
+                        }
+                    } catch (err) {
+                        console.error('Greška dijeljenja:', err);
+                        if (err.name === 'AbortError') {
+                            // Odkomentiraj logiranje ako/kad implementiraš logUsageEvent
+                            // logUsageEvent('share_dialog_aborted');
+                             console.log('Korisnik odustao od dijeljenja (AbortError). Brojač NIJE resetiran.');
+                        } else {
+                            // Odkomentiraj logiranje ako/kad implementiraš logUsageEvent
+                            // logUsageEvent('share_dialog_error', { error: err.toString() });
+                             console.log('Došlo je do druge greške pri dijeljenju. Brojač NIJE resetiran.');
+                        }
+                    }
+                });
+            }
+        } else { if (shareButton) shareButton.style.display = 'none'; }
+
+        // Listener za unos imena
+        if(sessionNameInput) {
+            sessionNameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); saveName(); }
+                else if (e.key === 'Escape') { sessionNameInput.value = currentSessionName || ''; sessionNameInput.style.display = 'none'; updateNameDisplay(); }
+            });
+        }
+
+
+        // --- NOVI REDOSLIJED INICIJALIZACIJE ---
+
+        // 1. Učitaj lokalno stanje brojača
         loadCountersState();
+
+        // 2. Napravi inicijalni update prikaza (broj računa, ukupno - još bez podataka iz sheeta)
+        updateDisplay(); // Osnovni update
+
+        // 3. ODMAH provjeri view i pokreni kameru ako treba
+        console.log("Provjeravam inicijalni view (prije dohvaćanja)...");
+        if (document.body.classList.contains('scanner-view')) {
+            console.log("Init: Scanner view - Pokrećem kameru ODMAH...");
+            initializeScanner(); // <<< POKRENI KAMERU ODMAH
+            attachVisibilityListener(); // <<< Poveži listener vidljivosti ODMAH
+        } else {
+            console.log("Init: History view...");
+            // Ako smo inicijalno u history view, ne treba pokretati kameru
+            // switchToHistoryView() će biti pozvan unutar .then() ili .catch() od fetchSheetData ako zatreba,
+            // ali možemo odmah renderirati osnovno stanje
+             renderHistoryView(currentlyViewedDate); // Pokaži osnovni history view odmah
+        }
+
+        // 4. SADA pokreni dohvaćanje podataka iz Sheeta u pozadini
+        // Ne koristimo .then() za čekanje na pokretanje kamere
         fetchSheetData().then(() => {
-            console.log("Provjeravam inicijalni view...");
-            if (document.body.classList.contains('scanner-view')) { console.log("Init: Scanner view..."); initializeScanner(); attachVisibilityListener(); }
-            else { console.log("Init: History view..."); switchToHistoryView(); }
-            updateDisplay();
-            console.log("Inicijalizacija završena.");
+            // Kad podaci stignu (ili dohvaćanje završi):
+            console.log("Sheet podaci dohvaćeni (u pozadini). Ažuriram UI ako treba.");
+            // initializeCounters() će potencijalno ažurirati brojac ako je bio null
+            // updateRunningText() će prikazati/sakriti tekst
+            // checkSharePrompt() će prikazati/sakriti poruku
+            // Nema potrebe ponovo zvati initializeScanner() ovdje.
+
+            // Ažuriraj prikaz povijesti ako smo u history viewu, jer su stigli podaci
+            if (document.body.classList.contains('history-view')) {
+                 console.log("Ažuriram prikaz povijesti nakon dohvaćanja podataka.");
+                 renderHistoryView(currentlyViewedDate);
+            } else {
+                 // Ako smo u scanner viewu, samo osvježi osnovni display
+                 updateDisplay();
+            }
+            console.log("Inicijalizacija (pozadinska obrada) završena.");
+             // Logiranje uspješnog učitavanja (odkomentirati kad bude logUsageEvent)
+             // logUsageEvent('app_loaded');
+
+
         }).catch(error => {
-             console.error("Greška tijekom inicijalnog dohvaćanja podataka:", error);
-             if (document.body.classList.contains('scanner-view')) { initializeScanner(); attachVisibilityListener(); } else { switchToHistoryView(); }
-             updateDisplay();
-             console.log("Inicijalizacija završena (s greškom dohvaćanja).");
+             // Čak i ako dohvaćanje ne uspije, kamera je već pokrenuta (ako smo bili u scanner view)
+             console.error("Greška tijekom pozadinskog dohvaćanja podataka:", error);
+             // Logiranje greške (odkomentirati kad bude logUsageEvent)
+             // logUsageEvent('app_load_fetch_error', { error: error.toString() });
+             console.log("Inicijalizacija završena (s greškom pozadinskog dohvaćanja).");
         });
 
-    }); // Kraj DOMContentLoaded
+        // Logiraj da je osnovna inicijalizacija gotova (kamera je možda već pokrenuta)
+        console.log("Osnovna inicijalizacija završena (dohvaćanje ide u pozadini).");
 
+    }); // Kraj DOMContentLoaded
     console.log(">>> KRAJ SKRIPTE <<<"); // DEBUG LOG
 
   </script>
