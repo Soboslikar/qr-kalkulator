@@ -115,7 +115,38 @@
     #running-text-container { position: absolute; top: 4.8em; left: 0; width: 100%; overflow: hidden; white-space: nowrap; z-index: 2; pointer-events: none; display: none; }
     #running-text-container span { display: inline-block; padding-left: 100%; font-size: 1.4em; font-weight: bold; color: yellow; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); animation: marquee 8s linear infinite; white-space: pre; /* <<< DODANA OVA LINIJA */}
     @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
-    #share-prompt-overlay { position: absolute; top: 7em; left: 5%; width: 90%; height: auto; background-color: rgba(0, 0, 0, 0.75); color: white; font-size: 1.3em; font-weight: bold; text-align: center; padding: 1.5em 1em; border-radius: 10px; z-index: 4; display: none; box-shadow: 0 4px 8px rgba(0,0,0,0.3); line-height: 1.4; align-items: center; justify-content: center; }
+ /* Unutar <style> taga */
+
+#share-prompt-overlay {
+    position: absolute;
+    top: 7em; /* Ostavljamo ovo ili prilagodi po potrebi */
+
+    /* --- CENTRIRANJE OKVIRA --- */
+    left: 50%;            /* Pomakni lijevi rub na sredinu */
+    transform: translateX(-50%); /* Vrati nazad za pola širine elementa */
+    /* --- ŠIRINA OKVIRA --- */
+    width: 60%; /* Možeš staviti 60%, 70%, 80% - koliko ti odgovara */
+
+    /* --- OSTALI STILOVI --- */
+    height: auto;
+    background-color: rgba(0, 0, 0, 0.75); /* Tamna pozadina ostaje */
+
+    /* --- BOJA TEKSTA --- */
+    color: lightgreen; /* Svjetlo zelena boja teksta */
+
+    font-size: 1.3em;
+    font-weight: bold;
+    text-align: center; /* Tekst unutar okvira je već centriran */
+    padding: 1.5em 1em;
+    border-radius: 10px;
+    z-index: 4;
+    display: none; /* Početno sakriven (JS mijenja u flex) */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    line-height: 1.4;
+    /* Ova flex svojstva centriraju tekst vertikalno/horizontalno unutar samog okvira */
+    align-items: center;
+    justify-content: center;
+}
     /* IZMJENA: Uklonjena pozadina kvačice */
     #counter-deactivated-indicator { position: fixed; top: 10px; left: 10px; font-size: 1em; color: limegreen; background-color: transparent; z-index: 5; display: none; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
     /* --- KRAJ NOVIH STILOVA --- */
