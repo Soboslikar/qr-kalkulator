@@ -317,6 +317,55 @@
 
     // *** POMOĆNE FUNKCIJE ***
     const parseTime = (timeStr) => { if (!timeStr || typeof timeStr !== 'string' || timeStr === '??:??' || timeStr.length !== 5 || timeStr[2] !== ':') return -1; const parts = timeStr.split(':'); const hours = parseInt(parts[0], 10); const minutes = parseInt(parts[1], 10); if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return -1; return hours * 60 + minutes; };
+function normalizeDateForSearch(input) {
+    if (!input || typeof input !== 'string') {
+        return null;
+    }
+    const term = input.trim();
+
+    // Pokušaj parsirati kao ISO format YYYY-MM-DD
+    const isoMatch = term.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+        const year = parseInt(isoMatch[1], 10);
+        const month = parseInt(isoMatch[2], 10) - 1; // Mjeseci u JS-u su 0-indexed
+        const day = parseInt(isoMatch[3], 10);
+        const date = new Date(year, month, day);
+        // Provjeri je li parsed date ispravan i odgovara unesenim dijelovima
+        if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
+             // Vrati u YYYY-MM-DD formatu koristeći postojeću helper funkciju ako je dostupna
+             // Ako getISODateString nije globalno dostupna, zamijeni s:
+             // const monthStr = String(date.getMonth() + 1).padStart(2, '0');
+             // const dayStr = String(date.getDate()).padStart(2, '0');
+             // return `${date.getFullYear()}-${monthStr}-${dayStr}`;
+             return getISODateString(date); // Koristi vašu postojeću funkciju
+        }
+    }
+
+    // Pokušaj parsirati formate poput DD.MM.YYYY, D.M.YYYY, DD/MM/YYYY, D/M/YYYY, sa 2- ili 4-znamenkastim godinama
+    const dotSlashMatch = term.match(/^(\d{1,2})[.\/](\d{1,2})[.\/]((\d{4})|(\d{2}))$/);
+    if (dotSlashMatch) {
+        const day = parseInt(dotSlashMatch[1], 10);
+        const month = parseInt(dotSlashMatch[2], 10) - 1; // Mjeseci u JS-u su 0-indexed
+        let year = parseInt(dotSlashMatch[4] || dotSlashMatch[5], 10); // Uhvati 4-znamenkasti (group 4) ili 2-znamenkasti (group 5)
+
+        // Obradi 2-znamenkastu godinu (npr. 25 postaje 2025)
+        // Jednostavna pretpostavka: ako je godina < 100, dodaj 2000
+        if (year < 100) {
+             year += 2000;
+        }
+
+        const date = new Date(year, month, day);
+         // Osnovna provjera valjanosti datuma (npr. 31.02.2023 nije validan datum)
+         // Također provjeri da se kreirani datum podudara s unesenim dijelovima (zbog automatske korekcije od strane Date objekta)
+        if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day && !isNaN(date.getTime())) {
+             // Vrati u YYYY-MM-DD formatu koristeći postojeću helper funkciju
+             return getISODateString(date); // Koristi vašu postojeću funkciju
+        }
+    }
+
+    // Ako nijedan format nije prepoznat ili validan
+    return null;
+}
 
     // --- MODIFICIRANA playSound FUNKCIJA ZA COOLDOWN (SAMO ZA ERROR) ---
     function playSound(id) {
