@@ -1,4 +1,4 @@
-# QR SKENER-RAČUNATOR
+# QR SKENER-KALKULATOR
 
 Jednostavna web aplikacija za skeniranje QR kodova s hrvatskih fiskalnih računa i automatsko zbrajanje iznosa u EUR. Aplikacija radi direktno u web pregledniku (na mobitelu ili računalu s kamerom) bez potrebe za instalacijom.
 
