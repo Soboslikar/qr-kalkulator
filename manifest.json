@@ -1,0 +1,21 @@
+{
+  "name": "QR RAČUNATOR",
+  "short_name": "RAČUNATOR",
+  "description": "Web aplikacija za skeniranje i zbrajanje fiskalnih računa.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f4f4f4",
+  "theme_color": "#1e7e34",
+  "icons": [
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
